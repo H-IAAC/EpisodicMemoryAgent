@@ -5,3 +5,5 @@
 build
 libs
 
+# Ignore IntelliJ directory
+.idea
