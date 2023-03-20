@@ -99,6 +99,7 @@ public class AgentMind extends Mind {
         innerSense.add(posIdea);
         innerSense.add(new Idea("Pitch", null, "Property", 1));
         innerSense.add(new Idea("Fuel", null, "Property", 1));
+        innerSense.add(new Idea("Step", 0, "TimeStep", 1));
 
         return innerSense;
     }
