@@ -13,8 +13,9 @@ public class MoveEventTracker extends Codelet {
 
     private Memory innerSenseMO;
     private Memory eventsMO;
-    private boolean debug = false;
+    private boolean debug = true;
     private int bufferSize = 2;
+    private int bufferStepSize = 4;
     private List<Idea> previousSelfIdea = new LinkedList<Idea>();
     private Idea firstSelfIdea;
     private Idea lastSelfIdea;
@@ -45,22 +46,41 @@ public class MoveEventTracker extends Codelet {
     @Override
     public void proc() {
         //Initialize event track buffer
-        if (previousSelfIdea.size() < this.bufferSize){
+        if (previousSelfIdea.size() == 0) {
             previousSelfIdea.add(currentInnerSense.clone());
         } else {
-            //Check if current state is coherent with previous states and event category
-            if (belongsToEvent(previousSelfIdea, currentInnerSense)){
-                Idea drop = previousSelfIdea.remove(0);
-                //Copies start of the event
-                if (firstSelfIdea == null) this.firstSelfIdea = drop.clone();
-                previousSelfIdea.add(currentInnerSense.clone());
+            if (previousSelfIdea.size() < this.bufferSize) {
+                if (((int)currentInnerSense.get("Step").getValue())
+                        - ((int)previousSelfIdea.get(previousSelfIdea.size()-1).get("Step").getValue())
+                        >= bufferStepSize)
+                    previousSelfIdea.add(currentInnerSense.clone());
             } else {
-                Idea event = constructEventIdea(previousSelfIdea.get(1));
-                previousSelfIdea.clear();
-                previousSelfIdea.add(currentInnerSense);
-                firstSelfIdea = null;
-                Idea eventsIdea = (Idea) eventsMO.getI();
-                eventsIdea.add(event);
+                if (((int)currentInnerSense.get("Step").getValue())
+                        - ((int)previousSelfIdea.get(previousSelfIdea.size()-1).get("Step").getValue())
+                        >= bufferStepSize) {
+                    //Check if current state is coherent with previous states and event category
+                    boolean check = belongsToEvent(previousSelfIdea, currentInnerSense);
+                    System.out.println(check);
+                    if (check) {
+                        Idea drop = previousSelfIdea.remove(0);
+                        //Copies start of the event
+                        if (firstSelfIdea == null) this.firstSelfIdea = drop.clone();
+                        previousSelfIdea.add(currentInnerSense.clone());
+                    } else {
+                        if (firstSelfIdea != null) {
+                            Idea event = constructEventIdea(previousSelfIdea.get(1));
+                            previousSelfIdea.clear();
+                            previousSelfIdea.add(currentInnerSense.clone());
+                            firstSelfIdea = null;
+                            Idea eventsIdea = (Idea) eventsMO.getI();
+                            eventsIdea.add(event);
+                            if (debug) System.out.println("--------------\n" + fullPromt(eventsIdea, ""));
+                        } else {
+                            previousSelfIdea.remove(0);
+                            previousSelfIdea.add(currentInnerSense.clone());
+                        }
+                    }
+                }
             }
         }
     }
@@ -77,9 +97,12 @@ public class MoveEventTracker extends Codelet {
         Vector2D pointC = new Vector2D(
                 (float) current.get("Position.X").getValue(),
                 (float) current.get("Position.Y").getValue());
-        Vector2D prevDirVector = pointB.sub(pointA).normalize();
-        Vector2D currDirVector = pointC.sub(pointB).normalize();
-        return prevDirVector.angle(currDirVector) < 0.01;
+        if (pointA.sub(pointB).magnitude() > 0) {
+            Vector2D prevDirVector = pointB.sub(pointA).normalize();
+            Vector2D currDirVector = pointC.sub(pointB).normalize();
+            return prevDirVector.angle(currDirVector) < 0.01;
+        }
+        return false;
     }
 
     private Idea constructEventIdea(Idea lastSelf){
@@ -106,5 +129,13 @@ public class MoveEventTracker extends Codelet {
 
     public void setBufferSize(int bufferSize) {
         if (bufferSize > 0) this.bufferSize = bufferSize;
+    }
+
+    private String fullPromt(Idea idea, String pre){
+        String out = pre + idea.toString() + "[" + idea.getResumedValue() + "]" + "\n";
+        for (Idea l : idea.getL()){
+            out += fullPromt(l, pre + "  ");
+        }
+        return out;
     }
 }

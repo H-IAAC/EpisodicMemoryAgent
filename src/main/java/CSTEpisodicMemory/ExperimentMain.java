@@ -18,5 +18,6 @@ public class ExperimentMain {
         // The following lines create the MindViewer and configure it
         MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
         mv.setVisible(true);
+        env.creature.moveTo(2f,2f);
     }
 }
