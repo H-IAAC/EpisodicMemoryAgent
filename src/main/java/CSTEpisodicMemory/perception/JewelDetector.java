@@ -21,11 +21,17 @@ public class JewelDetector extends Codelet {
     
     private Memory visionMO;
     private Memory knownJewelsMO;
+    private boolean debug = false;
     
     public JewelDetector(){
         this.name = "JewelDetector";
     }
-    
+
+    public JewelDetector(boolean debug){
+        this.name = "JewelDetector";
+        this.debug = debug;
+    }
+
     @Override
     public void accessMemoryObjects() {
         synchronized(this) {
@@ -45,8 +51,12 @@ public class JewelDetector extends Codelet {
             CopyOnWriteArrayList<Thing> vision;
             List<Idea> known;
             synchronized (visionMO) {
-               vision = new CopyOnWriteArrayList((List<Thing>) visionMO.getI());    
-               known = Collections.synchronizedList(((Idea) knownJewelsMO.getI()).getL());
+               vision = new CopyOnWriteArrayList((List<Thing>) visionMO.getI());
+               Idea jewelsIdea = (Idea) knownJewelsMO.getI();
+               if (debug){
+                   System.out.println(jewelsIdea.toStringFull());
+               }
+               known = Collections.synchronizedList(jewelsIdea.getL());
                synchronized(vision) {
                  for (Thing t : vision) {
                     boolean found = false;
@@ -73,6 +83,7 @@ public class JewelDetector extends Codelet {
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
         jewelIdea.add(posIdea);
         jewelIdea.add(new Idea("Color", t.getColor(), "Property", 1));
+        jewelIdea.add(new Idea("ID", t.getId(), "Property", 1));
         return jewelIdea;
     }
 }

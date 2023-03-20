@@ -18,10 +18,17 @@ public class InnerSense extends Codelet{
     private Memory innerSenseMO;
     private Agent agent;
     private Idea cis;
+    private boolean debug = false;
 
     public InnerSense(Agent nc) {
             agent = nc;
             this.name = "InnerSense";
+    }
+
+    public InnerSense(Agent nc, boolean debug) {
+        agent = nc;
+        this.name = "InnerSense";
+        this.debug = debug;
     }
     
     @Override
@@ -31,9 +38,13 @@ public class InnerSense extends Codelet{
     }
 
     public void proc() {
-         cis.get("position").setValue(agent.getPosition());
-         cis.get("pitch").setValue(agent.getPitch());
-         cis.get("fuel").setValue(agent.getFuel());
+        cis.get("Position").get("X").setValue(agent.getPosition().get(0));
+        cis.get("Position").get("Y").setValue(agent.getPosition().get(1));
+        cis.get("Pitch").setValue(agent.getPitch());
+        cis.get("Fuel").setValue(agent.getFuel());
+        if (debug) {
+            System.out.println(cis.toStringFull());
+        }
     }
 
     @Override

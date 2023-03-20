@@ -13,9 +13,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class WallDetector extends Codelet {
     private Memory visionMO;
     private Memory currentWallsMO;
+    private boolean debug = false;
 
     public WallDetector(){
         this.name = "WallDetector";
+    }
+
+    public WallDetector(boolean debug){
+        this.name = "WallDetector";
+        this.debug = debug;
     }
 
     @Override
@@ -38,7 +44,11 @@ public class WallDetector extends Codelet {
         List<Idea> known;
         synchronized (visionMO) {
             vision = new CopyOnWriteArrayList((List<Thing>) visionMO.getI());
-            known = Collections.synchronizedList(((Idea) currentWallsMO.getI()).getL());
+            Idea wallsIdea = ((Idea) currentWallsMO.getI());
+            if (debug) {
+                System.out.println(wallsIdea.toStringFull());
+            }
+            known = Collections.synchronizedList(wallsIdea.getL());
             synchronized(vision) {
                 for (Thing t : vision) {
                     boolean found = false;
@@ -49,9 +59,10 @@ public class WallDetector extends Codelet {
                                 found = true;
                                 break;
                             }
-                        if (!found && t.isBrick()) known.add(constructWallIdea(t));
+                        if (!found && t.isBrick()) {
+                            known.add(constructWallIdea(t));
+                        }
                     }
-
                 }
             }
         }
@@ -64,7 +75,12 @@ public class WallDetector extends Codelet {
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
         wallIdea.add(posIdea);
+        Idea sizeIdea = new Idea("Size", null, "Property", 1);
+        sizeIdea.add(new Idea("Width", t.getWidth(), "QualityDimension", 1));
+        sizeIdea.add(new Idea("Depth", t.getDepth(), "QualityDimension", 1));
+        wallIdea.add(sizeIdea);
         wallIdea.add(new Idea("Color", t.getColor(), "Property", 1));
+        wallIdea.add(new Idea("ID", t.getId(), "Property", 1));
         return wallIdea;
     }
 }
