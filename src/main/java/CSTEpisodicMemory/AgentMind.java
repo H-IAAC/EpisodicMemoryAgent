@@ -4,6 +4,7 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.event.MoveEventTracker;
 import CSTEpisodicMemory.perception.JewelDetector;
 import CSTEpisodicMemory.perception.WallDetector;
 import CSTEpisodicMemory.sensor.InnerSense;
@@ -14,6 +15,7 @@ import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 
 /**
@@ -40,14 +42,15 @@ public class AgentMind extends Mind {
         //createCodeletGroup("Motor");
         createCodeletGroup("Perception");
         createCodeletGroup("Behavioral");
-        createMemoryGroup("Sensory");
+        //createMemoryGroup("Sensory");
         //createMemoryGroup("Motor");
-        createMemoryGroup("Working");
+        //createMemoryGroup("Working");
 
         Memory innerSenseMO;
         Memory visionMO;
         Memory knownJewelsMO;
         Memory wallsMO;
+        Memory eventsMO;
 
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
@@ -60,6 +63,9 @@ public class AgentMind extends Mind {
         //Detected Walls
         Idea wallsIdea = new Idea("Walls", null, 7);
         wallsMO = createMemoryObject("WALLS", wallsIdea);
+        //Move Event Tracker
+        Idea eventsIdea = new Idea("Events", null, 7);
+        eventsMO = createMemoryObject("EVENTS", eventsIdea);
 
 
         //Inner Sense Codelet
@@ -83,6 +89,12 @@ public class AgentMind extends Mind {
         wallsDetectorCodelet.addInput(visionMO);
         wallsDetectorCodelet.addOutput(wallsMO);
         insertCodelet(wallsDetectorCodelet, "Perception");
+
+        //Move Event Codelet
+        Codelet moveEventTracker = new MoveEventTracker();
+        moveEventTracker.addInput(innerSenseMO);
+        moveEventTracker.addOutput(eventsMO);
+        insertCodelet(moveEventTracker, "Perception");
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())

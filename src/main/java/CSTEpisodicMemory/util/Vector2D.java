@@ -2,7 +2,7 @@ package CSTEpisodicMemory.util;
 
 import org.sat4j.core.Vec;
 
-public class Vector2D implements Cloneable{
+public class Vector2D {
 
     private double x = 0;
     private double y = 0;
@@ -10,6 +10,11 @@ public class Vector2D implements Cloneable{
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    public Vector2D(Vector2D v){
+        this.x = v.getX();
+        this.y = v.getY();
     }
 
     public double getX() {
@@ -52,12 +57,7 @@ public class Vector2D implements Cloneable{
     }
 
     public double angle(Vector2D v){
-        Vector2D a = null;
-        try {
-            a = ((Vector2D) this.clone()).sub(v);
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+        Vector2D a = new Vector2D(this).sub(v);
         return Math.atan2(a.getX(), a.getY());
     }
 }
