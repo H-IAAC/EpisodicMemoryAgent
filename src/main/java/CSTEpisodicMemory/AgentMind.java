@@ -4,10 +4,116 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.perception.JewelDetector;
+import CSTEpisodicMemory.perception.WallDetector;
+import CSTEpisodicMemory.sensor.InnerSense;
+import CSTEpisodicMemory.sensor.Vision;
+import br.unicamp.cst.core.entities.Codelet;
+import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.Mind;
+import br.unicamp.cst.representation.idea.Idea;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author bruno
  */
-public class AgentMind {
-    
+public class AgentMind extends Mind {
+
+    private boolean debug = false;
+    public List<Codelet> bList = new ArrayList<Codelet>();
+
+    public AgentMind(Environment env, boolean debug){
+        this.debug = debug;
+        initializeMindAndStar(env);
+    }
+    public AgentMind(Environment env){
+        super();
+        initializeMindAndStar(env);
+    }
+
+    private void initializeMindAndStar(Environment env){
+        // Create CodeletGroups and MemoryGroups for organizing Codelets and Memories
+        createCodeletGroup("Sensory");
+        //createCodeletGroup("Motor");
+        createCodeletGroup("Perception");
+        createCodeletGroup("Behavioral");
+        createMemoryGroup("Sensory");
+        //createMemoryGroup("Motor");
+        createMemoryGroup("Working");
+
+        Memory innerSenseMO;
+        Memory visionMO;
+        Memory knownJewelsMO;
+        Memory wallsMO;
+
+        //Inner Sense
+        Idea innerSenseIdea = initializeInnerSenseIdea();
+        innerSenseMO = createMemoryObject("INNER", innerSenseIdea);
+        //Vision sensor
+        visionMO = createMemoryObject("VISION");
+        //Detected Jewels
+        Idea jewelsIdea = new Idea("Jewels", null, 7);
+        knownJewelsMO = createMemoryObject("KNOWN_JEWELS", jewelsIdea);
+        //Detected Walls
+        Idea wallsIdea = new Idea("Walls", null, 7);
+        wallsMO = createMemoryObject("WALLS", wallsIdea);
+
+
+        //Inner Sense Codelet
+        Codelet innerSenseCodelet = new InnerSense(env.creature);
+        innerSenseCodelet.addOutput(innerSenseMO);
+        insertCodelet(innerSenseCodelet, "Sensory");
+
+        //Vision Sensor Codelet
+        Codelet visionCodelet = new Vision(env.creature);
+        visionCodelet.addOutput(visionMO);
+        insertCodelet(visionCodelet, "Sensory");
+
+        //Jewel Detector Codelet
+        Codelet jewelDetectorCodelet = new JewelDetector(debug);
+        jewelDetectorCodelet.addInput(visionMO);
+        jewelDetectorCodelet.addOutput(knownJewelsMO);
+        insertCodelet(jewelDetectorCodelet, "Perception");
+
+        //Walls Detector Codelet
+        Codelet wallsDetectorCodelet = new WallDetector(debug);
+        wallsDetectorCodelet.addInput(visionMO);
+        wallsDetectorCodelet.addOutput(wallsMO);
+        insertCodelet(wallsDetectorCodelet, "Perception");
+
+        bList.add(wallsDetectorCodelet);
+        for (Codelet c : this.getCodeRack().getAllCodelets())
+            c.setTimeStep(200);
+
+        start();
+    }
+
+    private Idea initializeInnerSenseIdea(){
+        Idea innerSense = new Idea("Self", "AGENT", "AbstractObject", 1);
+        Idea posIdea = new Idea("Position", null, "Property", 1);
+        posIdea.add(new Idea("X", null, "QualityDimension", 1));
+        posIdea.add(new Idea("Y", null, "QualityDimension", 1));
+        innerSense.add(posIdea);
+        innerSense.add(new Idea("Pitch", null, "Property", 1));
+        innerSense.add(new Idea("Fuel", null, "Property", 1));
+
+        return innerSense;
+    }
+
+//    private Idea initializePerceptionIdea(){
+//        Idea perceptionIdea = new Idea("Perception", null, 7);
+//        Idea innerSense = new Idea("Self", "AGENT", "AbstractObject", 1);
+//        Idea posIdea = new Idea("Position", null, "Property", 1);
+//        posIdea.add(new Idea("X", null, "QualityDimension", 1));
+//        posIdea.add(new Idea("Y", null, "QualityDimension", 1));
+//        innerSense.add(posIdea);
+//        innerSense.add(new Idea("Pitch", null, "Property", 1));
+//        innerSense.add(new Idea("Fuel", null, "Property", 1));
+//        perceptionIdea.add(innerSense);
+//        perceptionIdea.add(new Idea("Jewels", null, 7));
+//        perceptionIdea.add(new Idea("Walls", null, 7));
+//    }
 }
