@@ -4,6 +4,7 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.context.GoalSelector;
 import CSTEpisodicMemory.event.MoveEventTracker;
 import CSTEpisodicMemory.perception.JewelDetector;
 import CSTEpisodicMemory.perception.WallDetector;
@@ -41,6 +42,7 @@ public class AgentMind extends Mind {
         createCodeletGroup("Sensory");
         //createCodeletGroup("Motor");
         createCodeletGroup("Perception");
+        createCodeletGroup("Context");
         createCodeletGroup("Behavioral");
         //createMemoryGroup("Sensory");
         //createMemoryGroup("Motor");
@@ -51,6 +53,7 @@ public class AgentMind extends Mind {
         Memory knownJewelsMO;
         Memory wallsMO;
         Memory eventsMO;
+        Memory goalsMO;
 
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
@@ -58,14 +61,17 @@ public class AgentMind extends Mind {
         //Vision sensor
         visionMO = createMemoryObject("VISION");
         //Detected Jewels
-        Idea jewelsIdea = new Idea("Jewels", null, 7);
+        Idea jewelsIdea = new Idea("Jewels", null, 5);
         knownJewelsMO = createMemoryObject("KNOWN_JEWELS", jewelsIdea);
         //Detected Walls
-        Idea wallsIdea = new Idea("Walls", null, 7);
+        Idea wallsIdea = new Idea("Walls", null, 5);
         wallsMO = createMemoryObject("WALLS", wallsIdea);
         //Move Event Tracker
-        Idea eventsIdea = new Idea("Events", null, 7);
+        Idea eventsIdea = new Idea("Events", null, 5);
         eventsMO = createMemoryObject("EVENTS", eventsIdea);
+        //Goals
+        Idea goalsIdea = new Idea("Goals", null, 5);
+        goalsMO = createMemoryObject("GOALS", goalsIdea);
 
 
         //Inner Sense Codelet
@@ -95,6 +101,14 @@ public class AgentMind extends Mind {
         moveEventTracker.addInput(innerSenseMO);
         moveEventTracker.addOutput(eventsMO);
         insertCodelet(moveEventTracker, "Perception");
+
+        //Goal selector Codelet
+        Codelet goalSelectorCodelet = new GoalSelector();
+        goalSelectorCodelet.addInput(innerSenseMO);
+        goalSelectorCodelet.addInput(knownJewelsMO);
+        goalSelectorCodelet.addInput(wallsMO);
+        goalSelectorCodelet.addOutput(goalsMO);
+        insertCodelet(goalSelectorCodelet, "Context");
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())

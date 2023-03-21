@@ -29,7 +29,7 @@ public class MoveEventTracker extends Codelet {
     }
 
     public MoveEventTracker(boolean debug){
-        this.name = "JewelDetector";
+        this.name = "MoveEventTracker";
         this.debug = debug;
     }
 
