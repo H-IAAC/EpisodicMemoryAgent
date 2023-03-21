@@ -9,6 +9,8 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.*;
 import java.util.List;
 
+import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
+
 public class MoveEventTracker extends Codelet {
 
     private Memory innerSenseMO;
@@ -52,15 +54,16 @@ public class MoveEventTracker extends Codelet {
             if (previousSelfIdea.size() < this.bufferSize) {
                 if (((int)currentInnerSense.get("Step").getValue())
                         - ((int)previousSelfIdea.get(previousSelfIdea.size()-1).get("Step").getValue())
-                        >= bufferStepSize)
+                        >= bufferStepSize) {
                     previousSelfIdea.add(currentInnerSense.clone());
+                }
             } else {
                 if (((int)currentInnerSense.get("Step").getValue())
                         - ((int)previousSelfIdea.get(previousSelfIdea.size()-1).get("Step").getValue())
                         >= bufferStepSize) {
                     //Check if current state is coherent with previous states and event category
                     boolean check = belongsToEvent(previousSelfIdea, currentInnerSense);
-                    System.out.println(check);
+                    if (debug) System.out.println(check);
                     if (check) {
                         Idea drop = previousSelfIdea.remove(0);
                         //Copies start of the event
@@ -74,7 +77,7 @@ public class MoveEventTracker extends Codelet {
                             firstSelfIdea = null;
                             Idea eventsIdea = (Idea) eventsMO.getI();
                             eventsIdea.add(event);
-                            if (debug) System.out.println("--------------\n" + fullPromt(eventsIdea, ""));
+                            if (debug) System.out.println("--------------\n" + fullPrint(eventsIdea));
                         } else {
                             previousSelfIdea.remove(0);
                             previousSelfIdea.add(currentInnerSense.clone());
@@ -97,7 +100,7 @@ public class MoveEventTracker extends Codelet {
         Vector2D pointC = new Vector2D(
                 (float) current.get("Position.X").getValue(),
                 (float) current.get("Position.Y").getValue());
-        if (pointA.sub(pointB).magnitude() > 0) {
+        if (pointA.sub(pointB).magnitude() > 0.05) {
             Vector2D prevDirVector = pointB.sub(pointA).normalize();
             Vector2D currDirVector = pointC.sub(pointB).normalize();
             return prevDirVector.angle(currDirVector) < 0.01;
@@ -131,11 +134,5 @@ public class MoveEventTracker extends Codelet {
         if (bufferSize > 0) this.bufferSize = bufferSize;
     }
 
-    private String fullPromt(Idea idea, String pre){
-        String out = pre + idea.toString() + "[" + idea.getResumedValue() + "]" + "\n";
-        for (Idea l : idea.getL()){
-            out += fullPromt(l, pre + "  ");
-        }
-        return out;
-    }
+
 }
