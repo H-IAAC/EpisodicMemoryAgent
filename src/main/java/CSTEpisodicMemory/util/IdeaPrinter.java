@@ -2,16 +2,26 @@ package CSTEpisodicMemory.util;
 
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IdeaPrinter {
 
+    transient static List<Object> listtoavoidloops = new ArrayList<Object>();
+
     public static String fullPrint(Idea idea){
+        listtoavoidloops = new ArrayList<Object>();
         return fullPrint(idea, "");
     }
 
-    public static String fullPrint(Idea idea, String pre){
-        String out = pre + idea.toString() + "[" + printValue(idea) + "]" + "\n";
-        for (Idea l : idea.getL()){
-            out += fullPrint(l, pre + "  ");
+    private static String fullPrint(Idea idea, String pre){
+        String ideaString = idea.toString() + "[" + printValue(idea) + "]";
+        String out = pre + typeScopeString(idea) + ideaString + "\n";
+        if (!listtoavoidloops.contains(idea.getId())) {
+            listtoavoidloops.add(idea.getId());
+            for (Idea l : idea.getL()) {
+                out += fullPrint(l, pre + "  ");
+            }
         }
         return out;
     }
@@ -19,7 +29,7 @@ public class IdeaPrinter {
     public static String printValue(Idea idea){
         String result;
         if (idea.isFloat() || idea.isDouble()) {
-            result = String.format("%4.5f",idea.getValue());
+            result = String.format("%4.5f", idea.getValue());
         } else {
             try {
                 int trial = Integer.parseInt(idea.getValue().toString());
@@ -35,5 +45,56 @@ public class IdeaPrinter {
             }
         }
         return(result);
+    }
+
+    private static String typeScopeString(Idea idea){
+        switch (idea.getType()) {
+            case 0:
+                //Object 1
+                return "Ex ■: ";
+            case 1:
+                //Property 1
+                return "Ex ◪: ";
+            case 2:
+                //Link
+                return "Link: ";
+            case 3:
+                //Dimension
+                return "◖: ";
+            case 4:
+                //Episode 1
+                return "Ex ->: ";
+            case 5:
+                //Composite
+                return "Comp: ";
+            case 6:
+                //Aggregate
+                return "Aggr: ";
+            case 7:
+                //Config
+                return "Config: ";
+            case 8:
+                //Time
+                return "◷: ";
+            case 9:
+                //Property 2
+                return "Law ◪: ";
+            case 10:
+                //Object 2
+                return "Law ■: ";
+            case 11:
+                //Episode 2
+                return "Law ->: ";
+            case 12:
+                //Property 0
+                return "Hipp ◪: ";
+            case 13:
+                //Object 0
+                return "Hipp ■: ";
+            case 14:
+                //Episode 0
+                return "Hipp ->: ";
+        }
+        return "No cat: ";
     }
 }
