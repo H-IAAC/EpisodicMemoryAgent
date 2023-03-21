@@ -98,7 +98,7 @@ public class AgentMind extends Mind {
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
-            c.setTimeStep(200);
+            c.setTimeStep(100);
 
         start();
     }

@@ -15,7 +15,7 @@ public class MoveEventTracker extends Codelet {
 
     private Memory innerSenseMO;
     private Memory eventsMO;
-    private boolean debug = true;
+    private boolean debug = false;
     private int bufferSize = 2;
     private int bufferStepSize = 4;
     private List<Idea> previousSelfIdea = new LinkedList<Idea>();
@@ -25,7 +25,7 @@ public class MoveEventTracker extends Codelet {
     private int count = 1;
 
     public MoveEventTracker(){
-        this.name = "JewelDetector";
+        this.name = "MoveEventTracker";
     }
 
     public MoveEventTracker(boolean debug){

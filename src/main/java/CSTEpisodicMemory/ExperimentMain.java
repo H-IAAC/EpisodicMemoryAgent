@@ -18,6 +18,17 @@ public class ExperimentMain {
         // The following lines create the MindViewer and configure it
         MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
         mv.setVisible(true);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
         env.creature.moveTo(2f,2f);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        env.creature.moveTo(3f,1f);
     }
 }
