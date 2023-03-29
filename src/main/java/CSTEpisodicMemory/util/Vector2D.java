@@ -34,22 +34,22 @@ public class Vector2D {
     }
 
     public Vector2D add(Vector2D v){
-        this.x += v.getX();
-        this.y += v.getY();
-        return this;
+        double x_ = this.x + v.getX();
+        double y_ = this.y + v.getY();
+        return new Vector2D(x_, y_);
     }
 
     public Vector2D sub(Vector2D v){
-        this.x -= v.getX();
-        this.y -= v.getY();
-        return this;
+        double x_ = this.x - v.getX();
+        double y_ = this.y - v.getY();
+        return new Vector2D(x_, y_);
     }
 
     public Vector2D normalize(){
         double mag = this.magnitude();
-        this.x = this.x / mag;
-        this.y = this.y / mag;
-        return this;
+        double x_ = this.x / mag;
+        double y_ = this.y / mag;
+        return new Vector2D(x_, y_);
     }
 
     public double magnitude(){
@@ -57,7 +57,19 @@ public class Vector2D {
     }
 
     public double angle(Vector2D v){
-        Vector2D a = new Vector2D(this).sub(v);
-        return Math.atan2(a.getX(), a.getY());
+        double prod = this.x * v.getX() + this.y * v.getY();
+        double cos = prod / (this.magnitude() * v.magnitude());
+        return Math.acos(cos);
+    }
+
+    public boolean isSameQuadrant(Vector2D v) {
+        boolean checkX = this.x >= 0 && v.getX() >= 0 || this.x <= 0 && v.getX() <= 0;
+        boolean checkY = this.y >= 0 && v.getY() >= 0 || this.y <= 0 && v.getY() <= 0;
+        return checkX && checkY;
+    }
+
+    @Override
+    public String toString() {
+        return "X: " + this.x + " - Y: " + this.y;
     }
 }

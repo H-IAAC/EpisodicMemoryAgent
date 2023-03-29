@@ -25,10 +25,22 @@ public class ExperimentMain {
         }
         env.creature.moveTo(2f,2f);
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException ex) {
             Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
         }
         env.creature.moveTo(3f,1f);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        env.creature.moveTo(0.5f,2f);
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        env.creature.moveTo(0.5f,9f);
     }
 }

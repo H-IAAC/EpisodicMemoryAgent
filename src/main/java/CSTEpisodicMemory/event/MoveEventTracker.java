@@ -8,6 +8,8 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.*;
 import java.util.List;
 
+import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
+
 public class MoveEventTracker extends EventTracker {
 
     private boolean debug = false;
@@ -17,7 +19,7 @@ public class MoveEventTracker extends EventTracker {
         this.name = "MoveEventTracker";
         this.setEventCategoryName("Move");
         this.setBufferSize(2);
-        this.setBufferStepSize(4);
+        this.setBufferStepSize(2);
     }
 
     public MoveEventTracker(boolean debug){
@@ -26,7 +28,7 @@ public class MoveEventTracker extends EventTracker {
         this.debug = debug;
         this.setEventCategoryName("Move");
         this.setBufferSize(2);
-        this.setBufferStepSize(4);
+        this.setBufferStepSize(2);
     }
 
     @Override
@@ -42,12 +44,14 @@ public class MoveEventTracker extends EventTracker {
         Vector2D pointC = new Vector2D(
                 (float) current.get("Position.X").getValue(),
                 (float) current.get("Position.Y").getValue());
-        if (pointA.sub(pointB).magnitude() > 0.05) {
-            Vector2D prevDirVector = pointB.sub(pointA).normalize();
-            Vector2D currDirVector = pointC.sub(pointB).normalize();
-            return prevDirVector.angle(currDirVector) < 0.01;
-        }
-        return false;
+        Vector2D prevDirVector = pointB.sub(pointA);
+        Vector2D currDirVector = pointC.sub(pointB).normalize();
+        boolean check = prevDirVector.magnitude() > 0.01 && Math.abs(prevDirVector.angle(currDirVector)) < 0.02;
+        System.out.println("---" + check + "---");
+        System.out.println(pointA.toString());
+        System.out.println(pointB.toString());
+        System.out.println(pointC.toString());
+        return check;
     }
 
     @Override

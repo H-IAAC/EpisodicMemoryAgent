@@ -67,7 +67,7 @@ public abstract class EventTracker extends Codelet {
                         inputIdeaBuffer.add(currentInputIdea.clone());
                     } else {
                         if (initialEventIdea != null) {
-                            Idea event = constructEventIdea(inputIdeaBuffer.get(1));
+                            Idea event = constructEventIdea(inputIdeaBuffer.get(inputIdeaBuffer.size()-1));
                             inputIdeaBuffer.clear();
                             inputIdeaBuffer.add(currentInputIdea.clone());
                             initialEventIdea = null;
