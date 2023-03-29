@@ -22,7 +22,7 @@ public class GoalSelector extends Codelet {
     private Idea walls;
     private Idea goals;
 
-    private boolean debug = true;
+    private boolean debug = false;
 
     public GoalSelector(){
         this.name = "GoalSelector";

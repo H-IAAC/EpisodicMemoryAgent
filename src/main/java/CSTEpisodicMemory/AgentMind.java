@@ -4,12 +4,15 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.categories.RoomCategoryIdea;
 import CSTEpisodicMemory.context.GoalSelector;
 import CSTEpisodicMemory.event.MoveEventTracker;
 import CSTEpisodicMemory.perception.JewelDetector;
+import CSTEpisodicMemory.perception.RoomDetector;
 import CSTEpisodicMemory.perception.WallDetector;
 import CSTEpisodicMemory.sensor.InnerSense;
 import CSTEpisodicMemory.sensor.Vision;
+import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
@@ -54,6 +57,8 @@ public class AgentMind extends Mind {
         Memory wallsMO;
         Memory eventsMO;
         Memory goalsMO;
+        Memory categoriesRoomMO;
+        Memory roomsMO;
 
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
@@ -72,7 +77,21 @@ public class AgentMind extends Mind {
         //Goals
         Idea goalsIdea = new Idea("Goals", null, 5);
         goalsMO = createMemoryObject("GOALS", goalsIdea);
-
+        //----Categories----
+        //Rooms
+        List<RoomCategoryIdea> roomsCategoriesIdea = new ArrayList<>();
+        roomsCategoriesIdea.add(new RoomCategoryIdea("RoomA",
+                new Vector2D(0, 0),
+                new Vector2D(8, 3)));
+        roomsCategoriesIdea.add(new RoomCategoryIdea("RoomB",
+                new Vector2D(0, 3),
+                new Vector2D(1, 7)));
+        roomsCategoriesIdea.add(new RoomCategoryIdea("RoomC",
+                new Vector2D(0, 7),
+                new Vector2D(8, 10)));
+        categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
+        Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
+        roomsMO = createMemoryObject("ROOM", roomIdea);
 
         //Inner Sense Codelet
         Codelet innerSenseCodelet = new InnerSense(env.creature);
@@ -109,6 +128,13 @@ public class AgentMind extends Mind {
         goalSelectorCodelet.addInput(wallsMO);
         goalSelectorCodelet.addOutput(goalsMO);
         insertCodelet(goalSelectorCodelet, "Context");
+
+        //RoomDetector Codelet
+        Codelet roomDetectorCodelet = new RoomDetector();
+        roomDetectorCodelet.addInput(innerSenseMO);
+        roomDetectorCodelet.addInput(categoriesRoomMO);
+        roomDetectorCodelet.addOutput(roomsMO);
+        insertCodelet(roomDetectorCodelet, "Perception");
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
