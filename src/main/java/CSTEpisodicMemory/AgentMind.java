@@ -4,9 +4,10 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.categories.EventCategory;
 import CSTEpisodicMemory.categories.RoomCategoryIdea;
 import CSTEpisodicMemory.context.GoalSelector;
-import CSTEpisodicMemory.event.MoveEventTracker;
+import CSTEpisodicMemory.entity.EventTracker;
 import CSTEpisodicMemory.perception.JewelDetector;
 import CSTEpisodicMemory.perception.RoomDetector;
 import CSTEpisodicMemory.perception.WallDetector;
@@ -19,7 +20,7 @@ import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
-import java.util.EventListener;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -116,7 +117,10 @@ public class AgentMind extends Mind {
         insertCodelet(wallsDetectorCodelet, "Perception");
 
         //Move Event Codelet
-        Codelet moveEventTracker = new MoveEventTracker();
+        EventCategory moveEventCategory = new EventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"));
+        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory);
+        moveEventTracker.setBufferSize(2);
+        moveEventTracker.setBufferStepSize(2);
         moveEventTracker.addInput(innerSenseMO);
         moveEventTracker.addOutput(eventsMO);
         insertCodelet(moveEventTracker, "Perception");

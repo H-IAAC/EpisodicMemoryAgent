@@ -1,16 +1,18 @@
 package CSTEpisodicMemory.entity;
 
+import CSTEpisodicMemory.categories.EventCategory;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
-public abstract class EventTracker extends Codelet {
+public class EventTracker extends Codelet {
 
     private String inputMemoryName = "PERCEPTION_MEMORY";
     private String outputMemoryName = "EVENTS_MEMORY";
@@ -22,13 +24,24 @@ public abstract class EventTracker extends Codelet {
     private List<Idea> inputIdeaBuffer = new LinkedList<Idea>();
     private Idea initialEventIdea;
     private Idea currentInputIdea;
-    private String eventCategoryName = null;
     private int count = 1;
+    private double detectionTreashold = 0.5;
+    private EventCategory trackedEventCategory;
 
-    public EventTracker(String inputMemoryName, String outputMemoryName) {
+    public EventTracker(String inputMemoryName, String outputMemoryName, EventCategory trackedEventCategory) {
         this.inputMemoryName = inputMemoryName;
         this.outputMemoryName = outputMemoryName;
+        this.trackedEventCategory = trackedEventCategory;
     }
+
+    public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, EventCategory trackedEventCategory) {
+        this.inputMemoryName = inputMemoryName;
+        this.outputMemoryName = outputMemoryName;
+        this.detectionTreashold = detectionTreashold;
+        this.trackedEventCategory = trackedEventCategory;
+    }
+
+
 
     @Override
     public void accessMemoryObjects() {
@@ -49,25 +62,25 @@ public abstract class EventTracker extends Codelet {
             inputIdeaBuffer.add(currentInputIdea.clone());
         } else {
             if (inputIdeaBuffer.size() < this.bufferSize) {
-                if (((int) currentInputIdea.get("Step").getValue())
-                        - ((int) inputIdeaBuffer.get(inputIdeaBuffer.size() - 1).get("Step").getValue())
-                        >= bufferStepSize) {
+                if (checkElapsedTime()) {
                     inputIdeaBuffer.add(currentInputIdea.clone());
                 }
             } else {
-                if (((int) currentInputIdea.get("Step").getValue())
-                        - ((int) inputIdeaBuffer.get(inputIdeaBuffer.size() - 1).get("Step").getValue())
-                        >= bufferStepSize) {
+                if (checkElapsedTime()) {
                     //Check if current state is coherent with previous states and event category
-                    boolean check = belongsToEvent(inputIdeaBuffer, currentInputIdea);
-                    if (check) {
+                    Idea testEvent = constructTestEvent();
+                    if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
                         Idea drop = inputIdeaBuffer.remove(0);
                         //Copies start of the event
                         if (initialEventIdea == null) this.initialEventIdea = drop.clone();
                         inputIdeaBuffer.add(currentInputIdea.clone());
                     } else {
                         if (initialEventIdea != null) {
-                            Idea event = constructEventIdea(inputIdeaBuffer.get(inputIdeaBuffer.size()-1));
+                            List<Idea> constraints = new ArrayList<>();
+                            constraints.add(initialEventIdea);
+                            constraints.add(inputIdeaBuffer.get(inputIdeaBuffer.size()-1));
+                            Idea event = trackedEventCategory.instantiation(constraints);
+                            event.setName("Event" + count++);
                             inputIdeaBuffer.clear();
                             inputIdeaBuffer.add(currentInputIdea.clone());
                             initialEventIdea = null;
@@ -84,20 +97,26 @@ public abstract class EventTracker extends Codelet {
         }
     }
 
-    private Idea constructEventIdea(Idea lastEventIdea) {
-        Idea eventIdea = new Idea("Event" + count++, this.eventCategoryName, "Episode", 1);
-        Idea time1 = new Idea("", 1, "TimeStep", 1);
-        Idea time2 = new Idea("", 2, "TimeStep", 1);
-            time1.add(extractRelevant(this.initialEventIdea));
-            time2.add(extractRelevant(lastEventIdea));
-            eventIdea.add(time1);
-            eventIdea.add(time2);
-            return eventIdea;
+    private Idea constructTestEvent() {
+        Idea testEvent = new Idea("Event", null, "Episode", 0);
+        List<Idea> steps = new ArrayList<>();
+        for (int i = 0; i<this.inputIdeaBuffer.size(); i++){
+            Idea step = new Idea("Step", i, "Timestep", 0);
+            step.add(inputIdeaBuffer.get(i));
+            steps.add(step);
+        }
+        Idea step = new Idea("Step", this.inputIdeaBuffer.size(), "Timestep", 0);
+        step.add(currentInputIdea);
+        steps.add(step);
+        testEvent.setL(steps);
+        return testEvent;
     }
 
-    public abstract boolean belongsToEvent(List<Idea> inputIdeaBuffer, Idea currentInputIdea);
-
-    public abstract Idea extractRelevant(Idea idea);
+    private boolean checkElapsedTime() {
+        return ((int) currentInputIdea.get("Step").getValue())
+                - ((int) inputIdeaBuffer.get(inputIdeaBuffer.size() - 1).get("Step").getValue())
+                >= bufferStepSize;
+    }
 
     public int getBufferSize() {
         return bufferSize;
@@ -163,9 +182,5 @@ public abstract class EventTracker extends Codelet {
 
     public void setOutputMemoryName(String outputMemoryName) {
         this.outputMemoryName = outputMemoryName;
-    }
-
-    public void setEventCategoryName(String eventCategoryName) {
-        this.eventCategoryName = eventCategoryName;
     }
 }
