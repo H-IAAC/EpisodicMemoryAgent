@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 public class Environment {
     public WS3DCoppelia world;
     public Agent creature = null;
+    public boolean initialized = false;
 
     public Environment() {
         world = new WS3DCoppelia(8, 10);
@@ -26,6 +27,7 @@ public class Environment {
         initializaRooms();
         try {
             world.startSimulation();
+            initialized = true;
         } catch (IOException ex) {
             Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
         } catch (CborException ex) {
@@ -48,5 +50,14 @@ public class Environment {
         world.createBrick(BrickTypes.RED_BRICK, 1-wallWidth, 7-wallWidth, 8, 7);
         world.createBrick(BrickTypes.RED_BRICK, 8-wallWidth, 7-wallWidth, 8, 10);
         world.createBrick(BrickTypes.RED_BRICK, 0-wallWidth, 10-wallWidth, 8, 10);
+    }
+
+    public void stopSimulation(){
+        try {
+            world.stopSimulation();
+            initialized = false;
+        } catch (CborException ex) {
+            Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

@@ -32,10 +32,10 @@ public class EventCategory extends CategoryIdea {
         ArrayRealVector prevDirVector = propertiesVector.get(1).subtract(propertiesVector.get(0));
         ArrayRealVector currDirVector = propertiesVector.get(2).subtract(propertiesVector.get(1));
         boolean check = prevDirVector.getNorm() > 0.01 && getAbsAngle(prevDirVector, currDirVector) < 0.02;
-        System.out.println("---" + check + "---");
-        System.out.println(Arrays.toString(propertiesVector.get(0).toArray()));
-        System.out.println(Arrays.toString(propertiesVector.get(1).toArray()));
-        System.out.println(Arrays.toString(propertiesVector.get(2).toArray()));
+//        System.out.println("---" + check + "---");
+//        System.out.println(Arrays.toString(propertiesVector.get(0).toArray()));
+//        System.out.println(Arrays.toString(propertiesVector.get(1).toArray()));
+//        System.out.println(Arrays.toString(propertiesVector.get(2).toArray()));
         if (check)
             return 1.0;
         return 0;

@@ -3,6 +3,7 @@
  */
 package CSTEpisodicMemory;
 
+import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.util.viewer.MindViewer;
 
 import java.util.logging.Level;
@@ -18,6 +19,21 @@ public class ExperimentMain {
         // The following lines create the MindViewer and configure it
         MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
         mv.setVisible(true);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                env.stopSimulation();
+            }
+        });
+        runTestCommands(env);
+    }
+
+    public static void runTestCommands(Environment env){
+        env.world.createThing(Constants.JewelTypes.RED_JEWEL, 0.2f, 9.5f);
+        env.world.createThing(Constants.JewelTypes.BLUE_JEWEL, 0.4f, 9.5f);
+        env.world.createThing(Constants.JewelTypes.GREEN_JEWEL, 0.6f, 9.5f);
+        env.world.createThing(Constants.JewelTypes.WHITE_JEWEL, 0.8f, 9.5f);
+        env.world.createThing(Constants.JewelTypes.MAGENTA_JEWEL, 1.0f, 9.5f);
+        env.world.createThing(Constants.JewelTypes.YELLOW_JEWEL, 1.2f, 9.5f);
         try {
             Thread.sleep(3000);
         } catch (InterruptedException ex) {

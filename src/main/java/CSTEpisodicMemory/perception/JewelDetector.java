@@ -75,7 +75,7 @@ public class JewelDetector extends Codelet {
             }
     }
 
-    private Idea constructJewelIdea(Thing t) {
+    public static Idea constructJewelIdea(Thing t) {
         
         Idea jewelIdea = new Idea("Jewel", t.getTypeName(), "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);

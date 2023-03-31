@@ -8,10 +8,12 @@ import CSTEpisodicMemory.categories.EventCategory;
 import CSTEpisodicMemory.categories.RoomCategoryIdea;
 import CSTEpisodicMemory.context.GoalSelector;
 import CSTEpisodicMemory.entity.EventTracker;
+import CSTEpisodicMemory.impulses.GoToJewelImpulse;
 import CSTEpisodicMemory.perception.JewelDetector;
 import CSTEpisodicMemory.perception.RoomDetector;
 import CSTEpisodicMemory.perception.WallDetector;
 import CSTEpisodicMemory.sensor.InnerSense;
+import CSTEpisodicMemory.sensor.LeafletSense;
 import CSTEpisodicMemory.sensor.Vision;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
@@ -60,6 +62,8 @@ public class AgentMind extends Mind {
         Memory goalsMO;
         Memory categoriesRoomMO;
         Memory roomsMO;
+        Memory leafletsMO;
+        Memory impulsesMO;
 
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
@@ -93,6 +97,13 @@ public class AgentMind extends Mind {
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
         Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
         roomsMO = createMemoryObject("ROOM", roomIdea);
+        //--------
+        //Leaflets
+        Idea leafletsIdea = new Idea("Leaflets", null, 0);
+        leafletsMO = createMemoryObject("LEAFLETS", leafletsIdea);
+        //Impulses
+        Idea impulsesIdea = new Idea("Impulses", null, 0);
+        impulsesMO = createMemoryObject("IMPULSES", impulsesIdea);
 
         //Inner Sense Codelet
         Codelet innerSenseCodelet = new InnerSense(env.creature);
@@ -103,6 +114,11 @@ public class AgentMind extends Mind {
         Codelet visionCodelet = new Vision(env.creature);
         visionCodelet.addOutput(visionMO);
         insertCodelet(visionCodelet, "Sensory");
+
+        //Leaflet Sense Codelet
+        Codelet leafletSenseCodelet = new LeafletSense(env.creature);
+        leafletSenseCodelet.addOutput(leafletsMO);
+        insertCodelet(leafletSenseCodelet, "Sensory");
 
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
@@ -118,12 +134,30 @@ public class AgentMind extends Mind {
 
         //Move Event Codelet
         EventCategory moveEventCategory = new EventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"));
-        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory);
+        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, debug);
         moveEventTracker.setBufferSize(2);
         moveEventTracker.setBufferStepSize(2);
         moveEventTracker.addInput(innerSenseMO);
         moveEventTracker.addOutput(eventsMO);
         insertCodelet(moveEventTracker, "Perception");
+
+        //Rotate Event Codelet
+        EventCategory rotateEventCategory= new EventCategory("Rotate", Arrays.asList("Self.Pitch", "Self.Pitch"));
+        EventTracker rotateEventTracker = new EventTracker("INNER", "EVENTS", rotateEventCategory, debug);
+        rotateEventTracker.setBufferSize(2);
+        rotateEventTracker.setBufferStepSize(2);
+        rotateEventTracker.addInput(innerSenseMO);
+        rotateEventTracker.addOutput(eventsMO);
+        insertCodelet(rotateEventTracker, "Perception");
+
+        //Impulses
+        //Go to jewel
+        Codelet goToJewelImpulse = new GoToJewelImpulse();
+        goToJewelImpulse.addInput(innerSenseMO);
+        goToJewelImpulse.addInput(knownJewelsMO);
+        goToJewelImpulse.addInput(leafletsMO);
+        goToJewelImpulse.addOutput(impulsesMO);
+        insertCodelet(goToJewelImpulse, "Behavioural");
 
         //Goal selector Codelet
         Codelet goalSelectorCodelet = new GoalSelector();

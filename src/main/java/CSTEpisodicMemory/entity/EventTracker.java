@@ -24,14 +24,22 @@ public class EventTracker extends Codelet {
     private List<Idea> inputIdeaBuffer = new LinkedList<Idea>();
     private Idea initialEventIdea;
     private Idea currentInputIdea;
-    private int count = 1;
+    private static int count = 1;
     private double detectionTreashold = 0.5;
     private EventCategory trackedEventCategory;
+    private boolean debug = false;
 
     public EventTracker(String inputMemoryName, String outputMemoryName, EventCategory trackedEventCategory) {
         this.inputMemoryName = inputMemoryName;
         this.outputMemoryName = outputMemoryName;
         this.trackedEventCategory = trackedEventCategory;
+    }
+
+    public EventTracker(String inputMemoryName, String outputMemoryName, EventCategory trackedEventCategory, boolean debug) {
+        this.inputMemoryName = inputMemoryName;
+        this.outputMemoryName = outputMemoryName;
+        this.trackedEventCategory = trackedEventCategory;
+        this.debug = debug;
     }
 
     public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, EventCategory trackedEventCategory) {
@@ -41,7 +49,13 @@ public class EventTracker extends Codelet {
         this.trackedEventCategory = trackedEventCategory;
     }
 
-
+    public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, EventCategory trackedEventCategory, boolean debug) {
+        this.inputMemoryName = inputMemoryName;
+        this.outputMemoryName = outputMemoryName;
+        this.detectionTreashold = detectionTreashold;
+        this.trackedEventCategory = trackedEventCategory;
+        this.debug = debug;
+    }
 
     @Override
     public void accessMemoryObjects() {
@@ -86,7 +100,8 @@ public class EventTracker extends Codelet {
                             initialEventIdea = null;
                             Idea eventsIdea = (Idea) eventsOutputMO.getI();
                             eventsIdea.add(event);
-                            System.out.println(fullPrint(eventsIdea));
+                            if (debug)
+                                System.out.println(fullPrint(eventsIdea));
                         } else {
                             inputIdeaBuffer.remove(0);
                             inputIdeaBuffer.add(currentInputIdea.clone());
