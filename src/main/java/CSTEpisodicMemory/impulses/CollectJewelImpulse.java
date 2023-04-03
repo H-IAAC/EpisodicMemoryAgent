@@ -5,32 +5,30 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
-public class GoToJewelImpulse extends Codelet {
+public class CollectJewelImpulse extends Codelet {
 
     private Memory innerSenseMO;
-    private Memory leafletMO;
     private Memory jewelsMO;
     private Memory impulsesMO;
     private Idea inner;
-    private Idea leaflets;
     private Idea jewels;
     private Idea impulses;
 
-    private double minDesire = 0.7, maxDesire = 0.8;
-    private String impulseCat = "GoTo";
+    private double minDesire = 0.9, maxDesire = 1.0;
+    private String impulseCat = "Collect";
 
     @Override
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");
         this.inner = (Idea) innerSenseMO.getI();
-        this.leafletMO = (MemoryObject) getInput("LEAFLETS");
-        this.leaflets = (Idea) leafletMO.getI();
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.jewels = (Idea) jewelsMO.getI();
         this.impulsesMO = (MemoryObject) getOutput("IMPULSES");
@@ -66,7 +64,7 @@ public class GoToJewelImpulse extends Codelet {
         List<Integer> jewelsID = jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).toList();
         for (Idea impulse : impulses.getL()){
             if (impulse.getValue().equals(this.impulseCat)){
-                if (!jewelsID.contains((int) impulse.get("State.ID").getValue())){
+                if (!jewelsID.contains((int) impulse.get("State.Jewel.ID").getValue())){
                     toRemove.add(impulse);
                 }
             }
@@ -81,32 +79,24 @@ public class GoToJewelImpulse extends Codelet {
 
     private double calculateDesirability(Idea jewel) {
         double maxDesire = -1.0;
-
-        for (Idea leaflet : leaflets.getL()){
-            int leafletRemain = 0;
-            int leafletNeed = 0;
-            boolean necessary = false;
-            for (Idea jewelColor : leaflet.getL()){
-                if (jewelColor.get("Remained") != null) {
-                    leafletRemain += (int) jewelColor.get("Remained").getValue();
-                    leafletNeed += (int) jewelColor.get("Need").getValue();
-                    if ((int) jewelColor.get("Remained").getValue() > 0 && jewelColor.getName().equals(jewel.getValue())) {
-                        necessary = true;
-                    }
-                }
-            }
-            if (necessary && (1.0 - leafletRemain / (1.0*leafletNeed)) > maxDesire)
-                maxDesire = 1.0 - leafletRemain / (1.0*leafletNeed);
-        }
+        Vector2D selfPos = new Vector2D(
+                (float) inner.get("Position.X").getValue(),
+                (float) inner.get("Position.Y").getValue());
+        Vector2D jewelPos = new Vector2D(
+                (float) jewel.get("Position.X").getValue(),
+                (float) jewel.get("Position.Y").getValue());
+        if (selfPos.sub(jewelPos).magnitude() < 0.4)
+            maxDesire = 1.0;
         return maxDesire;
     }
 
     private Idea createImpulse(Idea jewel, double desirability) {
         Idea impulse = new Idea("Impulse", this.impulseCat, "Episode", 0);
         Idea state = new Idea("State", null, "Timestamp", 0);
-        Idea self = new Idea("Self", null, "AbstractObject", 1);
-        self.add(jewel.get("Position").clone());
-        state.add(self);
+        Idea stateJewel = new Idea("Jewel", jewel.getValue(), "AbstractObject", 1);
+        stateJewel.add(jewel.get("ID").clone());
+        stateJewel.add(new Idea("Condition", "In Bag", "Property", 1));
+        state.add(stateJewel);
         state.add(jewel.get("ID").clone());
         state.add(new Idea("Desire", desirability, "Property", 1));
         impulse.add(state);

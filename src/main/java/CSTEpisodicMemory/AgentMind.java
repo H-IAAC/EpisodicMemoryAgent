@@ -4,11 +4,16 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.behavior.Collect;
+import CSTEpisodicMemory.behavior.Move;
 import CSTEpisodicMemory.categories.EventCategory;
 import CSTEpisodicMemory.categories.RoomCategoryIdea;
 import CSTEpisodicMemory.context.GoalSelector;
 import CSTEpisodicMemory.entity.EventTracker;
+import CSTEpisodicMemory.impulses.CollectJewelImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
+import CSTEpisodicMemory.motor.HandsActuatorCodelet;
+import CSTEpisodicMemory.motor.LegsActuatorCodelet;
 import CSTEpisodicMemory.perception.JewelDetector;
 import CSTEpisodicMemory.perception.RoomDetector;
 import CSTEpisodicMemory.perception.WallDetector;
@@ -18,6 +23,7 @@ import CSTEpisodicMemory.sensor.Vision;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 
@@ -46,7 +52,7 @@ public class AgentMind extends Mind {
     private void initializeMindAndStar(Environment env){
         // Create CodeletGroups and MemoryGroups for organizing Codelets and Memories
         createCodeletGroup("Sensory");
-        //createCodeletGroup("Motor");
+        createCodeletGroup("Motor");
         createCodeletGroup("Perception");
         createCodeletGroup("Context");
         createCodeletGroup("Behavioral");
@@ -64,6 +70,8 @@ public class AgentMind extends Mind {
         Memory roomsMO;
         Memory leafletsMO;
         Memory impulsesMO;
+        MemoryContainer handsMO;
+        MemoryContainer legsMO;
 
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
@@ -104,6 +112,10 @@ public class AgentMind extends Mind {
         //Impulses
         Idea impulsesIdea = new Idea("Impulses", null, 0);
         impulsesMO = createMemoryObject("IMPULSES", impulsesIdea);
+        //Hands
+        handsMO = createMemoryContainer("HANDS");
+        //Leags
+        legsMO = createMemoryContainer("LEGS");
 
         //Inner Sense Codelet
         Codelet innerSenseCodelet = new InnerSense(env.creature);
@@ -132,6 +144,13 @@ public class AgentMind extends Mind {
         wallsDetectorCodelet.addOutput(wallsMO);
         insertCodelet(wallsDetectorCodelet, "Perception");
 
+        //RoomDetector Codelet
+        Codelet roomDetectorCodelet = new RoomDetector();
+        roomDetectorCodelet.addInput(innerSenseMO);
+        roomDetectorCodelet.addInput(categoriesRoomMO);
+        roomDetectorCodelet.addOutput(roomsMO);
+        insertCodelet(roomDetectorCodelet, "Perception");
+
         //Move Event Codelet
         EventCategory moveEventCategory = new EventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"));
         EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, debug);
@@ -157,22 +176,44 @@ public class AgentMind extends Mind {
         goToJewelImpulse.addInput(knownJewelsMO);
         goToJewelImpulse.addInput(leafletsMO);
         goToJewelImpulse.addOutput(impulsesMO);
-        insertCodelet(goToJewelImpulse, "Behavioural");
+        insertCodelet(goToJewelImpulse, "Behavioral");
 
-        //Goal selector Codelet
-        Codelet goalSelectorCodelet = new GoalSelector();
-        goalSelectorCodelet.addInput(innerSenseMO);
-        goalSelectorCodelet.addInput(knownJewelsMO);
-        goalSelectorCodelet.addInput(wallsMO);
-        goalSelectorCodelet.addOutput(goalsMO);
-        insertCodelet(goalSelectorCodelet, "Context");
+        //Collect Jewel
+        Codelet collectJewelImpulse = new CollectJewelImpulse();
+        collectJewelImpulse.addInput(innerSenseMO);
+        collectJewelImpulse.addInput(knownJewelsMO);
+        collectJewelImpulse.addOutput(impulsesMO);
+        insertCodelet(collectJewelImpulse, "Behavioral");
+        ////Goal selector Codelet
+        //Codelet goalSelectorCodelet = new GoalSelector();
+        //goalSelectorCodelet.addInput(innerSenseMO);
+        //goalSelectorCodelet.addInput(knownJewelsMO);
+        //goalSelectorCodelet.addInput(wallsMO);
+        //goalSelectorCodelet.addOutput(goalsMO);
+        //insertCodelet(goalSelectorCodelet, "Context");
 
-        //RoomDetector Codelet
-        Codelet roomDetectorCodelet = new RoomDetector();
-        roomDetectorCodelet.addInput(innerSenseMO);
-        roomDetectorCodelet.addInput(categoriesRoomMO);
-        roomDetectorCodelet.addOutput(roomsMO);
-        insertCodelet(roomDetectorCodelet, "Perception");
+        //Move Action/Behaviour
+        Codelet moveActionCodelet = new Move();
+        moveActionCodelet.addInput(impulsesMO);
+        moveActionCodelet.addOutput(legsMO);
+        insertCodelet(moveActionCodelet, "Behavioral");
+
+        //Collect Action/Behaviour
+        Codelet collectActionCodelet = new Collect();
+        collectActionCodelet.addInput(impulsesMO);
+        collectActionCodelet.addInput(knownJewelsMO);
+        collectActionCodelet.addOutput(handsMO);
+        insertCodelet(collectActionCodelet, "Behavioral");
+
+        //Hands Motor Codelet
+        Codelet handsMotorCodelet = new HandsActuatorCodelet(env.creature);
+        handsMotorCodelet.addInput(handsMO);
+        insertCodelet(handsMotorCodelet, "Motor");
+
+        //Legs Motor Codelet
+        Codelet legsMotorCodelet = new LegsActuatorCodelet(env.creature);
+        legsMotorCodelet.addInput(legsMO);
+        insertCodelet(legsMotorCodelet, "Motor");
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
