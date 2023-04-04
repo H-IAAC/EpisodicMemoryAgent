@@ -1,26 +1,27 @@
 package CSTEpisodicMemory.categories;
 
 import CSTEpisodicMemory.entity.CategoryIdea;
-import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.representation.idea.Idea;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
+public abstract class EventCategory extends CategoryIdea {
 
-public class EventCategory extends CategoryIdea {
-
-    private final List<String> properiesList;
+    private final List<String> vectorPropertiesList;
+    private final List<String> contextPropertiesList;
 
     public EventCategory(String name, List<String> properiesList) {
         super(name, null, "Episode", 2);
-        this.properiesList = properiesList;
+        this.vectorPropertiesList = properiesList;
+        contextPropertiesList = new ArrayList<>();
+    }
+
+    public EventCategory(String name, List<String> vectorPropertiesList, List<String> contextPropertiesList) {
+        super(name, null, "Episode", 2);
+        this.vectorPropertiesList = vectorPropertiesList;
+        this.contextPropertiesList = contextPropertiesList;
     }
 
     @Override
@@ -29,29 +30,24 @@ public class EventCategory extends CategoryIdea {
         for (Idea step : idea.getL())
             propertiesVector.add(extractProperties(step));
 
-        ArrayRealVector prevDirVector = propertiesVector.get(1).subtract(propertiesVector.get(0));
-        ArrayRealVector currDirVector = propertiesVector.get(2).subtract(propertiesVector.get(1));
-        boolean check = prevDirVector.getNorm() > 0.01 && getAbsAngle(prevDirVector, currDirVector) < 0.02;
-//        System.out.println("---" + check + "---");
-//        System.out.println(Arrays.toString(propertiesVector.get(0).toArray()));
-//        System.out.println(Arrays.toString(propertiesVector.get(1).toArray()));
-//        System.out.println(Arrays.toString(propertiesVector.get(2).toArray()));
+        boolean check = isThisCategory(propertiesVector);
         if (check)
             return 1.0;
         return 0;
     }
 
-    private double getAbsAngle(ArrayRealVector vecA, ArrayRealVector vecB) {
-        double normA = vecA.getNorm();
-        double normB = vecB.getNorm();
-        double cos = (vecA.dotProduct(vecB)) / (normA * normB);
-        return Math.abs(Math.acos(cos));
-    }
+    protected abstract boolean isThisCategory(List<ArrayRealVector> propertiesVector);
+
 
     private ArrayRealVector extractProperties(Idea idea) {
         ArrayRealVector propertyVector = new ArrayRealVector();
-        for (String property : properiesList){
-            propertyVector = (ArrayRealVector) propertyVector.append((float) idea.get(property).getValue());
+        for (String property : vectorPropertiesList){
+            if (idea.get(property).getValue() instanceof Float)
+                propertyVector = (ArrayRealVector) propertyVector.append((float) idea.get(property).getValue());
+            if (idea.get(property).getValue() instanceof Integer)
+                propertyVector = (ArrayRealVector) propertyVector.append((int) idea.get(property).getValue());
+            if (idea.get(property).getValue() instanceof Double)
+                propertyVector = (ArrayRealVector) propertyVector.append((double) idea.get(property).getValue());
         }
         return propertyVector;
     }
@@ -73,7 +69,10 @@ public class EventCategory extends CategoryIdea {
 
     private Idea extractRelevant(Idea idea) {
         Idea extracted = new Idea(idea.getName(), idea.getValue(), idea.getType());
-        for (String property : properiesList){
+        for (String property : vectorPropertiesList){
+            extractMerge(extracted, idea, property);
+        }
+        for (String property : contextPropertiesList){
             extractMerge(extracted, idea, property);
         }
         return extracted;

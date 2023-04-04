@@ -5,11 +5,9 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
@@ -85,7 +83,7 @@ public class CollectJewelImpulse extends Codelet {
         Vector2D jewelPos = new Vector2D(
                 (float) jewel.get("Position.X").getValue(),
                 (float) jewel.get("Position.Y").getValue());
-        if (selfPos.sub(jewelPos).magnitude() < 0.4)
+        if (selfPos.sub(jewelPos).magnitude() < 0.45)
             maxDesire = 1.0;
         return maxDesire;
     }

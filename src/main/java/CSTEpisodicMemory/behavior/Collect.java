@@ -16,6 +16,7 @@ public class Collect extends Codelet {
     private Memory impulseMO;
     private Memory jewelsMO;
     private MemoryContainer handsMO;
+    private Memory jewelsCountersMO;
 
     private Idea impulses;
     private Idea jewels;
@@ -31,6 +32,7 @@ public class Collect extends Codelet {
         this.handsMO = (MemoryContainer) getOutput("HANDS");
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.jewels = (Idea) jewelsMO.getI();
+        this.jewelsCountersMO = (MemoryObject) getOutput("JEWELS_COUNTERS");
     }
 
     @Override
@@ -40,7 +42,6 @@ public class Collect extends Codelet {
 
     @Override
     public void proc() {
-        System.out.println(fullPrint(impulses));
         Idea mostIntenseImpulse = null;
         for (Idea impulse : impulses.getL()){
             if (impulse.get("State.Jewel") != null){
@@ -69,11 +70,24 @@ public class Collect extends Codelet {
 
     private void removeFromMemory(int id) {
         List<Idea> modifiedL = new ArrayList<>();
+        String jewelType = "";
         for (Idea jewel : jewels.getL()){
             if (((int) jewel.get("ID").getValue()) != id){
                 modifiedL.add(jewel.clone());
+            } else {
+                jewelType = (String) jewel.getValue();
             }
         }
         jewels.setL(modifiedL);
+        synchronized (jewelsCountersMO){
+            Idea jewelsCountersIdea = (Idea) jewelsCountersMO.getI();
+            List<Idea> counters = jewelsCountersIdea.getL();
+            jewelsCountersIdea.get("Step").setValue((int) jewelsCountersIdea.get("Step").getValue() + 1);
+            for (Idea counter : counters){
+                if (counter.getName().equalsIgnoreCase(jewelType)){
+                    counter.setValue((int) counter.getValue() - 1);
+                }
+            }
+        }
     }
 }
