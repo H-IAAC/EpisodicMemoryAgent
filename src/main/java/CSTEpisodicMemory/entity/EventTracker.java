@@ -5,11 +5,13 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import br.unicamp.cst.util.viewer.representation.idea.IdeaEditor;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static CSTEpisodicMemory.util.IdeaPrinter.csvPrint;
 import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
 public class EventTracker extends Codelet {

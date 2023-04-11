@@ -3,22 +3,24 @@ package CSTEpisodicMemory.impulses;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static CSTEpisodicMemory.util.IdeaPrinter.csvPrint;
 import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
 public class CollectJewelImpulse extends Codelet {
 
     private Memory innerSenseMO;
     private Memory jewelsMO;
-    private Memory impulsesMO;
+    private MemoryContainer impulsesMO;
     private Idea inner;
     private Idea jewels;
-    private Idea impulses;
 
     private double minDesire = 0.9, maxDesire = 1.0;
     private String impulseCat = "Collect";
@@ -29,8 +31,7 @@ public class CollectJewelImpulse extends Codelet {
         this.inner = (Idea) innerSenseMO.getI();
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.jewels = (Idea) jewelsMO.getI();
-        this.impulsesMO = (MemoryObject) getOutput("IMPULSES");
-        this.impulses = (Idea) impulsesMO.getI();
+        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
     }
 
     @Override
@@ -58,20 +59,19 @@ public class CollectJewelImpulse extends Codelet {
     }
 
     private void removeSatisfiedImpulses() {
-        List<Idea> toRemove = new ArrayList<>();
-        List<Integer> jewelsID = jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).toList();
-        for (Idea impulse : impulses.getL()){
-            if (impulse.getValue().equals(this.impulseCat)){
-                if (!jewelsID.contains((int) impulse.get("State.Jewel.ID").getValue())){
-                    toRemove.add(impulse);
+        List<Memory> toRemove = new ArrayList<>();
+        List<Integer> jewelsID = jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).collect(Collectors.toList());
+        List<Memory> impulsesMemories = impulsesMO.getAllMemories();
+        synchronized (impulsesMemories) {
+            for (Memory impulseMem : impulsesMemories){
+                Idea impulse = (Idea) impulseMem.getI();
+                if (impulse.getValue().equals(this.impulseCat)){
+                    if (!jewelsID.contains((int) impulse.get("State.Jewel.ID").getValue())){
+                        toRemove.add(impulseMem);
+                    }
                 }
             }
-        }
-        synchronized (impulsesMO) {
-            this.impulses = (Idea) impulsesMO.getI();
-            List<Idea> currL = impulses.getL();
-            currL.removeAll(toRemove);
-            impulses.setL(currL);
+            impulsesMemories.removeAll(toRemove);
         }
     }
 
@@ -90,7 +90,7 @@ public class CollectJewelImpulse extends Codelet {
 
     private Idea createImpulse(Idea jewel, double desirability) {
         Idea impulse = new Idea("Impulse", this.impulseCat, "Episode", 0);
-        Idea state = new Idea("State", null, "Timestamp", 0);
+        Idea state = new Idea("State", null, "Timestep", 0);
         Idea stateJewel = new Idea("Jewel", jewel.getValue(), "AbstractObject", 1);
         stateJewel.add(jewel.get("ID").clone());
         stateJewel.add(new Idea("Condition", "In Bag", "Property", 1));
@@ -102,28 +102,14 @@ public class CollectJewelImpulse extends Codelet {
     }
 
     public void addIfNotPresent(Idea idea){
-        int presentInIdx = -1;
-        for (Idea present : impulses.getL()){
-            if ((int) present.get("State.ID").getValue() == (int) idea.get("State.ID").getValue()
-                    && present.getValue().equals(this.impulseCat))
-                presentInIdx = impulses.getL().indexOf(present); //Ineficient please chnge
-        }
-        if (presentInIdx != -1){
-            impulses.getL().remove(presentInIdx);
-        }
-        impulses.add(idea);
+        impulsesMO.setI(idea,
+                (double) idea.get("State.Desire").getValue(),
+                this.impulseCat + idea.get("State.ID").getValue());
     }
 
     public void removeIfPresent(Idea jewel){
-        int presentInIdx = -1;
-        for (Idea present : impulses.getL()){
-            if ((int) present.get("State.ID").getValue() == (int) jewel.get("ID").getValue()
-                    && present.getValue().equals(this.impulseCat)){
-                presentInIdx = impulses.getL().indexOf(present);
-            }
-        }
-        if (presentInIdx != -1){
-            impulses.getL().remove(presentInIdx);
-        }
+        impulsesMO.setI(jewel,
+                -1.0,
+                this.impulseCat + jewel.get("ID").getValue());
     }
 }

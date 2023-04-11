@@ -13,7 +13,7 @@ public class LinearEventCategory extends EventCategory{
     }
 
     @Override
-    protected boolean isThisCategory(List<ArrayRealVector> propertiesVector) {
+    protected boolean checkVectorChange(List<ArrayRealVector> propertiesVector) {
         int vectorSize = propertiesVector.size();
         if (vectorSize < 3){
             Logger.getLogger(LinearEventCategory.class.getName()).log(Level.SEVERE,

@@ -13,12 +13,12 @@ import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
 public class Collect extends Codelet {
 
-    private Memory impulseMO;
+    private MemoryContainer impulseMO;
     private Memory jewelsMO;
     private MemoryContainer handsMO;
     private Memory jewelsCountersMO;
 
-    private Idea impulses;
+    private Idea impulse;
     private Idea jewels;
 
     public Collect() {
@@ -27,8 +27,8 @@ public class Collect extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        this.impulseMO = (Memory) getInput("IMPULSES");
-        this.impulses = (Idea) impulseMO.getI();
+        this.impulseMO = (MemoryContainer) getInput("IMPULSES");
+        this.impulse = (Idea) impulseMO.getI();
         this.handsMO = (MemoryContainer) getOutput("HANDS");
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.jewels = (Idea) jewelsMO.getI();
@@ -42,29 +42,17 @@ public class Collect extends Codelet {
 
     @Override
     public void proc() {
-        Idea mostIntenseImpulse = null;
-        for (Idea impulse : impulses.getL()){
-            if (impulse.get("State.Jewel") != null){
+        if (impulse != null) {
+            if (impulse.get("State.Jewel") != null) {
                 if (impulse.get("State.Jewel.Condition").getValue().equals("In Bag")) {
-                    if (mostIntenseImpulse == null) {
-                        mostIntenseImpulse = impulse;
-                    } else {
-                        double maxDesire = (double) mostIntenseImpulse.get("State.Desire").getValue();
-                        double checkDesire = (double) impulse.get("State.Desire").getValue();
-                        if (checkDesire > maxDesire) {
-                            mostIntenseImpulse = impulse;
-                        }
-                    }
+                    Idea action = new Idea("Action", "Collect", "Episode", 0);
+                    action.add(new Idea("Jewel_ID", impulse.get("State.Jewel.ID").getValue()));
+                    handsMO.setI(action, (double) impulse.get("State.Desire").getValue(), this.name);
+                    removeFromMemory((int) impulse.get("State.Jewel.ID").getValue());
+                } else {
+                    handsMO.setI(null, 0.0, this.name);
                 }
             }
-        }
-        if (mostIntenseImpulse != null){
-            Idea action = new Idea("Action", "Collect", "Episode", 0);
-            action.add(new Idea("Jewel_ID", mostIntenseImpulse.get("State.Jewel.ID").getValue()));
-            handsMO.setI(action, (double) mostIntenseImpulse.get("State.Desire").getValue(), this.name);
-            removeFromMemory((int) mostIntenseImpulse.get("State.Jewel.ID").getValue());
-        } else {
-            handsMO.setI(null, 0.0, this.name);
         }
     }
 

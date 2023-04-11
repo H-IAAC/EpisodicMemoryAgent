@@ -76,13 +76,13 @@ public class JewelDetector extends Codelet {
                                 Idea jewelsCountersIdea = (Idea) jewelsCountersMO.getI();
                                 List<Idea> counters = jewelsCountersIdea.getL();
                                 jewelsCountersIdea.get("Step").setValue((int) jewelsCountersIdea.get("Step").getValue() + 1);
+                                jewelsCountersIdea.get("TimeStamp").setValue(System.currentTimeMillis());
                                 for (Idea counter : counters) {
                                     if (counter.getName().equals(t.getTypeName())) {
                                         int count = (int) counter.getValue() + 1;
                                         counter.setValue(count);
                                     }
                                 }
-                                System.out.println(fullPrint(jewelsCountersIdea));
                             }
                         }
                     }

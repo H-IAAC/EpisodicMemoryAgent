@@ -97,4 +97,30 @@ public class IdeaPrinter {
         }
         return "No cat: ";
     }
+
+    public static String csvPrint(Idea idea){
+        return csvPrint(idea, "");
+    }
+
+    public static String csvPrint(Idea idea, String prefix){
+        String csv = prefix + "{\n";
+        csv += prefix + "  \"id\": " + idea.getId() + ",\n";
+        csv += prefix + "  \"name\": \"" + idea.getName() + "\",\n";
+        csv += prefix + "  \"value\": \"" + (idea.getValue() != null ? idea.getResumedValue():"") + "\",\n";
+        StringBuilder lCsv = new StringBuilder();
+        for (Idea l : idea.getL()){
+            lCsv.append("\n").append(csvPrint(l, prefix + "    ")).append(",");
+        }
+        if (idea.getL().size() > 0) {
+            lCsv.deleteCharAt(lCsv.length() - 1);
+            csv += prefix + "  \"l\": [" + lCsv + "\n"+ prefix +"  ],\n";
+        } else {
+            csv += prefix + "  \"l\": [],\n";
+        }
+        csv += prefix + "  \"type\": " + idea.getType() + ",\n";
+        csv += prefix + "  \"category\": \"" + idea.getCategory() + "\",\n";
+        csv += prefix + "  \"scope\": " + idea.getScope() + "\n";
+        csv += prefix + "}";
+        return csv;
+    }
 }

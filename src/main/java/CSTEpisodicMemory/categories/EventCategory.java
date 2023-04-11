@@ -5,6 +5,7 @@ import br.unicamp.cst.representation.idea.Idea;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class EventCategory extends CategoryIdea {
@@ -30,13 +31,13 @@ public abstract class EventCategory extends CategoryIdea {
         for (Idea step : idea.getL())
             propertiesVector.add(extractProperties(step));
 
-        boolean check = isThisCategory(propertiesVector);
+        boolean check = checkVectorChange(propertiesVector);
         if (check)
             return 1.0;
         return 0;
     }
 
-    protected abstract boolean isThisCategory(List<ArrayRealVector> propertiesVector);
+    protected abstract boolean checkVectorChange(List<ArrayRealVector> propertiesVector);
 
 
     private ArrayRealVector extractProperties(Idea idea) {
@@ -58,8 +59,8 @@ public abstract class EventCategory extends CategoryIdea {
             Idea eventIdea = new Idea("Event", this.getName(), "Episode", 1);
             Idea time1 = new Idea("", 1, "TimeStep", 1);
             Idea time2 = new Idea("", 2, "TimeStep", 1);
-            time1.add(extractRelevant(constraints.get(0)));
-            time2.add(extractRelevant(constraints.get(1)));
+            time1.getL().addAll(extractRelevant(constraints.get(0)));
+            time2.getL().addAll(extractRelevant(constraints.get(1)));
             eventIdea.add(time1);
             eventIdea.add(time2);
             return eventIdea;
@@ -67,7 +68,7 @@ public abstract class EventCategory extends CategoryIdea {
         return null;
     }
 
-    private Idea extractRelevant(Idea idea) {
+    private List<Idea> extractRelevant(Idea idea) {
         Idea extracted = new Idea(idea.getName(), idea.getValue(), idea.getType());
         for (String property : vectorPropertiesList){
             extractMerge(extracted, idea, property);
@@ -75,7 +76,7 @@ public abstract class EventCategory extends CategoryIdea {
         for (String property : contextPropertiesList){
             extractMerge(extracted, idea, property);
         }
-        return extracted;
+        return Arrays.asList(extracted, idea.get("TimeStamp"));
     }
 
     private Idea extractMerge(Idea copy, Idea original, String path){

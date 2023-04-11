@@ -44,6 +44,7 @@ public class InnerSense extends Codelet{
         cis.get("Fuel").setValue(agent.getFuel());
         int step = (int) cis.get("Step").getValue();
         cis.get("Step").setValue(step + 1);
+        cis.get("TimeStamp").setValue(System.currentTimeMillis());
         if (debug) {
             System.out.println(cis.toStringFull());
         }

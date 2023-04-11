@@ -73,7 +73,7 @@ public class AgentMind extends Mind {
         Memory categoriesRoomMO;
         Memory roomsMO;
         Memory leafletsMO;
-        Memory impulsesMO;
+        MemoryContainer impulsesMO;
         MemoryContainer handsMO;
         MemoryContainer legsMO;
 
@@ -93,6 +93,7 @@ public class AgentMind extends Mind {
         Idea jewelCountersIdea = new Idea("JewelsCounters", null, 5);
         jewelCountersIdea.setL(jewelsCounters);
         jewelCountersIdea.add(new Idea("Step", 0, "TimeStep", 1));
+        jewelCountersIdea.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
         jewelsCounterMO = createMemoryObject("JEWELS_COUNTERS", jewelCountersIdea);
         //Detected Walls
         Idea wallsIdea = new Idea("Walls", null, 5);
@@ -123,8 +124,16 @@ public class AgentMind extends Mind {
         Idea leafletsIdea = new Idea("Leaflets", null, 0);
         leafletsMO = createMemoryObject("LEAFLETS", leafletsIdea);
         //Impulses
-        Idea impulsesIdea = new Idea("Impulses", null, 0);
-        impulsesMO = createMemoryObject("IMPULSES", impulsesIdea);
+        //Idea impulsesIdea = new Idea("Impulses", null, 0);
+        impulsesMO = createMemoryContainer("IMPULSES");
+        //-------Explore Impulse (TEST ONLY) -----
+        Idea impulse = new Idea("Impulse", "Explore", "Episode", 0);
+        Idea state = new Idea("State", null, "Timestep", 0);
+        state.add(new Idea("Desire", 0.1, "Property", 1));
+        impulse.add(state);
+        impulsesMO.setI(impulse, 0.1, "Explore");
+        //---------
+
         //Hands
         handsMO = createMemoryContainer("HANDS");
         //Leags
@@ -167,7 +176,7 @@ public class AgentMind extends Mind {
 
         //Move Event Codelet
         LinearEventCategory moveEventCategory = new LinearEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"));
-        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, debug);
+        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, true);
         moveEventTracker.setBufferSize(2);
         moveEventTracker.setBufferStepSize(2);
         moveEventTracker.addInput(innerSenseMO);
@@ -175,7 +184,7 @@ public class AgentMind extends Mind {
         insertCodelet(moveEventTracker, "Perception");
 
         //Rotate Event Codelet
-        LinearEventCategory rotateEventCategory= new LinearEventCategory("Rotate", Arrays.asList("Self.Pitch", "Self.Pitch"));
+        LinearEventCategory rotateEventCategory= new LinearEventCategory("Rotate", Arrays.asList("Self.Pitch"));
         EventTracker rotateEventTracker = new EventTracker("INNER", "EVENTS", rotateEventCategory, debug);
         rotateEventTracker.setBufferSize(2);
         rotateEventTracker.setBufferStepSize(2);
@@ -185,13 +194,24 @@ public class AgentMind extends Mind {
 
         //Found Jewel Event
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
-            StepEventCategory foundJewelEventCategory = new StepEventCategory(type.typeName(), Arrays.asList("JewelsCounters." + type.typeName(), "StepUp"));
+            StepEventCategory foundJewelEventCategory = new StepEventCategory("Found_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepUp");
             EventTracker jewelFoundEventTracker = new EventTracker("JEWELS_COUNTERS", "EVENTS", foundJewelEventCategory, debug);
             jewelFoundEventTracker.setBufferSize(2);
-            jewelFoundEventTracker.setBufferStepSize(1);
+            jewelFoundEventTracker.setBufferStepSize(2);
             jewelFoundEventTracker.addInput(jewelsCounterMO);
             jewelFoundEventTracker.addOutput(eventsMO);
             insertCodelet(jewelFoundEventTracker, "Perception");
+        }
+
+        //Collect Jewel Event
+        for (Constants.JewelTypes type : Constants.JewelTypes.values()){
+            StepEventCategory collectJewelEventCategory = new StepEventCategory("Collected_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepDown");
+            EventTracker jewelCollectedEventTracker = new EventTracker("JEWELS_COUNTERS", "EVENTS", collectJewelEventCategory, debug);
+            jewelCollectedEventTracker.setBufferSize(2);
+            jewelCollectedEventTracker.setBufferStepSize(2);
+            jewelCollectedEventTracker.addInput(jewelsCounterMO);
+            jewelCollectedEventTracker.addOutput(eventsMO);
+            insertCodelet(jewelCollectedEventTracker, "Perception");
         }
 
         //Impulses
@@ -251,12 +271,13 @@ public class AgentMind extends Mind {
     private Idea initializeInnerSenseIdea(){
         Idea innerSense = new Idea("Self", "AGENT", "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
-        posIdea.add(new Idea("X", null, "QualityDimension", 1));
-        posIdea.add(new Idea("Y", null, "QualityDimension", 1));
+        posIdea.add(new Idea("X",0, 3));
+        posIdea.add(new Idea("Y",0, 3));
         innerSense.add(posIdea);
         innerSense.add(new Idea("Pitch", null, "Property", 1));
         innerSense.add(new Idea("Fuel", null, "Property", 1));
         innerSense.add(new Idea("Step", 0, "TimeStep", 1));
+        innerSense.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
 
         return innerSense;
     }
