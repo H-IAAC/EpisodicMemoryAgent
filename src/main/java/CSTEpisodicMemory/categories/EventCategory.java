@@ -1,26 +1,27 @@
 package CSTEpisodicMemory.categories;
 
-import CSTEpisodicMemory.entity.CategoryIdea;
-import br.unicamp.cst.representation.idea.Idea;
+import CSTEpisodicMemory.core.representation.CategoryFunctions;
+import br.unicamp.cst.representation.idea.*;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class EventCategory extends CategoryIdea {
+public abstract class EventCategory implements Category {
 
     private final List<String> vectorPropertiesList;
     private final List<String> contextPropertiesList;
+    protected String name;
 
     public EventCategory(String name, List<String> properiesList) {
-        super(name, null, "Episode", 2);
+        this.name = name;
         this.vectorPropertiesList = properiesList;
         contextPropertiesList = new ArrayList<>();
     }
 
     public EventCategory(String name, List<String> vectorPropertiesList, List<String> contextPropertiesList) {
-        super(name, null, "Episode", 2);
+        this.name = name;
         this.vectorPropertiesList = vectorPropertiesList;
         this.contextPropertiesList = contextPropertiesList;
     }
@@ -54,9 +55,9 @@ public abstract class EventCategory extends CategoryIdea {
     }
 
     @Override
-    public Idea instantiation(List<Idea> constraints) {
+    public Idea getInstance(List<Idea> constraints) {
         if (constraints != null){
-            Idea eventIdea = new Idea("Event", this.getName(), "Episode", 1);
+            Idea eventIdea = new Idea("Event", this.name, "Episode", 1);
             Idea time1 = new Idea("", 1, "TimeStep", 1);
             Idea time2 = new Idea("", 2, "TimeStep", 1);
             time1.getL().addAll(extractRelevant(constraints.get(0)));

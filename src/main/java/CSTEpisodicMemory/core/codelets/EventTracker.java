@@ -1,11 +1,11 @@
-package CSTEpisodicMemory.entity;
+package CSTEpisodicMemory.core.codelets;
 
-import CSTEpisodicMemory.categories.EventCategory;
+import CSTEpisodicMemory.core.representation.IdeaPlus;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
+import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
-import br.unicamp.cst.util.viewer.representation.idea.IdeaEditor;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -28,34 +28,38 @@ public class EventTracker extends Codelet {
     private Idea currentInputIdea;
     private static int count = 1;
     private double detectionTreashold = 0.5;
-    private EventCategory trackedEventCategory;
+    private Idea trackedEventCategory;
     private boolean debug = false;
 
-    public EventTracker(String inputMemoryName, String outputMemoryName, EventCategory trackedEventCategory) {
+    public EventTracker(String inputMemoryName, String outputMemoryName, Idea trackedEventCategory) {
         this.inputMemoryName = inputMemoryName;
         this.outputMemoryName = outputMemoryName;
-        this.trackedEventCategory = trackedEventCategory;
+        if (trackedEventCategory.getValue() instanceof Category)
+            this.trackedEventCategory = trackedEventCategory;
     }
 
-    public EventTracker(String inputMemoryName, String outputMemoryName, EventCategory trackedEventCategory, boolean debug) {
+    public EventTracker(String inputMemoryName, String outputMemoryName, Idea trackedEventCategory, boolean debug) {
         this.inputMemoryName = inputMemoryName;
         this.outputMemoryName = outputMemoryName;
-        this.trackedEventCategory = trackedEventCategory;
+        if (trackedEventCategory.getValue() instanceof Category)
+            this.trackedEventCategory = trackedEventCategory;
         this.debug = debug;
     }
 
-    public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, EventCategory trackedEventCategory) {
+    public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory) {
         this.inputMemoryName = inputMemoryName;
         this.outputMemoryName = outputMemoryName;
         this.detectionTreashold = detectionTreashold;
-        this.trackedEventCategory = trackedEventCategory;
+        if (trackedEventCategory.getValue() instanceof Category)
+            this.trackedEventCategory = trackedEventCategory;
     }
 
-    public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, EventCategory trackedEventCategory, boolean debug) {
+    public EventTracker(String inputMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory, boolean debug) {
         this.inputMemoryName = inputMemoryName;
         this.outputMemoryName = outputMemoryName;
         this.detectionTreashold = detectionTreashold;
-        this.trackedEventCategory = trackedEventCategory;
+        if (trackedEventCategory.getValue() instanceof Category)
+            this.trackedEventCategory = trackedEventCategory;
         this.debug = debug;
     }
 
@@ -89,6 +93,7 @@ public class EventTracker extends Codelet {
                         Idea drop = inputIdeaBuffer.remove(0);
                         //Copies start of the event
                         if (initialEventIdea == null) this.initialEventIdea = drop.clone();
+
                         inputIdeaBuffer.add(currentInputIdea.clone());
                     } else {
                         if (initialEventIdea != null) {
@@ -103,7 +108,7 @@ public class EventTracker extends Codelet {
                             Idea eventsIdea = (Idea) eventsOutputMO.getI();
                             eventsIdea.add(event);
                             if (debug)
-                                System.out.println(fullPrint(eventsIdea));
+                                System.out.println(csvPrint(eventsIdea));
                         } else {
                             inputIdeaBuffer.remove(0);
                             inputIdeaBuffer.add(currentInputIdea.clone());

@@ -6,12 +6,12 @@ package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.behavior.Collect;
 import CSTEpisodicMemory.behavior.Move;
-import CSTEpisodicMemory.categories.EventCategory;
 import CSTEpisodicMemory.categories.LinearEventCategory;
-import CSTEpisodicMemory.categories.RoomCategoryIdea;
+import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
 import CSTEpisodicMemory.categories.StepEventCategory;
-import CSTEpisodicMemory.context.GoalSelector;
-import CSTEpisodicMemory.entity.EventTracker;
+import CSTEpisodicMemory.core.codelets.EventTracker;
+import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.core.representation.IdeaPlus;
 import CSTEpisodicMemory.impulses.CollectJewelImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
@@ -22,17 +22,20 @@ import CSTEpisodicMemory.perception.WallDetector;
 import CSTEpisodicMemory.sensor.InnerSense;
 import CSTEpisodicMemory.sensor.LeafletSense;
 import CSTEpisodicMemory.sensor.Vision;
+import CSTEpisodicMemory.util.NodeState;
 import CSTEpisodicMemory.util.Vector2D;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.Mind;
+import br.unicamp.cst.representation.idea.*;
 import br.unicamp.cst.representation.idea.Idea;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
+import scala.Int;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -77,6 +80,9 @@ public class AgentMind extends Mind {
         MemoryContainer handsMO;
         MemoryContainer legsMO;
 
+
+
+
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
         innerSenseMO = createMemoryObject("INNER", innerSenseIdea);
@@ -106,14 +112,14 @@ public class AgentMind extends Mind {
         goalsMO = createMemoryObject("GOALS", goalsIdea);
         //----Categories----
         //Rooms
-        List<RoomCategoryIdea> roomsCategoriesIdea = new ArrayList<>();
-        roomsCategoriesIdea.add(new RoomCategoryIdea("RoomA",
+        List<IdeaPlus> roomsCategoriesIdea = new ArrayList<>();
+        roomsCategoriesIdea.add(constructRoomCategory("RoomA",
                 new Vector2D(0, 0),
                 new Vector2D(8, 3)));
-        roomsCategoriesIdea.add(new RoomCategoryIdea("RoomB",
+        roomsCategoriesIdea.add(constructRoomCategory("RoomB",
                 new Vector2D(0, 3),
                 new Vector2D(1, 7)));
-        roomsCategoriesIdea.add(new RoomCategoryIdea("RoomC",
+        roomsCategoriesIdea.add(constructRoomCategory("RoomC",
                 new Vector2D(0, 7),
                 new Vector2D(8, 10)));
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
@@ -126,13 +132,6 @@ public class AgentMind extends Mind {
         //Impulses
         //Idea impulsesIdea = new Idea("Impulses", null, 0);
         impulsesMO = createMemoryContainer("IMPULSES");
-        //-------Explore Impulse (TEST ONLY) -----
-        Idea impulse = new Idea("Impulse", "Explore", "Episode", 0);
-        Idea state = new Idea("State", null, "Timestep", 0);
-        state.add(new Idea("Desire", 0.1, "Property", 1));
-        impulse.add(state);
-        impulsesMO.setI(impulse, 0.1, "Explore");
-        //---------
 
         //Hands
         handsMO = createMemoryContainer("HANDS");
@@ -175,8 +174,8 @@ public class AgentMind extends Mind {
         insertCodelet(roomDetectorCodelet, "Perception");
 
         //Move Event Codelet
-        LinearEventCategory moveEventCategory = new LinearEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"));
-        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, true);
+        Idea moveEventCategory = constructEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"), "Linear");
+        EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, debug);
         moveEventTracker.setBufferSize(2);
         moveEventTracker.setBufferStepSize(2);
         moveEventTracker.addInput(innerSenseMO);
@@ -184,7 +183,7 @@ public class AgentMind extends Mind {
         insertCodelet(moveEventTracker, "Perception");
 
         //Rotate Event Codelet
-        LinearEventCategory rotateEventCategory= new LinearEventCategory("Rotate", Arrays.asList("Self.Pitch"));
+        Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Self.Pitch"), "Linear");
         EventTracker rotateEventTracker = new EventTracker("INNER", "EVENTS", rotateEventCategory, debug);
         rotateEventTracker.setBufferSize(2);
         rotateEventTracker.setBufferStepSize(2);
@@ -194,7 +193,7 @@ public class AgentMind extends Mind {
 
         //Found Jewel Event
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
-            StepEventCategory foundJewelEventCategory = new StepEventCategory("Found_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepUp");
+            Idea foundJewelEventCategory = constructEventCategory("Found_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepUp");
             EventTracker jewelFoundEventTracker = new EventTracker("JEWELS_COUNTERS", "EVENTS", foundJewelEventCategory, debug);
             jewelFoundEventTracker.setBufferSize(2);
             jewelFoundEventTracker.setBufferStepSize(2);
@@ -205,7 +204,7 @@ public class AgentMind extends Mind {
 
         //Collect Jewel Event
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
-            StepEventCategory collectJewelEventCategory = new StepEventCategory("Collected_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepDown");
+            Idea collectJewelEventCategory = constructEventCategory("Collected_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepDown");
             EventTracker jewelCollectedEventTracker = new EventTracker("JEWELS_COUNTERS", "EVENTS", collectJewelEventCategory, debug);
             jewelCollectedEventTracker.setBufferSize(2);
             jewelCollectedEventTracker.setBufferStepSize(2);
@@ -261,6 +260,7 @@ public class AgentMind extends Mind {
         legsMotorCodelet.addInput(legsMO);
         insertCodelet(legsMotorCodelet, "Motor");
 
+
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
             c.setTimeStep(100);
@@ -280,6 +280,48 @@ public class AgentMind extends Mind {
         innerSense.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
 
         return innerSense;
+    }
+
+    private IdeaPlus constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB){
+        IdeaPlus idea = new IdeaPlus(name, null, "AbstractObject", 0);
+        idea.setCategoryFunctions(new RoomCategoryIdeaFunctions(name, cornerA, cornerB));
+        return idea;
+    }
+
+    private Idea constructEventCategory(String name, List<String> properties, String type){
+        Idea idea = new Idea(name, null, "Episode", 2);
+        switch (type){
+            case "Linear":
+                idea.setValue(new LinearEventCategory(name, properties));
+                break;
+            case "StepUp":
+                idea.setValue(new StepEventCategory(name, properties, "StepUp"));
+                break;
+            case "StepDown":
+                idea.setValue(new StepEventCategory(name, properties, "StepDown"));
+                break;
+        }
+        return idea;
+    }
+
+    private Map<Integer, NodeState> updateValues(MutableValueGraph<Integer, String> graph, Integer goal, Map<Integer, NodeState> stateMap){
+        for (Integer n : graph.predecessors(goal)){
+            if (graph.edgeValueOrDefault(n, goal, "None").equals("EndPos")){
+                if (stateMap.get(n).eval < stateMap.get(goal).eval*0.9) {
+                    stateMap.get(n).eval = stateMap.get(goal).eval * 0.9;
+                    stateMap = updateValues(graph, n, stateMap);
+                }
+            }
+        }
+        for (Integer n : graph.successors(goal)){
+            if (graph.edgeValueOrDefault(goal, n , "None").equals("StartPos")){
+                if (stateMap.get(n).eval < stateMap.get(goal).eval*0.9) {
+                    stateMap.get(n).eval = stateMap.get(goal).eval * 0.9;
+                    stateMap = updateValues(graph, n, stateMap);
+                }
+            }
+        }
+        return stateMap;
     }
 
 //    private Idea initializePerceptionIdea(){

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class StepEventCategory extends EventCategory{
+public class StepEventCategory extends EventCategory {
 
     private int type = 0;
     private double stepSizeThreashold = 0.5;
@@ -34,7 +34,7 @@ public class StepEventCategory extends EventCategory{
         int vectorSize = propertiesVector.size();
         if (vectorSize < 3){
             Logger.getLogger(LinearEventCategory.class.getName()).log(Level.SEVERE,
-                    "Step Event Category " + this.getName() + " receveid buffer to small");
+                    "Step Event Category " + this.name + " receveid buffer to small");
             return false;
         }
         //For now step will be a sudden change in properties vector magnitude

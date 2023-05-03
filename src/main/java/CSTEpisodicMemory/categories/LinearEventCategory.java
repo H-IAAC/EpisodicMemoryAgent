@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class LinearEventCategory extends EventCategory{
+public class LinearEventCategory extends EventCategory {
 
     public LinearEventCategory(String name, List<String> properiesList) {
         super(name, properiesList);
@@ -17,7 +17,7 @@ public class LinearEventCategory extends EventCategory{
         int vectorSize = propertiesVector.size();
         if (vectorSize < 3){
             Logger.getLogger(LinearEventCategory.class.getName()).log(Level.SEVERE,
-                    "Linear Event Category " + this.getName() + " receveid buffer to small");
+                    "Linear Event Category " + this.name + " receveid buffer to small");
             return false;
         }
         ArrayRealVector prevDirVector = propertiesVector.get(1).subtract(propertiesVector.get(0));

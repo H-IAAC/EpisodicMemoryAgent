@@ -4,10 +4,17 @@
 package CSTEpisodicMemory;
 
 import WS3DCoppelia.util.Constants;
+import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryContainer;
+import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.util.viewer.MindViewer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
 
 public class ExperimentMain {
 
@@ -24,10 +31,10 @@ public class ExperimentMain {
                 env.stopSimulation();
             }
         });
-        runTestCommands(env);
+        runTestCommands(env, a);
     }
 
-    public static void runTestCommands(Environment env){
+    public static void runTestCommands(Environment env, AgentMind a){
         env.world.createThing(Constants.JewelTypes.RED_JEWEL, 0.2f, 9.5f);
         env.world.createThing(Constants.JewelTypes.BLUE_JEWEL, 0.4f, 9.5f);
         env.world.createThing(Constants.JewelTypes.GREEN_JEWEL, 0.6f, 9.5f);
@@ -51,12 +58,51 @@ public class ExperimentMain {
 //        } catch (InterruptedException ex) {
 //            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-        env.creature.moveTo(0.5f,2f);
+        //-------Explore Impulse (TEST ONLY) -----
+        Idea impulse = new Idea("Impulse", "Explore", "Episode", 0);
+        Idea state = new Idea("State", null, "Timestep", 0);
+        Idea dest = new Idea("Self", null, "AbstractObject", 1);
+        Idea posIdea = new Idea("Position", null, "Property", 1);
+        posIdea.add(new Idea("X",0.5f, 3));
+        posIdea.add(new Idea("Y",2f, 3));
+        dest.add(posIdea);
+        state.add(dest);
+        state.add(new Idea("Desire", 0.1, "Property", 1));
+        impulse.add(state);
+        //---------
+        List<Memory> mems = a.getRawMemory().getAllMemoryObjects();
+        for (Memory mo : mems) {
+            if (mo.getName() != null && mo.getName().equalsIgnoreCase("IMPULSES")) {
+                MemoryContainer moc = (MemoryContainer) mo;
+                moc.setI(impulse, 0.1, "Explore");
+                System.out.println(fullPrint((Idea) mo.getI()));
+            }
+        }
+
+        //env.creature.moveTo(0.5f,2f);
         try {
             Thread.sleep(7000);
         } catch (InterruptedException ex) {
             Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
         }
-        env.creature.moveTo(0.5f,9f);
+
+        Idea impulse_ = new Idea("Impulse", "Explore", "Episode", 0);
+        Idea state_ = new Idea("State", null, "Timestep", 0);
+        Idea dest_ = new Idea("Self", null, "AbstractObject", 1);
+        Idea posIdea_ = new Idea("Position", null, "Property", 1);
+        posIdea_.add(new Idea("X",0.5f, 3));
+        posIdea_.add(new Idea("Y",9f, 3));
+        dest_.add(posIdea_);
+        state_.add(dest_);
+        state_.add(new Idea("Desire", 0.1, "Property", 1));
+        impulse_.add(state_);
+        for (Memory mo : mems) {
+            if (mo.getName() != null && mo.getName().equalsIgnoreCase("IMPULSES")) {
+                MemoryContainer moc = (MemoryContainer) mo;
+                moc.setI(impulse_, 0.1, "Explore");
+                System.out.println(fullPrint((Idea) mo.getI()));
+            }
+        }
+        //env.creature.moveTo(0.5f,9f);
     }
 }

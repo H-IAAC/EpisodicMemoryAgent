@@ -1,4 +1,4 @@
-package CSTEpisodicMemory.entity;
+package CSTEpisodicMemory.core.representation;
 
 import br.unicamp.cst.representation.idea.Idea;
 
@@ -13,12 +13,12 @@ public abstract class CategoryIdea extends Idea {
     public abstract double membership(Idea idea);
     public abstract Idea instantiation(List<Idea> constraints);
 
-    public static Idea searcIdea(Idea idea, String name){
+    public static Idea searchIdea(Idea idea, String name){
         Idea hit = idea.get(name);
         if (hit == null){
             //!!!!This can generate infinite loops
             for (Idea i : idea.getL()){
-                hit = searcIdea(i, name);
+                hit = searchIdea(i, name);
             }
         }
         return hit;
