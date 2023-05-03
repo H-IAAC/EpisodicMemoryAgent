@@ -1,15 +1,15 @@
 package CSTEpisodicMemory.categories;
 
-import CSTEpisodicMemory.core.representation.CategoryFunctions;
-import CSTEpisodicMemory.core.representation.IdeaPlus;
+import CSTEpisodicMemory.util.IdeaPrinter;
 import CSTEpisodicMemory.util.Vector2D;
+import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.List;
 
 import static java.lang.Math.abs;
 
-public class RoomCategoryIdeaFunctions implements CategoryFunctions {
+public class RoomCategoryIdeaFunctions implements Category {
 
     private final String name;
     private Vector2D cornerA;
@@ -23,7 +23,7 @@ public class RoomCategoryIdeaFunctions implements CategoryFunctions {
 
     @Override
     public double membership(Idea idea) {
-        Idea position = IdeaPlus.searchIdea(idea, "Position");
+        Idea position = IdeaPrinter.searchIdea(idea, "Position");
         Vector2D pos = new Vector2D((float) position.get("X").getValue(), (float) position.get("Y").getValue());
         pos = pos.sub(cornerB);
         Vector2D diag = cornerA.sub(cornerB);
@@ -33,7 +33,7 @@ public class RoomCategoryIdeaFunctions implements CategoryFunctions {
     }
 
     @Override
-    public Idea instantiation(List<Idea> constraints) {
+    public Idea getInstance(List<Idea> constraints) {
         return null;
     }
 }

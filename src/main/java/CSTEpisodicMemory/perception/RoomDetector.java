@@ -1,7 +1,6 @@
 package CSTEpisodicMemory.perception;
 
 import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
-import CSTEpisodicMemory.core.representation.IdeaPlus;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -16,7 +15,7 @@ public class RoomDetector extends Codelet {
     private Memory roomCategoriesMO;
     private Memory roomMO;
     private Idea innerSense;
-    private List<IdeaPlus> roomCategories;
+    private List<Idea> roomCategories;
     private Idea detectedRoom;
 
     public RoomDetector() {
@@ -28,7 +27,7 @@ public class RoomDetector extends Codelet {
         this.innerSenseMO = (MemoryObject) getInput("INNER");
         this.innerSense = (Idea) innerSenseMO.getI();
         this.roomCategoriesMO = (MemoryObject) getInput("ROOM_CATEGORIES");
-        this.roomCategories = (List<IdeaPlus>) roomCategoriesMO.getI();
+        this.roomCategories = (List<Idea>) roomCategoriesMO.getI();
         this.roomMO = (MemoryObject) getOutput("ROOM");
         this.detectedRoom = (Idea) roomMO.getI();
     }
@@ -41,7 +40,7 @@ public class RoomDetector extends Codelet {
     @Override
     public void proc() {
         detectedRoom.setL(new ArrayList<>());
-        for (IdeaPlus category : roomCategories){
+        for (Idea category : roomCategories){
             if (category.membership(innerSense) > 0 ){
                 detectedRoom.add(new Idea("Location", category.getName(), "Property", 1));
             }

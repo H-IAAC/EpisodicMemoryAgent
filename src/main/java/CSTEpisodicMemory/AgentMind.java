@@ -11,7 +11,7 @@ import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
 import CSTEpisodicMemory.categories.StepEventCategory;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.core.representation.IdeaPlus;
+import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.impulses.CollectJewelImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
@@ -73,6 +73,7 @@ public class AgentMind extends Mind {
         Memory wallsMO;
         Memory eventsMO;
         Memory goalsMO;
+        Memory storyMO;
         Memory categoriesRoomMO;
         Memory roomsMO;
         Memory leafletsMO;
@@ -110,9 +111,14 @@ public class AgentMind extends Mind {
         //Goals
         Idea goalsIdea = new Idea("Goals", null, 5);
         goalsMO = createMemoryObject("GOALS", goalsIdea);
+
+        //Story
+        Idea storyGraph = new Idea("Story", null, "Composition", 1);
+        GraphIdea story = new GraphIdea(storyGraph);
+        storyMO = createMemoryObject("STORY", story);
         //----Categories----
         //Rooms
-        List<IdeaPlus> roomsCategoriesIdea = new ArrayList<>();
+        List<Idea> roomsCategoriesIdea = new ArrayList<>();
         roomsCategoriesIdea.add(constructRoomCategory("RoomA",
                 new Vector2D(0, 0),
                 new Vector2D(8, 3)));
@@ -260,6 +266,12 @@ public class AgentMind extends Mind {
         legsMotorCodelet.addInput(legsMO);
         insertCodelet(legsMotorCodelet, "Motor");
 
+        Codelet episodeBindingCodelet = new EpisodeBinding();
+        episodeBindingCodelet.addInput(eventsMO);
+        episodeBindingCodelet.addInput(impulsesMO);
+        episodeBindingCodelet.addInput(roomsMO);
+        episodeBindingCodelet.addOutput(storyMO);
+        insertCodelet(episodeBindingCodelet, "Behavioural");
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
@@ -282,9 +294,9 @@ public class AgentMind extends Mind {
         return innerSense;
     }
 
-    private IdeaPlus constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB){
-        IdeaPlus idea = new IdeaPlus(name, null, "AbstractObject", 0);
-        idea.setCategoryFunctions(new RoomCategoryIdeaFunctions(name, cornerA, cornerB));
+    private Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB){
+        Idea idea = new Idea(name, null, "AbstractObject", 0);
+        idea.setValue(new RoomCategoryIdeaFunctions(name, cornerA, cornerB));
         return idea;
     }
 

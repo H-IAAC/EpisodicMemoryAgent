@@ -124,4 +124,15 @@ public class IdeaPrinter {
         csv += prefix + "}";
         return csv;
     }
+
+    public static Idea searchIdea(Idea idea, String name){
+        Idea hit = idea.get(name);
+        if (hit == null){
+            //!!!!This can generate infinite loops
+            for (Idea i : idea.getL()){
+                hit = searchIdea(i, name);
+            }
+        }
+        return hit;
+    }
 }

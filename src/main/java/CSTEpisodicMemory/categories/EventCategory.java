@@ -1,6 +1,5 @@
 package CSTEpisodicMemory.categories;
 
-import CSTEpisodicMemory.core.representation.CategoryFunctions;
 import br.unicamp.cst.representation.idea.*;
 import org.apache.commons.math3.linear.ArrayRealVector;
 

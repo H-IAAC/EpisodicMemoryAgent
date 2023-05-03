@@ -68,7 +68,6 @@ public class JewelDetector extends Codelet {
                         for (Idea e : myknown)
                             if (t.getId() == ((int) e.get("ID").getValue())) {
                                 found = true;
-                                break;
                             }
                         if (!found && t.isJewel()) {
                             known.add(constructJewelIdea(t));
@@ -84,6 +83,12 @@ public class JewelDetector extends Codelet {
                                     }
                                 }
                             }
+                        }
+                        synchronized (jewelsCountersMO) {
+                            Idea jewelsCountersIdea = (Idea) jewelsCountersMO.getI();
+                            List<Idea> counters = jewelsCountersIdea.getL();
+                            jewelsCountersIdea.get("Step").setValue((int) jewelsCountersIdea.get("Step").getValue() + 1);
+                            jewelsCountersIdea.get("TimeStamp").setValue(System.currentTimeMillis());
                         }
                     }
                 }
