@@ -5,8 +5,6 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
-
 public class GraphIdea {
 
     public Idea graph;
@@ -23,15 +21,24 @@ public class GraphIdea {
         this.graph = graph;
     }
 
-    public Idea insertNode(Idea node) {
-        Idea coord = new Idea("Coordinate", coordinateCount++, "Property", 1);
-        return insertNode(node, coord);
+    public Idea insertEventNode(Idea node){
+        return insertNode(node, "Event");
     }
 
-    public Idea insertNode(Idea node, Idea coord){
+    public Idea insertLocationNode(Idea node){
+        return insertNode(node, "Location");
+    }
+
+    public Idea insertNode(Idea node, String type) {
+        Idea coord = new Idea("Coordinate", coordinateCount++, "Property", 1);
+        return insertNode(node, coord, type);
+    }
+
+    public Idea insertNode(Idea node, Idea coord, String type){
         Idea nodeIdea = new Idea("Node", nodeCount++, "AbstractObject", 1);
         nodeIdea.add(node);
         nodeIdea.add(coord);
+        nodeIdea.add(new Idea("Type", type, "Property", 1));
         graph.add(nodeIdea);
         coordinateMap.put(coord, nodeIdea);
         return nodeIdea;
@@ -41,15 +48,15 @@ public class GraphIdea {
 
         Idea nodeIdeaSource;
         Optional<Idea> nodeOpt = graph.getL().stream().filter(e->e.getL().contains(nodeSource)).findFirst();
-        nodeIdeaSource = nodeOpt.orElseGet(() -> insertNode(nodeSource));
+        nodeIdeaSource = nodeOpt.orElseGet(() -> insertEventNode(nodeSource));
 
         Idea nodeIdeaDest;
         nodeOpt = graph.getL().stream().filter(e->e.getL().contains(nodeDest)).findFirst();
-        nodeIdeaDest = nodeOpt.orElseGet(() -> insertNode(nodeDest));
+        nodeIdeaDest = nodeOpt.orElseGet(() -> insertEventNode(nodeDest));
 
         Idea ideaLink = new Idea("Link", linkCount++, "Property", 1);
-        ideaLink.add(new Idea("Source", nodeIdeaSource.get("Coordinate")));
-        ideaLink.add(new Idea("Sink", nodeIdeaDest.get("Coordinate")));
+        ideaLink.add(new Idea("Source", nodeIdeaSource.get("Coordinate").getValue()));
+        ideaLink.add(new Idea("Sink", nodeIdeaDest.get("Coordinate").getValue()));
         ideaLink.add(new Idea("Type", type, "Property", 1));
         graph.add(ideaLink);
 
@@ -106,6 +113,20 @@ public class GraphIdea {
 
     public List<Idea> getNodes(){
         return graph.getL().stream().filter(e->e.getName().equals("Node")).collect(Collectors.toList());
+    }
+
+    public List<Idea> getEventNodes(){
+        return graph.getL().stream()
+                .filter(e->e.getName().equals("Node"))
+                .filter(e->e.get("Type").equals("Event"))
+                .collect(Collectors.toList());
+    }
+
+    public List<Idea> getLocationNodes(){
+        return graph.getL().stream()
+                .filter(e->e.getName().equals("Node"))
+                .filter(e->e.get("Type").equals("Location"))
+                .collect(Collectors.toList());
     }
 
     public String toString(){

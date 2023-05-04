@@ -11,8 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.csvPrint;
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
+import static CSTEpisodicMemory.util.IdeaHelper.csvPrint;
 
 public class CollectJewelImpulse extends Codelet {
 

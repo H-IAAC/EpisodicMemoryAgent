@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
-
 /**
  * @author bruno
  */

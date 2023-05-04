@@ -8,7 +8,7 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.ArrayList;
 import java.util.List;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
+import static CSTEpisodicMemory.util.IdeaHelper.fullPrint;
 
 public class GoalSelector extends Codelet {
 

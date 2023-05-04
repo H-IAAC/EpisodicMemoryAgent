@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
-
 public class GoToJewelImpulse extends Codelet {
 
     private Memory innerSenseMO;

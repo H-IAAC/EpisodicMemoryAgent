@@ -9,12 +9,11 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.util.viewer.MindViewer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
+import static CSTEpisodicMemory.util.IdeaHelper.fullPrint;
 
 public class ExperimentMain {
 
@@ -81,7 +80,7 @@ public class ExperimentMain {
 
         //env.creature.moveTo(0.5f,2f);
         try {
-            Thread.sleep(7000);
+            Thread.sleep(10000);
         } catch (InterruptedException ex) {
             Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
         }

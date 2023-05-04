@@ -29,12 +29,12 @@ public class GraphIdeaTest {
         pos3 = new Idea("Pos3", 3, "Property", 1);
 
         graphIdea = new GraphIdea(new Idea("Graph", null));
-        graphIdea.insertNode(event1);
-        graphIdea.insertNode(event2);
-        graphIdea.insertNode(event3);
-        graphIdea.insertNode(pos1);
-        graphIdea.insertNode(pos2);
-        graphIdea.insertNode(pos3);
+        graphIdea.insertEventNode(event1);
+        graphIdea.insertEventNode(event2);
+        graphIdea.insertEventNode(event3);
+        graphIdea.insertEventNode(pos1);
+        graphIdea.insertEventNode(pos2);
+        graphIdea.insertEventNode(pos3);
 
         graphIdea.insetLink(event1, event2, "Next");
         graphIdea.insetLink(event2, event3, "Next");

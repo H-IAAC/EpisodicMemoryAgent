@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.csvPrint;
+import static CSTEpisodicMemory.util.IdeaHelper.csvPrint;
 
 public class EventTracker extends Codelet {
 

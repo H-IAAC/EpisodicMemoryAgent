@@ -9,8 +9,6 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.ArrayList;
 import java.util.List;
 
-import static CSTEpisodicMemory.util.IdeaPrinter.fullPrint;
-
 public class Collect extends Codelet {
 
     private MemoryContainer impulseMO;

@@ -5,7 +5,7 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IdeaPrinter {
+public class IdeaHelper {
 
     transient static List<Object> listtoavoidloops = new ArrayList<Object>();
 

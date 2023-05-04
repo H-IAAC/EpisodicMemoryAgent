@@ -1,6 +1,6 @@
 package CSTEpisodicMemory.categories;
 
-import CSTEpisodicMemory.util.IdeaPrinter;
+import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
@@ -23,7 +23,7 @@ public class RoomCategoryIdeaFunctions implements Category {
 
     @Override
     public double membership(Idea idea) {
-        Idea position = IdeaPrinter.searchIdea(idea, "Position");
+        Idea position = IdeaHelper.searchIdea(idea, "Position");
         Vector2D pos = new Vector2D((float) position.get("X").getValue(), (float) position.get("Y").getValue());
         pos = pos.sub(cornerB);
         Vector2D diag = cornerA.sub(cornerB);

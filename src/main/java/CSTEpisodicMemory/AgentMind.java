@@ -12,6 +12,7 @@ import CSTEpisodicMemory.categories.StepEventCategory;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
+import CSTEpisodicMemory.episodic.TimelineBufferCodelet;
 import CSTEpisodicMemory.impulses.CollectJewelImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
@@ -74,6 +75,7 @@ public class AgentMind extends Mind {
         Memory eventsMO;
         Memory goalsMO;
         Memory storyMO;
+        Memory bufferMO;
         Memory categoriesRoomMO;
         Memory roomsMO;
         Memory leafletsMO;
@@ -116,6 +118,9 @@ public class AgentMind extends Mind {
         Idea storyGraph = new Idea("Story", null, "Composition", 1);
         GraphIdea story = new GraphIdea(storyGraph);
         storyMO = createMemoryObject("STORY", story);
+        //Buffer
+        Idea bufferIdea = new Idea("Buffer", null, "Aggregation", 1);
+        bufferMO = createMemoryObject("BUFFER", bufferIdea);
         //----Categories----
         //Rooms
         List<Idea> roomsCategoriesIdea = new ArrayList<>();
@@ -272,6 +277,13 @@ public class AgentMind extends Mind {
         episodeBindingCodelet.addInput(roomsMO);
         episodeBindingCodelet.addOutput(storyMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
+
+        Codelet bufferCodelet = new TimelineBufferCodelet(Arrays.asList("INNER", "KNOWN_JEWELS", "IMPULSES"));
+        bufferCodelet.addInput(innerSenseMO);
+        bufferCodelet.addInput(knownJewelsMO);
+        bufferCodelet.addInput(impulsesMO);
+        bufferCodelet.addOutput(bufferMO);
+        insertCodelet(bufferCodelet);
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
