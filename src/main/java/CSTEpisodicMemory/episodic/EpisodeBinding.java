@@ -7,13 +7,16 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import br.unicamp.cst.representation.idea.IdeaComparator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EpisodeBinding extends Codelet {
 
     private Memory eventsMO;
+    private Memory bufferMO;
     private MemoryContainer impulsesMO;
     private Memory roomMO;
     private Memory storyMO;
@@ -23,6 +26,7 @@ public class EpisodeBinding extends Codelet {
     @Override
     public void accessMemoryObjects() {
         this.eventsMO = (MemoryObject) getInput("EVENTS");
+        this.bufferMO = (MemoryObject) getInput("BUFFER");
         this.impulsesMO = (MemoryContainer) getInput("IMPULSES");
         this.roomMO = (MemoryObject) getInput("ROOM");
         this.storyMO = (MemoryObject) getOutput("STORY");
@@ -39,68 +43,93 @@ public class EpisodeBinding extends Codelet {
         Idea impulseIdea = (Idea) impulsesMO.getI();
         GraphIdea story = (GraphIdea) storyMO.getI();
 
-        //System.out.println(IdeaHelper.csvPrint(story.graph).replace('\n',' '));
+        Idea timeline = (Idea) bufferMO.getI();
+
+        System.out.println(IdeaHelper.csvPrint(story.graph).replace('\n',' '));
 
         for (Idea event : eventsIdea.getL()){
             if (! story.hasNodeContent(event)){
-                List<Idea> otherNodes = new ArrayList<Idea>(story.getNodes());
+                List<Idea> otherNodes = new ArrayList<Idea>(story.getEventNodes());
                 story.insertEventNode(event);
+                createTemporalRelations(event, otherNodes, story);
 
-                Long start1 = 0L, end1 = 0L, start2 = 0L, end2 = 0L;
-                for (Idea step : event.getL()){
-                    if ((int) step.getValue() == 1)
-                        start1 = (Long) step.get("TimeStamp").getValue();
-                    else
-                        end1 = (Long) step.get("TimeStamp").getValue();
-                }
+                long eventEnd = (long) event.getL().get(1).get("TimeStamp").getValue();
+                Optional<Idea> context = timeline.getL().stream()
+                        .filter(e -> ((long) e.getValue()) <= eventEnd)
+                        .max((a,b)->(int)((long)a.getValue() - (long)b.getValue()));
+                if (context.isPresent()){
+                    Idea contextIdea = context.get();
+                    Idea position = contextIdea.get("Self").get("Position").clone();
+                    story.insertLocationNode(position);
+                    story.insetLink(event, position, "SpatialContext");
 
-                Long closestBeforeSink = Long.MAX_VALUE;
-                Idea closestBeforeSinkIdea = null;
-                Long closestBeforeSource = Long.MAX_VALUE;
-                Idea closestBeforeSourceIdea = null;
-                for (Idea node : otherNodes){
-                    Idea nodeContent = node.getL().stream()
-                            .filter(e->!e.getName().equals("Coordinate"))
-                            .findFirst()
-                            .orElse(null);
-
-                    for (Idea step : nodeContent.getL()) {
-                        if ((int) step.getValue() == 1)
-                            start2 = (Long) step.get("TimeStamp").getValue();
-                        else
-                            end2 = (Long) step.get("TimeStamp").getValue();
-                    }
-
-                    String relation = temporalRelation(start1, end1, start2, end2);
-                    if (!relation.equals("")){
-                        if (relation.equals("Before")){
-                            if (start2 - end1 < closestBeforeSink) {
-                                closestBeforeSink = start2 - end1;
-                                closestBeforeSinkIdea = nodeContent;
-                            }
-                        } else {
-                            story.insetLink(event, nodeContent, relation);
-                        }
-                    }
-                    relation = temporalRelation(start2, end2, start1, end1);
-                    if (!relation.equals("")){
-                        if (relation.equals("Before")){
-                            if (start1 - end2 < closestBeforeSource) {
-                                closestBeforeSource = start1 - end2;
-                                closestBeforeSourceIdea = nodeContent;
-                            }
-                        } else {
-                            story.insetLink(nodeContent, event, relation);
+                    Idea impulse = contextIdea.get("Impulse").clone();
+                    if (impulse != null){
+                        if (!story.hasNodeContent(impulse)) {
+                            story.insertContextNode(impulse);
+                            story.insetLink(event, impulse, "InternalContext");
                         }
                     }
                 }
-
-                if (closestBeforeSinkIdea != null)
-                    story.insetLink(event, closestBeforeSinkIdea, "Before");
-                if (closestBeforeSourceIdea != null)
-                    story.insetLink(closestBeforeSourceIdea, event, "Before");
             }
         }
+    }
+
+    private void createTemporalRelations(Idea event, List<Idea> otherNodes, GraphIdea story){
+        Long start1 = 0L, end1 = 0L, start2 = 0L, end2 = 0L;
+        for (Idea step : event.getL()){
+            if ((int) step.getValue() == 1)
+                start1 = (Long) step.get("TimeStamp").getValue();
+            else
+                end1 = (Long) step.get("TimeStamp").getValue();
+        }
+
+        Long closestBeforeSink = Long.MAX_VALUE;
+        Idea closestBeforeSinkIdea = null;
+        Long closestBeforeSource = Long.MAX_VALUE;
+        Idea closestBeforeSourceIdea = null;
+        for (Idea node : otherNodes){
+            Idea nodeContent = node.getL().stream()
+                    .filter(e->!e.getName().equals("Coordinate") && !e.getName().equals("Type"))
+                    .findFirst()
+                    .orElse(null);
+
+            for (Idea step : nodeContent.getL()) {
+                if ((int) step.getValue() == 1)
+                    start2 = (Long) step.get("TimeStamp").getValue();
+                else
+                    end2 = (Long) step.get("TimeStamp").getValue();
+            }
+
+            String relation = temporalRelation(start1, end1, start2, end2);
+            if (!relation.equals("")){
+                if (relation.equals("Before")){
+                    if (start2 - end1 < closestBeforeSink) {
+                        closestBeforeSink = start2 - end1;
+                        closestBeforeSinkIdea = nodeContent;
+                    }
+                } else {
+                    story.insetLink(event, nodeContent, relation);
+                }
+            }
+            relation = temporalRelation(start2, end2, start1, end1);
+            if (!relation.equals("")){
+                if (relation.equals("Before")){
+                    if (start1 - end2 < closestBeforeSource) {
+                        closestBeforeSource = start1 - end2;
+                        closestBeforeSourceIdea = nodeContent;
+                    }
+                } else {
+                    story.insetLink(nodeContent, event, relation);
+                }
+            }
+        }
+
+        if (closestBeforeSinkIdea != null)
+            story.insetLink(event, closestBeforeSinkIdea, "Before");
+        if (closestBeforeSourceIdea != null)
+            story.insetLink(closestBeforeSourceIdea, event, "Before");
+
     }
 
     public static String temporalRelation(long start1, long end1, long start2, long end2){

@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.core.representation;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.*;
@@ -27,6 +28,10 @@ public class GraphIdea {
 
     public Idea insertLocationNode(Idea node){
         return insertNode(node, "Location");
+    }
+
+    public Idea insertContextNode(Idea node){
+        return insertNode(node, "Context");
     }
 
     public Idea insertNode(Idea node, String type) {
@@ -108,7 +113,11 @@ public class GraphIdea {
     }
 
     public boolean hasNodeContent(Idea idea){
-        return graph.getL().stream().anyMatch(e->e.getL().contains(idea));
+        return this.getNodes().stream()
+                .map(e->e.get(idea.getName()))
+                .anyMatch(e->IdeaHelper.match(e,idea));
+
+        //return graph.getL().stream().anyMatch(e->e.getL().contains(idea));
     }
 
     public List<Idea> getNodes(){
@@ -118,7 +127,7 @@ public class GraphIdea {
     public List<Idea> getEventNodes(){
         return graph.getL().stream()
                 .filter(e->e.getName().equals("Node"))
-                .filter(e->e.get("Type").equals("Event"))
+                .filter(e->e.get("Type").getValue().equals("Event"))
                 .collect(Collectors.toList());
     }
 

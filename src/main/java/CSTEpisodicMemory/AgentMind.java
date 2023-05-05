@@ -275,6 +275,7 @@ public class AgentMind extends Mind {
         episodeBindingCodelet.addInput(eventsMO);
         episodeBindingCodelet.addInput(impulsesMO);
         episodeBindingCodelet.addInput(roomsMO);
+        episodeBindingCodelet.addInput(bufferMO);
         episodeBindingCodelet.addOutput(storyMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
 
@@ -288,6 +289,8 @@ public class AgentMind extends Mind {
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())
             c.setTimeStep(100);
+
+        bufferCodelet.setTimeStep(500);
 
         start();
     }

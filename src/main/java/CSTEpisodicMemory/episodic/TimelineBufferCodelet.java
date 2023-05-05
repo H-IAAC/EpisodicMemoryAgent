@@ -45,21 +45,15 @@ public class TimelineBufferCodelet extends Codelet {
     public void proc() {
         long currTime = System.currentTimeMillis();
         Idea buffer = (Idea) bufferMO.getI();
-        if (buffer.getL().size() > 10)
+        if (buffer.getL().size() > 100)
             buffer.getL().remove(0);
         Idea currTimestep = new Idea("", currTime, "Timestep", 1);
-        System.out.println("-----------------------");
-        System.out.println(IdeaHelper.csvPrint(buffer).replace('\n',' '));
+        //System.out.println("-----------------------");
+        //System.out.println(IdeaHelper.csvPrint(buffer).replace('\n',' '));
         for (Memory input : inputsMO){
             Idea content = (Idea) input.getI();
             if (content != null) {
-                Idea timestamp = IdeaHelper.searchIdea(content, "TimeStamp");
-                if (timestamp != null) {
-                    long contentTime = (long) timestamp.getValue();
-                    if (currTime - contentTime <= 100 && currTime >= contentTime) {
                         currTimestep.add(content.clone());
-                    }
-                }
             }
         }
         buffer.add(currTimestep);

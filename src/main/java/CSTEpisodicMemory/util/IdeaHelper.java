@@ -135,4 +135,22 @@ public class IdeaHelper {
         }
         return hit;
     }
+
+    public static boolean match(Idea a, Idea b){
+        if (a == null || b == null)
+            return false;
+
+        if (a.getId() == b.getId())
+            return true;
+
+        if (a.getName().equals(b.getName()) && a.getValue() == b.getValue()){
+            for (Idea s : a.getL()){
+                boolean hasSub = b.getL().stream().filter(e->match(s,e)).findFirst().isPresent();
+                if (!hasSub)
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
 }
