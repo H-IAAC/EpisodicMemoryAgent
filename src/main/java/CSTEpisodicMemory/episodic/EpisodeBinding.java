@@ -60,15 +60,17 @@ public class EpisodeBinding extends Codelet {
                 if (context.isPresent()){
                     Idea contextIdea = context.get();
                     Idea position = contextIdea.get("Self").get("Position").clone();
-                    story.insertLocationNode(position);
+                    if (!story.hasNodeContent(position)) {
+                        story.insertLocationNode(position);
+                    }
                     story.insetLink(event, position, "SpatialContext");
 
                     Idea impulse = contextIdea.get("Impulse").clone();
                     if (impulse != null){
                         if (!story.hasNodeContent(impulse)) {
                             story.insertContextNode(impulse);
-                            story.insetLink(event, impulse, "InternalContext");
                         }
+                        story.insetLink(event, impulse, "InternalContext");
                     }
                 }
             }

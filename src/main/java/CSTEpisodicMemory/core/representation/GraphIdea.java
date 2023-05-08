@@ -51,12 +51,17 @@ public class GraphIdea {
 
     public void insetLink(Idea nodeSource, Idea nodeDest, String type){
 
+
         Idea nodeIdeaSource;
-        Optional<Idea> nodeOpt = graph.getL().stream().filter(e->e.getL().contains(nodeSource)).findFirst();
+        Optional<Idea> nodeOpt = this.getNodes().stream()
+                .filter(e->e.getL().stream().anyMatch(l->IdeaHelper.match(l,nodeSource)))
+                .findFirst();
         nodeIdeaSource = nodeOpt.orElseGet(() -> insertEventNode(nodeSource));
 
         Idea nodeIdeaDest;
-        nodeOpt = graph.getL().stream().filter(e->e.getL().contains(nodeDest)).findFirst();
+        nodeOpt = this.getNodes().stream()
+                .filter(e->e.getL().stream().anyMatch(l->IdeaHelper.match(l,nodeDest)))
+                .findFirst();
         nodeIdeaDest = nodeOpt.orElseGet(() -> insertEventNode(nodeDest));
 
         Idea ideaLink = new Idea("Link", linkCount++, "Property", 1);

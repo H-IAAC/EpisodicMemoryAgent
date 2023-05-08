@@ -143,9 +143,12 @@ public class IdeaHelper {
         if (a.getId() == b.getId())
             return true;
 
-        if (a.getName().equals(b.getName()) && a.getValue() == b.getValue()){
+        if (a.getName().equals(b.getName())
+                && a.getValue().equals(b.getValue())
+                && a.getType() == b.getType()){
+
             for (Idea s : a.getL()){
-                boolean hasSub = b.getL().stream().filter(e->match(s,e)).findFirst().isPresent();
+                boolean hasSub = b.getL().stream().anyMatch(e->match(s,e));
                 if (!hasSub)
                     return false;
             }
