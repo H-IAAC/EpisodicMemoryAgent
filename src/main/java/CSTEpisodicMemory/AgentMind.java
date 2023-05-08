@@ -115,9 +115,12 @@ public class AgentMind extends Mind {
         goalsMO = createMemoryObject("GOALS", goalsIdea);
 
         //Story
+        Idea storiesIdea = new Idea("Stories", null, "Composition", 1);
+        Idea episode = new Idea("Episode", 0, "Episode", 1);
         Idea storyGraph = new Idea("Story", null, "Composition", 1);
-        GraphIdea story = new GraphIdea(storyGraph);
-        storyMO = createMemoryObject("STORY", story);
+        episode.add(storyGraph);
+        storiesIdea.add(episode);
+        storyMO = createMemoryObject("STORY", storiesIdea);
         //Buffer
         Idea bufferIdea = new Idea("Buffer", null, "Aggregation", 1);
         bufferMO = createMemoryObject("BUFFER", bufferIdea);

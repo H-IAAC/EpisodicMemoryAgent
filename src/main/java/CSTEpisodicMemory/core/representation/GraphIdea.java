@@ -20,6 +20,19 @@ public class GraphIdea {
 
     public GraphIdea(Idea graph){
         this.graph = graph;
+        if (graph.getL().size()>0){
+            for (Idea i : graph.getL()){
+                if (i.getName().equals("Node")) {
+                    nodeCount++;
+                    coordinateMap.put(i.get("Coordinate"), i);
+                }
+                if (i.getName().equals("Link")) {
+                    linkCount++;
+                    
+                }
+            }
+            coordinateCount = nodeCount;
+        }
     }
 
     public Idea insertEventNode(Idea node){
@@ -140,6 +153,13 @@ public class GraphIdea {
         return graph.getL().stream()
                 .filter(e->e.getName().equals("Node"))
                 .filter(e->e.get("Type").equals("Location"))
+                .collect(Collectors.toList());
+    }
+
+    public List<Idea> getContextNodes(){
+        return graph.getL().stream()
+                .filter(e->e.getName().equals("Node"))
+                .filter(e->e.get("Type").getValue().equals("Context"))
                 .collect(Collectors.toList());
     }
 

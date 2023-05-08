@@ -17,8 +17,6 @@ public class EpisodeBinding extends Codelet {
 
     private Memory eventsMO;
     private Memory bufferMO;
-    private MemoryContainer impulsesMO;
-    private Memory roomMO;
     private Memory storyMO;
 
     private static final int intervalThreshold = 200;
@@ -27,8 +25,6 @@ public class EpisodeBinding extends Codelet {
     public void accessMemoryObjects() {
         this.eventsMO = (MemoryObject) getInput("EVENTS");
         this.bufferMO = (MemoryObject) getInput("BUFFER");
-        this.impulsesMO = (MemoryContainer) getInput("IMPULSES");
-        this.roomMO = (MemoryObject) getInput("ROOM");
         this.storyMO = (MemoryObject) getOutput("STORY");
     }
 
@@ -40,41 +36,77 @@ public class EpisodeBinding extends Codelet {
     @Override
     public void proc() {
         Idea eventsIdea = (Idea) eventsMO.getI();
-        Idea impulseIdea = (Idea) impulsesMO.getI();
-        GraphIdea story = (GraphIdea) storyMO.getI();
-
         Idea timeline = (Idea) bufferMO.getI();
+        Idea stories = (Idea) storyMO.getI();
 
-        System.out.println(IdeaHelper.csvPrint(story.graph).replace('\n',' '));
+        Idea currentEpisode = stories.getL().get(0);
+        for (Idea ep : stories.getL()){
+            if((int)ep.getValue() > (int)currentEpisode.getValue())
+                currentEpisode = ep;
+        }
+        GraphIdea story = new GraphIdea(currentEpisode.get("Story"));
 
+        System.out.println(IdeaHelper.csvPrint(stories).replace('\n',' '));
+
+        List<Idea> segmentedEvents = new ArrayList<>();
         for (Idea event : eventsIdea.getL()){
             if (! story.hasNodeContent(event)){
-                List<Idea> otherNodes = new ArrayList<Idea>(story.getEventNodes());
-                story.insertEventNode(event);
-                createTemporalRelations(event, otherNodes, story);
-
                 long eventEnd = (long) event.getL().get(1).get("TimeStamp").getValue();
                 Optional<Idea> context = timeline.getL().stream()
                         .filter(e -> ((long) e.getValue()) <= eventEnd)
-                        .max((a,b)->(int)((long)a.getValue() - (long)b.getValue()));
-                if (context.isPresent()){
-                    Idea contextIdea = context.get();
-                    Idea position = contextIdea.get("Self").get("Position").clone();
-                    if (!story.hasNodeContent(position)) {
-                        story.insertLocationNode(position);
-                    }
-                    story.insetLink(event, position, "SpatialContext");
+                        .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
 
-                    Idea impulse = contextIdea.get("Impulse").clone();
-                    if (impulse != null){
-                        if (!story.hasNodeContent(impulse)) {
-                            story.insertContextNode(impulse);
+                if (context.isPresent() && isSegmentationEvent(story, event, context.get())){
+                    segmentedEvents.add(event);
+                } else {
+                    List<Idea> otherNodes = new ArrayList<Idea>(story.getEventNodes());
+                    story.insertEventNode(event);
+                    createTemporalRelations(event, otherNodes, story);
+
+                    if (context.isPresent()) {
+                        Idea contextIdea = context.get();
+                        Idea position = contextIdea.get("Self").get("Position").clone();
+                        if (!story.hasNodeContent(position)) {
+                            story.insertLocationNode(position);
                         }
-                        story.insetLink(event, impulse, "InternalContext");
+                        story.insetLink(event, position, "SpatialContext");
+
+                        Idea impulse = contextIdea.get("Impulse").clone();
+                        if (impulse != null) {
+                            if (!story.hasNodeContent(impulse)) {
+                                story.insertContextNode(impulse);
+                            }
+                            story.insetLink(event, impulse, "InternalContext");
+                        }
                     }
                 }
             }
         }
+
+        //Segment Episode
+        if (segmentedEvents.size() > 0){
+            //Create new episode
+            Idea newStory = new Idea("Story", null, "Composition", 1);
+            Idea newEpisode = new Idea("Episode", (int)currentEpisode.getValue() +1, "Episode", 1);
+            newEpisode.add(newStory);
+            stories.add(newEpisode);
+
+            //Clear events buffer
+            eventsIdea.setL(segmentedEvents);
+        }
+    }
+
+    private boolean isSegmentationEvent(GraphIdea story, Idea event, Idea context) {
+        Idea impulse = context.get("Impulse").clone();
+        if (impulse != null) {
+            if (!story.hasNodeContent(impulse)) {
+                if (story.getContextNodes().size() < 1)
+                    return false;
+                else
+                    return true;
+            }
+        }
+        return false;
     }
 
     private void createTemporalRelations(Idea event, List<Idea> otherNodes, GraphIdea story){
@@ -108,7 +140,7 @@ public class EpisodeBinding extends Codelet {
                 if (relation.equals("Before")){
                     if (start2 - end1 < closestBeforeSink) {
                         closestBeforeSink = start2 - end1;
-                        closestBeforeSinkIdea = nodeContent;
+                        closestBeforeSinkIdea = nodeContent.clone();
                     }
                 } else {
                     story.insetLink(event, nodeContent, relation);
@@ -119,7 +151,7 @@ public class EpisodeBinding extends Codelet {
                 if (relation.equals("Before")){
                     if (start1 - end2 < closestBeforeSource) {
                         closestBeforeSource = start1 - end2;
-                        closestBeforeSourceIdea = nodeContent;
+                        closestBeforeSourceIdea = nodeContent.clone();
                     }
                 } else {
                     story.insetLink(nodeContent, event, relation);
