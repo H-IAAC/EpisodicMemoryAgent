@@ -74,7 +74,7 @@ public class ExperimentMain {
             if (mo.getName() != null && mo.getName().equalsIgnoreCase("IMPULSES")) {
                 MemoryContainer moc = (MemoryContainer) mo;
                 moc.setI(impulse, 0.1, "Explore");
-                System.out.println(fullPrint((Idea) mo.getI()));
+                //System.out.println(fullPrint((Idea) mo.getI()));
             }
         }
 
@@ -99,7 +99,7 @@ public class ExperimentMain {
             if (mo.getName() != null && mo.getName().equalsIgnoreCase("IMPULSES")) {
                 MemoryContainer moc = (MemoryContainer) mo;
                 moc.setI(impulse_, 0.1, "Explore");
-                System.out.println(fullPrint((Idea) mo.getI()));
+                //System.out.println(fullPrint((Idea) mo.getI()));
             }
         }
         //env.creature.moveTo(0.5f,9f);

@@ -11,12 +11,9 @@ public class GraphIdea {
     public Idea graph;
 
     public Map<Idea,Idea> coordinateMap = new HashMap<>();
-    public Map<Idea, List<Link>> links = new HashMap<>();
-    public Map<Idea, List<Link>> reverseLinks = new HashMap<>();
 
     private int coordinateCount = 0;
     private int nodeCount = 0;
-    private int linkCount = 0;
 
     public GraphIdea(Idea graph){
         this.graph = graph;
@@ -26,10 +23,6 @@ public class GraphIdea {
                     nodeCount++;
                     coordinateMap.put(i.get("Coordinate"), i);
                 }
-                if (i.getName().equals("Link")) {
-                    linkCount++;
-                    
-                }
             }
             coordinateCount = nodeCount;
         }
@@ -37,6 +30,10 @@ public class GraphIdea {
 
     public Idea insertEventNode(Idea node){
         return insertNode(node, "Event");
+    }
+
+    public Idea insertEpisodeNode(Idea node){
+        return insertNode(node, "Episode");
     }
 
     public Idea insertLocationNode(Idea node){
@@ -54,85 +51,97 @@ public class GraphIdea {
 
     public Idea insertNode(Idea node, Idea coord, String type){
         Idea nodeIdea = new Idea("Node", nodeCount++, "AbstractObject", 1);
-        nodeIdea.add(node);
+        nodeIdea.add(new Idea("Content", node, "Configuration", 1));
         nodeIdea.add(coord);
         nodeIdea.add(new Idea("Type", type, "Property", 1));
+        nodeIdea.add(new Idea("Links", null, "Configuration", 1));
         graph.add(nodeIdea);
         coordinateMap.put(coord, nodeIdea);
         return nodeIdea;
     }
 
     public void insetLink(Idea nodeSource, Idea nodeDest, String type){
-
-
         Idea nodeIdeaSource;
-        Optional<Idea> nodeOpt = this.getNodes().stream()
-                .filter(e->e.getL().stream().anyMatch(l->IdeaHelper.match(l,nodeSource)))
-                .findFirst();
-        nodeIdeaSource = nodeOpt.orElseGet(() -> insertEventNode(nodeSource));
+        if (!nodeSource.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = this.getNodes().stream()
+                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), nodeSource))
+                    .findFirst();
+            nodeIdeaSource = nodeOpt.orElseGet(() -> insertEventNode(nodeSource));
+        } else {
+            nodeIdeaSource = nodeSource;
+        }
 
         Idea nodeIdeaDest;
-        nodeOpt = this.getNodes().stream()
-                .filter(e->e.getL().stream().anyMatch(l->IdeaHelper.match(l,nodeDest)))
-                .findFirst();
-        nodeIdeaDest = nodeOpt.orElseGet(() -> insertEventNode(nodeDest));
-
-        Idea ideaLink = new Idea("Link", linkCount++, "Property", 1);
-        ideaLink.add(new Idea("Source", nodeIdeaSource.get("Coordinate").getValue()));
-        ideaLink.add(new Idea("Sink", nodeIdeaDest.get("Coordinate").getValue()));
-        ideaLink.add(new Idea("Type", type, "Property", 1));
-        graph.add(ideaLink);
-
-        Link l = new Link();
-        l.type = type;
-        l.nodeSource = nodeIdeaSource;
-        l.nodeDest = nodeIdeaDest;
-
-        List<Link> nodeLinks = links.getOrDefault(nodeIdeaSource.get("Coordinate"), new ArrayList<Link>());
-        nodeLinks.add(l);
-        links.put(nodeIdeaSource.get("Coordinate"), nodeLinks);
-
-        List<Link> nodeReverseLinks = links.getOrDefault(nodeIdeaDest.get("Coordinate"), new ArrayList<Link>());
-        nodeReverseLinks.add(l);
-        reverseLinks.put(nodeIdeaDest.get("Coordinate"), nodeReverseLinks);
-    }
-
-    public List<Link> getSuccesors(Idea node){
-        Idea nodeIdeaSource;
-        System.out.println(node);
-        Optional<Idea> nodeOpt = graph.getL().stream().filter(e->e.getL().contains(node)).findFirst();
-        if (nodeOpt.isPresent()){
-            nodeIdeaSource = nodeOpt.get();
-            System.out.println("found");
-            if (links.containsKey(nodeIdeaSource.get("Coordinate"))){
-                return links.get(nodeIdeaSource.get("Coordinate"));
-            }
+        if (!nodeDest.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = this.getNodes().stream()
+                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), nodeDest))
+                    .findFirst();
+            nodeIdeaDest = nodeOpt.orElseGet(() -> insertEventNode(nodeDest));
+        } else {
+            nodeIdeaDest = nodeDest;
         }
-        return new ArrayList<>();
+
+        Idea links = nodeIdeaSource.get("Links");
+        Idea linksOfType = links.get(type);
+        if (linksOfType == null){
+            linksOfType = new Idea(type, null, "Configuration", 1);
+            links.add(linksOfType);
+        }
+        linksOfType.add(nodeIdeaDest);
     }
 
-    public List<Link> getPredecessors(Idea node){
+    public Map<String, List<Idea>> getSuccesors(Idea node){
+        Idea nodeIdeaSource = null;
+        if (!node.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = graph.getL().stream()
+                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), node)).findFirst();
+            if (nodeOpt.isPresent()){
+                nodeIdeaSource = nodeOpt.get();
+            }
+        } else {
+            nodeIdeaSource = node;
+        }
+
+        if (nodeIdeaSource != null){
+            Map<String, List<Idea>> linksOut = nodeIdeaSource.get("Links").getL().stream().collect(Collectors.toMap(Idea::getName, Idea::getL));
+            return linksOut;
+        }
+        return new HashMap<>();
+    }
+
+    public Map<String, List<Idea>> getPredecessors(Idea node){
         Idea nodeIdeaDest;
-        Optional<Idea> nodeOpt = graph.getL().stream().filter(e->e.getL().contains(node)).findFirst();
-        if (nodeOpt.isPresent()){
-            nodeIdeaDest = nodeOpt.get();
-            if (links.containsKey(nodeIdeaDest)){
-                return reverseLinks.get(nodeIdeaDest.get("Coordinate"));
+        if (!node.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = graph.getL().stream()
+                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), node)).findFirst();
+            if (nodeOpt.isPresent()){
+                nodeIdeaDest = nodeOpt.get();
+            } else {
+                nodeIdeaDest = null;
+            }
+        } else {
+            nodeIdeaDest = node;
+        }
+
+        HashMap<String, List<Idea>> linksIn = new HashMap<>();
+        if (nodeIdeaDest != null){
+            for (Idea n : this.getNodes()){
+                for (Idea link : n.get("Links").getL()){
+                    if (link.getL().stream().anyMatch(l->IdeaHelper.match(l, nodeIdeaDest))){
+                        List<Idea> linksInType = linksIn.getOrDefault(link.getName(), new ArrayList<>());
+                        linksInType.add(n);
+                        linksIn.put(link.getName(), linksInType);
+                    }
+                }
             }
         }
-        return new ArrayList<>();
+        return linksIn;
 
-    }
-
-    public class Link{
-        public String type;
-        public Idea nodeSource;
-        public Idea nodeDest;
     }
 
     public boolean hasNodeContent(Idea idea){
         return this.getNodes().stream()
-                .map(e->e.get(idea.getName()))
+                .map(e->(Idea) e.get("Content").getValue())
                 .anyMatch(e->IdeaHelper.match(e,idea));
 
         //return graph.getL().stream().anyMatch(e->e.getL().contains(idea));
@@ -149,10 +158,17 @@ public class GraphIdea {
                 .collect(Collectors.toList());
     }
 
+    public List<Idea> getEpisodeNodes(){
+        return graph.getL().stream()
+                .filter(e->e.getName().equals("Node"))
+                .filter(e->e.get("Type").getValue().equals("Episode"))
+                .collect(Collectors.toList());
+    }
+
     public List<Idea> getLocationNodes(){
         return graph.getL().stream()
                 .filter(e->e.getName().equals("Node"))
-                .filter(e->e.get("Type").equals("Location"))
+                .filter(e->e.get("Type").getValue().equals("Location"))
                 .collect(Collectors.toList());
     }
 
@@ -161,6 +177,13 @@ public class GraphIdea {
                 .filter(e->e.getName().equals("Node"))
                 .filter(e->e.get("Type").getValue().equals("Context"))
                 .collect(Collectors.toList());
+    }
+
+    public static Idea getNodeContent(Idea node){
+        if (node.getName().equals("Node")){
+            return (Idea) node.get("Content").getValue();
+        }
+        return null;
     }
 
     public String toString(){

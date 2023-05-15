@@ -12,7 +12,10 @@ import CSTEpisodicMemory.categories.StepEventCategory;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
+import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.TimelineBufferCodelet;
+import CSTEpisodicMemory.habits.LocationCategoryGenerator;
+import CSTEpisodicMemory.habits.LocationCategoryModification;
 import CSTEpisodicMemory.impulses.CollectJewelImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
@@ -76,6 +79,8 @@ public class AgentMind extends Mind {
         Memory goalsMO;
         Memory storyMO;
         Memory bufferMO;
+        Memory EPLTMO;
+        Memory locationsMO;
         Memory categoriesRoomMO;
         Memory roomsMO;
         Memory leafletsMO;
@@ -122,8 +127,13 @@ public class AgentMind extends Mind {
         storiesIdea.add(episode);
         storyMO = createMemoryObject("STORY", storiesIdea);
         //Buffer
-        Idea bufferIdea = new Idea("Buffer", null, "Aggregation", 1);
+        Idea bufferIdea = new Idea("Buffer", null, "Configuration", 1);
         bufferMO = createMemoryObject("BUFFER", bufferIdea);
+
+        //Episodic Long-term memory
+        Idea epLTM = new Idea("epLTM", null, "Configuration", 1);
+        GraphIdea epLTMGraph = new GraphIdea(epLTM);
+        EPLTMO = createMemoryObject("EPLTM", epLTMGraph);
         //----Categories----
         //Rooms
         List<Idea> roomsCategoriesIdea = new ArrayList<>();
@@ -139,6 +149,14 @@ public class AgentMind extends Mind {
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
         Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
         roomsMO = createMemoryObject("ROOM", roomIdea);
+
+        //Events
+        List<Idea> eventsCategoriesIdea = new ArrayList<>();
+        // Elements are added when event tracker codelets are instantiated
+
+        //Locations
+        List<Idea> locationsList = new ArrayList<>();
+        locationsMO = createMemoryObject("LOCATION", locationsList);
         //--------
         //Leaflets
         Idea leafletsIdea = new Idea("Leaflets", null, 0);
@@ -189,6 +207,7 @@ public class AgentMind extends Mind {
 
         //Move Event Codelet
         Idea moveEventCategory = constructEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"), "Linear");
+        eventsCategoriesIdea.add(moveEventCategory);
         EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, debug);
         moveEventTracker.setBufferSize(2);
         moveEventTracker.setBufferStepSize(2);
@@ -288,6 +307,17 @@ public class AgentMind extends Mind {
         bufferCodelet.addInput(impulsesMO);
         bufferCodelet.addOutput(bufferMO);
         insertCodelet(bufferCodelet);
+
+        Idea locAdpatHabit = new Idea("LocationAdaptHabit", null);
+        locAdpatHabit.setValue(new LocationCategoryModification(locAdpatHabit));
+        Idea locGenHabit = new Idea("LocationGeneratorHabit", null);
+        locGenHabit.setValue(new LocationCategoryGenerator());
+
+        Codelet episodicGistCodelet = new EpisodicGistExtraction(locAdpatHabit, locGenHabit);
+        episodicGistCodelet.addInput(storyMO);
+        episodicGistCodelet.addInput(locationsMO);
+        episodicGistCodelet.addOutput(EPLTMO);
+        insertCodelet(episodicGistCodelet, "Behavioural");
 
         bList.add(wallsDetectorCodelet);
         for (Codelet c : this.getCodeRack().getAllCodelets())

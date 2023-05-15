@@ -4,7 +4,10 @@ import CSTEpisodicMemory.core.representation.GraphIdea;
 import br.unicamp.cst.representation.idea.Idea;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -46,16 +49,15 @@ public class GraphIdeaTest {
 
     @Test
     public void testLinks(){
-        System.out.println(graphIdea.links);
-        List<GraphIdea.Link> links = graphIdea.getSuccesors(event1);
+        Map<String, List<Idea>> links = graphIdea.getSuccesors(event1);
         assertEquals(3, links.size());
 
-        List<String> types = links.stream().map(e->e.type).collect(Collectors.toList());
+        Set<String> types = links.keySet();
         assertTrue(types.contains("Next"));
         assertTrue(types.contains("Start"));
         assertTrue(types.contains("End"));
 
-        List<Idea> dest = links.stream().map(e->e.nodeDest.getL().get(1)).collect(Collectors.toList());
+        List<Idea> dest = links.values().stream().flatMap(Collection::stream).map(GraphIdea::getNodeContent).collect(Collectors.toList());
         System.out.println(dest);
         assertTrue(dest.contains(event2));
         assertTrue(dest.contains(pos1));

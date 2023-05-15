@@ -4,10 +4,12 @@ import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IdeaHelper {
 
     transient static List<Object> listtoavoidloops = new ArrayList<Object>();
+    transient static int maxLevel;
 
     public static String fullPrint(Idea idea){
         listtoavoidloops = new ArrayList<Object>();
@@ -100,21 +102,34 @@ public class IdeaHelper {
     }
 
     public static String csvPrint(Idea idea){
-        return csvPrint(idea, "");
+        listtoavoidloops = new ArrayList<>();
+        maxLevel = 10;
+        return csvPrint(idea, "", listtoavoidloops, 0);
     }
 
-    public static String csvPrint(Idea idea, String prefix){
+    public static String csvPrint(Idea idea, int maxLevel_){
+        listtoavoidloops = new ArrayList<>();
+        maxLevel = maxLevel_;
+        return csvPrint(idea, "", listtoavoidloops, 0);
+    }
+
+    public static String csvPrint(Idea idea, String prefix, List<Object> listtoavoidloops, int currLevel){
         String csv = prefix + "{\n";
         csv += prefix + "  \"id\": " + idea.getId() + ",\n";
         csv += prefix + "  \"name\": \"" + idea.getName() + "\",\n";
         csv += prefix + "  \"value\": \"" + (idea.getValue() != null ? idea.getResumedValue():"") + "\",\n";
         StringBuilder lCsv = new StringBuilder();
-        for (Idea l : idea.getL()){
-            lCsv.append("\n").append(csvPrint(l, prefix + "    ")).append(",");
-        }
-        if (idea.getL().size() > 0) {
-            lCsv.deleteCharAt(lCsv.length() - 1);
-            csv += prefix + "  \"l\": [" + lCsv + "\n"+ prefix +"  ],\n";
+        if (!listtoavoidloops.contains(idea) && currLevel < maxLevel) {
+            listtoavoidloops.add(idea);
+            for (Idea l : idea.getL()) {
+                lCsv.append("\n").append(csvPrint(l, prefix + "    ", listtoavoidloops, currLevel+1)).append(",");
+            }
+            if (idea.getL().size() > 0) {
+                lCsv.deleteCharAt(lCsv.length() - 1);
+                csv += prefix + "  \"l\": [" + lCsv + "\n" + prefix + "  ],\n";
+            } else {
+                csv += prefix + "  \"l\": [],\n";
+            }
         } else {
             csv += prefix + "  \"l\": [],\n";
         }

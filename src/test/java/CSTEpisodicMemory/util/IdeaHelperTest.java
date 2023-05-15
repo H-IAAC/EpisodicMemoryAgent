@@ -2,6 +2,11 @@ package CSTEpisodicMemory.util;
 
 import br.unicamp.cst.representation.idea.Idea;
 import org.junit.Test;
+import scala.Int;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

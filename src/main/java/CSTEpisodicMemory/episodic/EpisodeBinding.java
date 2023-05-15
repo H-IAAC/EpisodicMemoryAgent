@@ -9,6 +9,8 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.representation.idea.IdeaComparator;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +48,15 @@ public class EpisodeBinding extends Codelet {
         }
         GraphIdea story = new GraphIdea(currentEpisode.get("Story"));
 
-        System.out.println(IdeaHelper.csvPrint(stories).replace('\n',' '));
+        //try {
+        //    out = new PrintWriter("filename");
+        //    String csv = IdeaHelper.csvPrint(stories, 6);
+        //    out.println(csv);
+        //} catch (FileNotFoundException e) {
+        //    throw new RuntimeException(e);
+        //}
+
+        //System.out.println(IdeaHelper.csvPrint(stories, 6).replace("\n", " "));
 
         List<Idea> segmentedEvents = new ArrayList<>();
         for (Idea event : eventsIdea.getL()){
@@ -100,10 +110,7 @@ public class EpisodeBinding extends Codelet {
         Idea impulse = context.get("Impulse").clone();
         if (impulse != null) {
             if (!story.hasNodeContent(impulse)) {
-                if (story.getContextNodes().size() < 1)
-                    return false;
-                else
-                    return true;
+                return !(story.getContextNodes().size() < 1);
             }
         }
         return false;
@@ -123,10 +130,7 @@ public class EpisodeBinding extends Codelet {
         Long closestBeforeSource = Long.MAX_VALUE;
         Idea closestBeforeSourceIdea = null;
         for (Idea node : otherNodes){
-            Idea nodeContent = node.getL().stream()
-                    .filter(e->!e.getName().equals("Coordinate") && !e.getName().equals("Type"))
-                    .findFirst()
-                    .orElse(null);
+            Idea nodeContent = GraphIdea.getNodeContent(node);
 
             for (Idea step : nodeContent.getL()) {
                 if ((int) step.getValue() == 1)
