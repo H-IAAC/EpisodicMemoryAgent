@@ -55,6 +55,7 @@ public class GraphIdea {
         nodeIdea.add(coord);
         nodeIdea.add(new Idea("Type", type, "Property", 1));
         nodeIdea.add(new Idea("Links", null, "Configuration", 1));
+        nodeIdea.add(new Idea("Activation", 0d, "Property", 0));
         graph.add(nodeIdea);
         coordinateMap.put(coord, nodeIdea);
         return nodeIdea;
@@ -177,6 +178,82 @@ public class GraphIdea {
                 .filter(e->e.getName().equals("Node"))
                 .filter(e->e.get("Type").getValue().equals("Context"))
                 .collect(Collectors.toList());
+    }
+
+    public void setNodeActivation(Idea node, double val){
+        Idea foundNode = node;
+        if (!node.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = graph.getL().stream()
+                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), node)).findFirst();
+            if (nodeOpt.isPresent()){
+                foundNode = nodeOpt.get();
+            } else {
+                foundNode = null;
+            }
+        }
+
+        if (foundNode != null){
+            foundNode.get("Activation").setValue(val);
+        }
+    }
+
+    public void resetNodeActivation(Idea node){
+        setNodeActivation(node, 0d);
+    }
+
+    public void propagateActivations(List<String> successorsLinks, List<String> predecessorsList){
+        for (Idea node : getNodes()){
+            if ((double) node.get("Activation").getValue() > 0d)
+                propagateActivations(node, successorsLinks, predecessorsList);
+        }
+    }
+
+    private void propagateActivations(Idea node, List<String> successorsLinks, List<String> predecessorsLinks){
+        double nodeActivation = (double) node.get("Activation").getValue();
+        Map<String, List<Idea>> successors = getSuccesors(node);
+        Map<String, List<Idea>> predecessors = getPredecessors(node);
+
+        for (String linkType : successors.keySet()){
+            if (successorsLinks.contains(linkType)){
+                for (Idea linkedNode : successors.get(linkType)){
+                    double linkedActivation = (double) linkedNode.get("Activation").getValue();
+                    if (linkedActivation < nodeActivation*0.9){
+                        linkedNode.get("Activation").setValue(nodeActivation*0.9);
+                        propagateActivations(linkedNode, successorsLinks,predecessorsLinks);
+                    }
+                }
+            }
+        }
+        for (String linkType : predecessors.keySet()){
+            if (predecessorsLinks.contains(linkType)){
+                for (Idea linkedNode : predecessors.get(linkType)){
+                    double linkedActivation = (double) linkedNode.get("Activation").getValue();
+                    if (linkedActivation < nodeActivation*0.9){
+                        linkedNode.get("Activation").setValue(nodeActivation*0.9);
+                        propagateActivations(linkedNode, successorsLinks,predecessorsLinks);
+                    }
+                }
+            }
+        }
+    }
+
+    public void resetActivations(){
+        graph.getL().stream().filter(e->e.getName().equals("Node"))
+                .forEach(e->e.get("Activation").setValue(0d));
+    }
+
+    public Idea getNodeFromContent(Idea content){
+        Idea foundNode = content;
+        if (!content.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = graph.getL().stream()
+                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), content)).findFirst();
+            if (nodeOpt.isPresent()){
+                foundNode = nodeOpt.get();
+            } else {
+                foundNode = null;
+            }
+        }
+        return foundNode;
     }
 
     public static Idea getNodeContent(Idea node){

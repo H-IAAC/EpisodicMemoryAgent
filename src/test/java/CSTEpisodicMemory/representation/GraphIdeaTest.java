@@ -4,10 +4,7 @@ import CSTEpisodicMemory.core.representation.GraphIdea;
 import br.unicamp.cst.representation.idea.Idea;
 import org.junit.Test;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -62,5 +59,22 @@ public class GraphIdeaTest {
         assertTrue(dest.contains(event2));
         assertTrue(dest.contains(pos1));
         assertTrue(dest.contains(pos2));
+    }
+
+    @Test
+    public void testActivation(){
+        List<Idea> nodes = graphIdea.getNodes();
+        assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
+
+        graphIdea.setNodeActivation(pos1, 1d);
+        assertTrue((double) graphIdea.getNodeFromContent(pos1).get("Activation").getValue() == 1d);
+
+        graphIdea.propagateActivations(Arrays.asList("Next", "Start", "End"), Arrays.asList("Next", "Start", "End"));
+        double event3Activatio = (double) graphIdea.getNodeFromContent(event3).get("Activation").getValue();
+        assertTrue(event3Activatio == 0.9*0.9*0.9d);
+
+        graphIdea.resetActivations();
+        nodes = graphIdea.getNodes();
+        assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
     }
 }
