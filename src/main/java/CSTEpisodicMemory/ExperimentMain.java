@@ -3,6 +3,7 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.util.IdeaVisualizer;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -12,8 +13,6 @@ import br.unicamp.cst.util.viewer.MindViewer;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static CSTEpisodicMemory.util.IdeaHelper.fullPrint;
 
 public class ExperimentMain {
 
@@ -25,6 +24,12 @@ public class ExperimentMain {
         // The following lines create the MindViewer and configure it
         MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
         mv.setVisible(true);
+
+        IdeaVisualizer visu = new IdeaVisualizer(a);
+        visu.addMemoryWatch("Story", 6);
+        visu.addMemoryWatch("Impulses", 5);
+        visu.addMemoryWatch("EPLTM", 4);
+        visu.setVisible(true);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 env.stopSimulation();

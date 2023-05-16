@@ -45,8 +45,8 @@ public class EpisodicGistExtraction extends Codelet {
         Idea stories = (Idea) episodesMO.getI();
         List<Idea> memLocations = new ArrayList<>((ArrayList) locationMO.getI());
 
-        System.out.println("--------------------");
-        System.out.println(IdeaHelper.csvPrint(epLTMGraph.graph,4).replace("\n"," "));
+        //System.out.println("--------------------");
+        //System.out.println(IdeaHelper.csvPrint(epLTMGraph.graph,4).replace("\n"," "));
 
         //If there is a segmented episode
         if (stories.getL().size() > 1) {
