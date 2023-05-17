@@ -16,6 +16,7 @@ import com.google.gson.Gson;
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -127,6 +128,12 @@ public class IdeaVisualizer extends javax.swing.JFrame {
                 setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
             if (content instanceof GraphIdea)
                 setIdea(new Gson().fromJson(IdeaHelper.csvPrint(((GraphIdea) content).graph, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
+            if (content instanceof List) {
+                Idea show = new Idea(memoryName, null);
+                show.setL((List<Idea>) content);
+                setIdea(new Gson().fromJson(IdeaHelper.csvPrint(show, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
+            }
+
         }
     }//GEN-LAST:event_jList1ValueChanged
 

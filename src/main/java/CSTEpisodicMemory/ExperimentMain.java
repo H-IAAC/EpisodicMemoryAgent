@@ -4,6 +4,7 @@
 package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.util.IdeaVisualizer;
+import CSTEpisodicMemory.util.GraphicMind;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -22,14 +23,18 @@ public class ExperimentMain {
         Environment env=new Environment(); //Creates only a creature and some apples
         AgentMind a = new AgentMind(env);  // Creates the Agent Mind and start it
         // The following lines create the MindViewer and configure it
-        MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
-        mv.setVisible(true);
+        //MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
+        //mv.setVisible(true);
 
         IdeaVisualizer visu = new IdeaVisualizer(a);
         visu.addMemoryWatch("Story", 6);
         visu.addMemoryWatch("Impulses", 5);
         visu.addMemoryWatch("EPLTM", 4);
+        visu.addMemoryWatch("Location", 3);
         visu.setVisible(true);
+
+        GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
+
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 env.stopSimulation();
