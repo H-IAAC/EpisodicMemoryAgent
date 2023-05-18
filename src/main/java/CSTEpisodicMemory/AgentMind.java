@@ -17,6 +17,7 @@ import CSTEpisodicMemory.episodic.TimelineBufferCodelet;
 import CSTEpisodicMemory.habits.LocationCategoryGenerator;
 import CSTEpisodicMemory.habits.LocationCategoryModification;
 import CSTEpisodicMemory.impulses.CollectJewelImpulse;
+import CSTEpisodicMemory.impulses.ExploreImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
 import CSTEpisodicMemory.motor.LegsActuatorCodelet;
@@ -261,13 +262,16 @@ public class AgentMind extends Mind {
         collectJewelImpulse.addInput(knownJewelsMO);
         collectJewelImpulse.addOutput(impulsesMO);
         insertCodelet(collectJewelImpulse, "Behavioral");
-        ////Goal selector Codelet
-        //Codelet goalSelectorCodelet = new GoalSelector();
-        //goalSelectorCodelet.addInput(innerSenseMO);
-        //goalSelectorCodelet.addInput(knownJewelsMO);
-        //goalSelectorCodelet.addInput(wallsMO);
-        //goalSelectorCodelet.addOutput(goalsMO);
-        //insertCodelet(goalSelectorCodelet, "Context");
+
+        //Explore
+        Codelet exploreImpulse = new ExploreImpulse(roomsCategoriesIdea);
+        exploreImpulse.addInput(knownJewelsMO);
+        exploreImpulse.addInput(innerSenseMO);
+        exploreImpulse.addInput(roomsMO);
+        exploreImpulse.addInput(locationsMO);
+        exploreImpulse.addOutput(impulsesMO);
+        insertCodelet(exploreImpulse, "Behavioral");
+
 
         //Move Action/Behaviour
         Codelet moveActionCodelet = new Move();

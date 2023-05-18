@@ -1,19 +1,23 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.List;
+import java.util.Random;
 
 public class ExploreImpulse extends Codelet {
 
     private Memory jewelsMO;
     private Memory innerMO;
     private Memory roomMO;
-    private Memory impulsesMO;
+    private MemoryContainer impulsesMO;
+    private Memory locationsMO;
 
     private List<Idea> roomCategories;
     private String impulseCat = "Explore";
@@ -27,7 +31,8 @@ public class ExploreImpulse extends Codelet {
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.innerMO = (MemoryObject) getInput("INNER");
         this.roomMO = (MemoryObject) getInput("ROOM");
-        this.impulsesMO = (MemoryObject) getOutput("IMPULSES");
+        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
+        this.locationsMO = (MemoryObject) getInput("LOCATION");
     }
 
     @Override
@@ -38,58 +43,100 @@ public class ExploreImpulse extends Codelet {
     @Override
     public void proc() {
         Idea jewels = (Idea) jewelsMO.getI();
-        Idea impulses = (Idea) impulsesMO.getI();
         Idea inner = (Idea) innerMO.getI();
 
         int numJewels = jewels.getL().size();
         if (numJewels == 0){
-            boolean foundPrevImpulse = false;
-            for (Idea impulse : impulses.getL()){
-                if (impulse.getValue().equals(this.impulseCat)){
-                    foundPrevImpulse = true;
-                    Vector2D dest = new Vector2D(
-                            (float) impulse.get("Self.Position.X").getValue(),
-                            (float) impulse.get("Self.Position.Y").getValue());
-                    Vector2D curr = new Vector2D(
-                            (float) inner.get("Position.X").getValue(),
-                            (float) inner.get("Position.Y").getValue());
-                    if (dest.sub(curr).magnitude() < 0.15) {
-                        removeSatisfiedImpulses();
-                        Vector2D newDest = chooseLocation();
-                        impulses.add(createImpulse(newDest, 0.1));
-                    }
+            Idea impulse = (Idea) impulsesMO.getI(this.impulseCat);
+            if (impulse != null){
+                Vector2D dest = new Vector2D(
+                        (float) impulse.get("State.Self.Position.X").getValue(),
+                        (float) impulse.get("State.Self.Position.Y").getValue());
+                Vector2D curr = new Vector2D(
+                        (float) inner.get("Position.X").getValue(),
+                        (float) inner.get("Position.Y").getValue());
+                if (dest.sub(curr).magnitude() < 0.25) {
+                    //removeSatisfiedImpulses();
+                    Idea newDest = chooseLocation();
+                    impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);
                 }
-            }
-            if (!foundPrevImpulse){
-                Vector2D dest = chooseLocation();
-                impulses.add(createImpulse(dest, 0.1));
+            } else {
+                Idea dest = chooseLocation();
+                impulsesMO.setI(createImpulse(dest, 0.1), 0.1, this.impulseCat);
             }
         } else {
             removeSatisfiedImpulses();
         }
     }
 
-    private Vector2D chooseLocation() {
-        return null;
+    private Idea chooseLocation() {
+        Idea choosenLoc = null;
+        //List known locations
+        List<Idea> locations = (List<Idea>) locationsMO.getI();
+
+        //Sample a location based on reward value
+        if(locations.size() > 0) {
+            Idea selected = null;
+            synchronized (locations) {
+                double total = 0d;
+                for (Idea catLoc : locations){
+                    double r = (double) catLoc.get("Reward").getValue();
+                    total += r;
+                }
+                //5% chance of choosing a random, possibly unexplored, location
+                double rnd = new Random().nextDouble() * total*1.05;
+                total = 0;
+                for (Idea catLoc : locations){
+                    double r = (double) catLoc.get("Reward").getValue();
+                    total += r;
+                    if (rnd < total) {
+                        selected = catLoc;
+                        break;
+                    }
+                }
+            }
+
+            if (selected != null) {
+                choosenLoc = selected.instantiation();
+                return choosenLoc;
+            }
+        }
+
+        boolean isInRoom = false;
+        while (!isInRoom) {
+            choosenLoc = new Idea("Position", null, "Property", 0);
+            float x = 10 * new Random().nextFloat();
+            float y = 8 * new Random().nextFloat();
+            choosenLoc.add(new Idea("X", x, "QualityDimension", 0));
+            choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
+
+            for (Idea room : roomCategories) {
+                if (room.membership(choosenLoc) > 0.8)
+                    isInRoom = true;
+            }
+        }
+
+        return choosenLoc;
     }
 
     private void removeSatisfiedImpulses() {
-        Idea impulses = (Idea) impulsesMO.getI();
-        Idea remove = null;
-        for (Idea impulse : impulses.getL()){
-            if (impulse.getValue().equals(this.impulseCat))
-                remove = impulse;
+        List<Memory> impulsesMemories = impulsesMO.getAllMemories();
+        Memory remove = null;
+        synchronized (impulsesMemories) {
+            for (Memory impulseMem : impulsesMemories) {
+                Idea impulse = (Idea) impulseMem.getI();
+                if (impulse.getValue().equals(this.impulseCat))
+                    remove = impulseMem;
+            }
+            if (remove != null)
+                impulsesMemories.remove(remove);
         }
-        impulses.getL().remove(remove);
     }
 
-    private Idea createImpulse(Vector2D pos, double desirability) {
+    private Idea createImpulse(Idea position, double desirability) {
         Idea impulse = new Idea("Impulse", this.impulseCat, "Episode", 0);
         Idea state = new Idea("State", null, "Timestamp", 0);
         Idea self = new Idea("Self", null, "AbstractObject", 1);
-        Idea position = new Idea("Position", null, "Property", 0);
-        position.add(new Idea("X", pos.getX(), "QualityDimension", 0));
-        position.add(new Idea("Y", pos.getY(), "QualityDimension", 0));
         self.add(position);
         state.add(self);
         state.add(new Idea("Desire", desirability, "Property", 1));

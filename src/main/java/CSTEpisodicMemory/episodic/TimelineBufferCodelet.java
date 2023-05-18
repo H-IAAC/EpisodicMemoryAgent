@@ -53,7 +53,7 @@ public class TimelineBufferCodelet extends Codelet {
         for (Memory input : inputsMO){
             Idea content = (Idea) input.getI();
             if (content != null) {
-                        currTimestep.add(content.clone());
+                currTimestep.add(content.clone());
             }
         }
         buffer.add(currTimestep);

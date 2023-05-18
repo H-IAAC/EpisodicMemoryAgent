@@ -141,6 +141,9 @@ public class IdeaHelper {
     }
 
     public static Idea searchIdea(Idea idea, String name){
+        if (idea.getName().equals(name))
+            return idea;
+
         Idea hit = idea.get(name);
         if (hit == null){
             //!!!!This can generate infinite loops
