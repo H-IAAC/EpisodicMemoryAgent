@@ -9,10 +9,10 @@ import com.oracle.truffle.api.TruffleLanguage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
-import java.util.ArrayList;
+import java.awt.geom.Rectangle2D;
+import java.util.*;
 import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class GraphicMind extends JFrame {
 
@@ -65,9 +65,32 @@ public class GraphicMind extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g;
+                drawWalls(g2d);
                 loc.draw(g2d);
                 goalGraphic.draw(g2d);
                 agentGraphic.draw(g2d);
+            }
+
+            protected void drawWalls(Graphics2D g){
+                double sx = windowW/envW;
+                double sy = windowH/envH;
+                List<Rectangle2D.Double> walls = Arrays.asList(
+                        new Rectangle2D.Double(0*sx, 0*sy, 0.05*sx, 8.05*sy),
+                        new Rectangle2D.Double(0*sx, 0*sy, 3.05*sx, 0.05*sy),
+                        new Rectangle2D.Double(0*sx, 7.95*sy, 3.05*sx, 0.05*sy),
+                        new Rectangle2D.Double(3*sx, 0*sy, 4.05*sx, 0.05*sy),
+                        new Rectangle2D.Double(3*sx, 1*sy, 4.05*sx, 0.05*sy),
+                        new Rectangle2D.Double(7*sx, 0*sy, 3.05*sx, 0.05*sy),
+                        new Rectangle2D.Double(7*sx, 1*sy, 0.05*sx, 7.05*sy),
+                        new Rectangle2D.Double(7*sx, 8*sy, 3.05*sx, 0.05*sy),
+                        new Rectangle2D.Double(10*sx, 0*sy, 0.05*sx, 8.05*sy),
+                        new Rectangle2D.Double(3*sx, 1*sy, 0.05*sx, 7.05*sy)
+                );
+
+                g.setColor(Color.DARK_GRAY);
+                for (Rectangle2D.Double wall : walls){
+                    g.fill(wall);
+                }
             }
         };
 
