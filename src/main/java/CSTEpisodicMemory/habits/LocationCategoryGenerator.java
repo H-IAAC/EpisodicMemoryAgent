@@ -33,8 +33,8 @@ public class LocationCategoryGenerator implements Habit {
                     double radius = (double) owner.get("radius").getValue();
 
                     Idea instance = new Idea("Position", null, "Property", 0);
-                    float x = (float) Math.sqrt(radius) * new Random().nextFloat();
-                    float y = (float) Math.sqrt(radius) * new Random().nextFloat();
+                    float x = (float) Math.sqrt(radius/2) * new Random().nextFloat();
+                    float y = (float) Math.sqrt(radius/2) * new Random().nextFloat();
 
                     instance.add(new Idea("X", x + centerX, "QualityDimension", 0));
                     instance.add(new Idea("Y", y + centerY, "QualityDimension", 0));

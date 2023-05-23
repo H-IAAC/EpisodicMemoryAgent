@@ -28,6 +28,19 @@ public class GraphIdea {
         }
     }
 
+    public GraphIdea(GraphIdea clone){
+        this.graph = IdeaHelper.cloneIdea(clone.graph);
+        if (graph.getL().size()>0){
+            for (Idea i : graph.getL()){
+                if (i.getName().equals("Node")) {
+                    nodeCount++;
+                    coordinateMap.put(i.get("Coordinate"), i);
+                }
+            }
+            coordinateCount = nodeCount;
+        }
+    }
+
     public Idea insertEventNode(Idea node){
         return insertNode(node, "Event");
     }

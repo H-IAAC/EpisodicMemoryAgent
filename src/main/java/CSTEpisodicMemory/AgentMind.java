@@ -269,6 +269,7 @@ public class AgentMind extends Mind {
         exploreImpulse.addInput(innerSenseMO);
         exploreImpulse.addInput(roomsMO);
         exploreImpulse.addInput(locationsMO);
+        exploreImpulse.addInput(EPLTMO);
         exploreImpulse.addOutput(impulsesMO);
         insertCodelet(exploreImpulse, "Behavioral");
 
