@@ -3,13 +3,12 @@
  */
 package CSTEpisodicMemory;
 
-import CSTEpisodicMemory.util.IdeaVisualizer;
-import CSTEpisodicMemory.util.GraphicMind;
+import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
+import CSTEpisodicMemory.util.visualization.GraphicMind;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.representation.idea.Idea;
-import br.unicamp.cst.util.viewer.MindViewer;
 
 import java.util.List;
 import java.util.logging.Level;

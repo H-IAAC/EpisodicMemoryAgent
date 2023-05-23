@@ -1,4 +1,4 @@
-package CSTEpisodicMemory.util;
+package CSTEpisodicMemory.util.visualization;
 
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;

@@ -1,14 +1,10 @@
-package CSTEpisodicMemory.util;
+package CSTEpisodicMemory.util.visualization;
 
 import CSTEpisodicMemory.Environment;
-import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
-import br.unicamp.cst.representation.idea.Idea;
-import com.oracle.truffle.api.TruffleLanguage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
