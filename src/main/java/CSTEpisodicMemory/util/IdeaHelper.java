@@ -3,7 +3,9 @@ package CSTEpisodicMemory.util;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IdeaHelper {
@@ -173,5 +175,26 @@ public class IdeaHelper {
             return true;
         }
         return false;
+    }
+
+    public static Idea cloneIdea(Idea idea){
+        return cloneIdea(idea, new HashMap<>());
+    }
+
+    public static Idea cloneIdea(Idea idea, Map<Idea,Idea> avoidLoops){
+
+        Idea newnode;
+        newnode = new Idea(idea.getName(), idea.getValue(), idea.getType(), idea.getCategory(), idea.getScope());
+        newnode.setL(new ArrayList());
+        avoidLoops.put(idea, newnode);
+        for (Idea i : idea.getL()) {
+            if (!avoidLoops.containsKey(i)) {
+                Idea ni = cloneIdea(i, avoidLoops);
+                newnode.add(ni);
+            }else {
+                newnode.add(avoidLoops.get(i));
+            }
+        }
+        return newnode;
     }
 }

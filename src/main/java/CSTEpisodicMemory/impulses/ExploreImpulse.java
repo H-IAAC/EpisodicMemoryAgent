@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
@@ -8,8 +9,7 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class ExploreImpulse extends Codelet {
 
@@ -18,6 +18,7 @@ public class ExploreImpulse extends Codelet {
     private Memory roomMO;
     private MemoryContainer impulsesMO;
     private Memory locationsMO;
+    private Memory epltMO;
 
     private List<Idea> roomCategories;
     private String impulseCat = "Explore";
@@ -33,6 +34,7 @@ public class ExploreImpulse extends Codelet {
         this.roomMO = (MemoryObject) getInput("ROOM");
         this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
         this.locationsMO = (MemoryObject) getInput("LOCATION");
+        this.epltMO = (MemoryObject) getInput("EPLTM");
     }
 
     @Override
@@ -55,7 +57,7 @@ public class ExploreImpulse extends Codelet {
                 Vector2D curr = new Vector2D(
                         (float) inner.get("Position.X").getValue(),
                         (float) inner.get("Position.Y").getValue());
-                if (dest.sub(curr).magnitude() < 0.25) {
+                if (dest.sub(curr).magnitude() < 0.75) {
                     //removeSatisfiedImpulses();
                     Idea newDest = chooseLocation();
                     impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);
@@ -75,16 +77,20 @@ public class ExploreImpulse extends Codelet {
         List<Idea> locations = (List<Idea>) locationsMO.getI();
 
         //Sample a location based on reward value
+        List<Double> weigths = new LinkedList<>();
+        Idea selected = null;
         if(locations.size() > 0) {
-            Idea selected = null;
             synchronized (locations) {
                 double total = 0d;
                 for (Idea catLoc : locations){
                     double r = (double) catLoc.get("Reward").getValue();
                     total += r;
+                    weigths.add(total);
                 }
                 //5% chance of choosing a random, possibly unexplored, location
                 double rnd = new Random().nextDouble() * total*1.05;
+                //System.out.println(weigths);
+                //System.out.println(rnd);
                 total = 0;
                 for (Idea catLoc : locations){
                     double r = (double) catLoc.get("Reward").getValue();
@@ -95,26 +101,27 @@ public class ExploreImpulse extends Codelet {
                     }
                 }
             }
-
-            if (selected != null) {
-                choosenLoc = selected.instantiation();
-                return choosenLoc;
-            }
         }
 
         boolean isInRoom = false;
         while (!isInRoom) {
-            choosenLoc = new Idea("Position", null, "Property", 0);
-            float x = 10 * new Random().nextFloat();
-            float y = 8 * new Random().nextFloat();
-            choosenLoc.add(new Idea("X", x, "QualityDimension", 0));
-            choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
+            if (selected != null) {
+                choosenLoc = selected.instantiation();
+            } else {
+                choosenLoc = new Idea("Position", null, "Property", 0);
+                float x = 10 * new Random().nextFloat();
+                float y = 8 * new Random().nextFloat();
+                choosenLoc.add(new Idea("X", x, "QualityDimension", 0));
+                choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
+            }
 
             for (Idea room : roomCategories) {
                 if (room.membership(choosenLoc) > 0.8)
                     isInRoom = true;
             }
         }
+
+        planTrajectory(choosenLoc);
 
         return choosenLoc;
     }
@@ -142,5 +149,48 @@ public class ExploreImpulse extends Codelet {
         state.add(new Idea("Desire", desirability, "Property", 1));
         impulse.add(state);
         return impulse;
+    }
+
+    private void planTrajectory(Idea choosenLoc) {
+        List<Idea> locations = (List<Idea>) locationsMO.getI();
+        if (locations.size() > 0) {
+            GraphIdea epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());
+
+            Idea currPos = ((Idea) innerMO.getI()).clone().get("Position");
+
+            Idea bestTargetLoc = null;
+            double bestTargetMem = 0;
+            Idea bestStartLoc = null;
+            double bestStartMem = 0;
+            for (Idea loc : locations) {
+                double currPosMem = loc.membership(currPos);
+                double targetPosMem = loc.membership(choosenLoc);
+
+                if (currPosMem > bestStartMem) {
+                    bestStartLoc = loc;
+                    bestStartMem = currPosMem;
+                }
+                if (targetPosMem > bestTargetMem) {
+                    bestTargetLoc = loc;
+                    bestTargetMem = targetPosMem;
+                }
+            }
+
+            epltmGraph.setNodeActivation(bestTargetLoc, 1);
+            epltmGraph.propagateActivations(Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext"),
+                    Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext"));
+            List<Idea> locationNodes = epltmGraph.getLocationNodes();
+            locationNodes.sort(new Comparator<Idea>() {
+                @Override
+                public int compare(Idea idea, Idea t1) {
+                    return ((Double) idea.get("Activation").getValue()).compareTo((Double) t1.get("Activation").getValue());
+                }
+            });
+
+            for (Idea ll : locationNodes){
+                System.out.println(ll.get("Activation").getValue());
+            }
+        }
+
     }
 }
