@@ -31,8 +31,6 @@ public class AgentGraphic{
 
         AffineTransform reset = g.getTransform();
 
-        g.setColor(new Color(0xFFA700));
-
         Path2D.Double ag = new Path2D.Double();
         ag.moveTo(size*0.712, 0);
         ag.lineTo(-0.288*size,size/2);
@@ -41,8 +39,13 @@ public class AgentGraphic{
 
         Line2D.Double head = new Line2D.Double(0,0,size*0.712,0);
 
+        g.setColor(Color.BLACK);
         g.translate(pos.get(1) * windowW/envW, pos.get(0) * windowH/envH);
+        String fPos = String.format("%.2f - %.2f", pos.get(0), pos.get(1));
+        g.drawString(fPos, 20, 20);
+
         g.rotate(-pitch + Math.toRadians(90));
+        g.setColor(new Color(0xFFA700));
         g.fill(ag);
         g.setColor(Color.BLACK);
         g.draw(head);

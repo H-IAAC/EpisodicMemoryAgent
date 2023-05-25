@@ -57,12 +57,14 @@ public class GraphicMind extends JFrame {
             LocationGraphic loc = new LocationGraphic(m, envW,envH,windowW,windowH);
             AgentGraphic agentGraphic = new AgentGraphic(env, envW,envH,windowW,windowH);
             GoalGraphic goalGraphic = new GoalGraphic(m, envW,envH,windowW,windowH);
+            MoveGraphic moveGraphic = new MoveGraphic(m, envW,envH,windowW,windowH);
 
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g;
                 drawWalls(g2d);
-                loc.draw(g2d);
+                loc.draw2(g2d);
+                moveGraphic.draw(g2d);
                 goalGraphic.draw(g2d);
                 agentGraphic.draw(g2d);
             }
