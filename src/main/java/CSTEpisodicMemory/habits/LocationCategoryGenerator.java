@@ -11,6 +11,7 @@ import java.util.Random;
 public class LocationCategoryGenerator implements Habit {
 
     private static int locCount = 0;
+    public static double START_RADIUS = 0.7d;
 
     @Override
     public List<Idea> exec(Idea idea) {
@@ -20,7 +21,7 @@ public class LocationCategoryGenerator implements Habit {
             Idea newLocation = new Idea("Location_"+locCount++, null, "AbstractObject", 2);
             newLocation.add(new Idea("centerX", startX, "Property", 1));
             newLocation.add(new Idea("centerY", startY, "Property", 1));
-            newLocation.add(new Idea("radius", 1d, "Property", 1));
+            newLocation.add(new Idea("radius", START_RADIUS, "Property", 1));
             newLocation.add(new Idea("Reward", new Random().nextDouble(), "Property", 1));
 
             newLocation.setValue(new Category() {

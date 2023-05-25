@@ -20,6 +20,7 @@ public class EpisodicGistExtraction extends Codelet {
     private Idea locCatAcomodate;
     private Idea newLocCategoryGenerator;
     private Idea prevEp = null;
+    private Idea prevLastEvent = null;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator) {
         this.locCatAcomodate = locCatAcomodate;
@@ -145,9 +146,12 @@ public class EpisodicGistExtraction extends Codelet {
             epLTMGraph.insetLink(ep, endEvent, "End");
             if (prevEp == null){
                 prevEp = ep;
+                prevLastEvent = endEvent;
             } else {
                 epLTMGraph.insetLink(prevEp, ep, "Next");
+                epLTMGraph.insetLink(prevLastEvent, endEvent, "Next");
                 prevEp = ep;
+                prevLastEvent = endEvent;
             }
 
             stories.getL().remove(oldestEpisode);

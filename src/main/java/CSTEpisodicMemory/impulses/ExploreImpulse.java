@@ -9,6 +9,8 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.*;
 
 public class ExploreImpulse extends Codelet {
@@ -19,6 +21,7 @@ public class ExploreImpulse extends Codelet {
     private MemoryContainer impulsesMO;
     private Memory locationsMO;
     private Memory epltMO;
+    private Memory extra;
 
     private List<Idea> roomCategories;
     private String impulseCat = "Explore";
@@ -35,6 +38,7 @@ public class ExploreImpulse extends Codelet {
         this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
         this.locationsMO = (MemoryObject) getInput("LOCATION");
         this.epltMO = (MemoryObject) getInput("EPLTM");
+        this.extra = (Memory) getOutput("extra");
     }
 
     @Override
@@ -88,7 +92,8 @@ public class ExploreImpulse extends Codelet {
                     weigths.add(total);
                 }
                 //5% chance of choosing a random, possibly unexplored, location
-                double rnd = new Random().nextDouble() * total*1.05;
+                double rndChance = Math.exp(-locations.size()/10) + 0.05;
+                double rnd = new Random().nextDouble() * total*(1+rndChance);
                 //System.out.println(weigths);
                 //System.out.println(rnd);
                 total = 0;
@@ -121,7 +126,7 @@ public class ExploreImpulse extends Codelet {
             }
         }
 
-        planTrajectory(choosenLoc);
+        //planTrajectory(choosenLoc);
 
         return choosenLoc;
     }
@@ -177,8 +182,8 @@ public class ExploreImpulse extends Codelet {
             }
 
             epltmGraph.setNodeActivation(bestTargetLoc, 1);
-            epltmGraph.propagateActivations(Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext"),
-                    Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext"));
+            epltmGraph.propagateActivations(Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext","Next","Begin","End"),
+                    Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext","End","Begin","Next"));
             List<Idea> locationNodes = epltmGraph.getLocationNodes();
             locationNodes.sort(new Comparator<Idea>() {
                 @Override
@@ -187,8 +192,28 @@ public class ExploreImpulse extends Codelet {
                 }
             });
 
+            try {
+                PrintWriter out = new PrintWriter("./locations");
+                Idea tt = new Idea("ttt", null);
+                tt.setL(epltmGraph.getLocationNodes());
+                String csv = IdeaHelper.csvPrint(tt, 6);
+                out.println(csv);
+                out.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                PrintWriter out = new PrintWriter("./epltm");
+                String csv = IdeaHelper.csvPrint(epltmGraph.graph, 6);
+                out.println(csv);
+                out.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            extra.setI(epltmGraph.getLocationNodes());
+
             for (Idea ll : locationNodes){
-                System.out.println(ll.get("Activation").getValue());
+                System.out.println((double)ll.get("Activation").getValue());
             }
         }
 

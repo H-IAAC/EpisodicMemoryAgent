@@ -104,9 +104,11 @@ public class EventTracker extends Codelet {
                             inputIdeaBuffer.add(currentInputIdea.clone());
                             initialEventIdea = null;
                             Idea eventsIdea = (Idea) eventsOutputMO.getI();
-                            eventsIdea.add(event);
-                            if (debug)
-                                System.out.println(csvPrint(eventsIdea));
+                            synchronized (eventsIdea) {
+                                eventsIdea.add(event);
+                                if (debug)
+                                    System.out.println(csvPrint(eventsIdea));
+                            }
                         } else {
                             inputIdeaBuffer.remove(0);
                             inputIdeaBuffer.add(currentInputIdea.clone());

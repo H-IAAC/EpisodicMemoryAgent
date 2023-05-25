@@ -119,7 +119,7 @@ public class IdeaHelper {
         String csv = prefix + "{\n";
         csv += prefix + "  \"id\": " + idea.getId() + ",\n";
         csv += prefix + "  \"name\": \"" + idea.getName() + "\",\n";
-        csv += prefix + "  \"value\": \"" + (idea.getValue() != null ? idea.getResumedValue():"") + "\",\n";
+        csv += prefix + "  \"value\": \"" + (idea.getValue() != null ? getIdeaResumedValue(idea):"") + "\",\n";
         StringBuilder lCsv = new StringBuilder();
         if (!listtoavoidloops.contains(idea) && currLevel < maxLevel) {
             listtoavoidloops.add(idea);
@@ -196,5 +196,28 @@ public class IdeaHelper {
             }
         }
         return newnode;
+    }
+
+
+    public static String getIdeaResumedValue(Idea idea){
+        String result;
+        if (idea.isFloat() || idea.isDouble()) {
+            result = String.format("%4.4f",idea.getValue());
+        }
+        else {
+            try {
+                int trial = Integer.parseInt(idea.getValue().toString());
+                result = String.format("%d",trial);
+            } catch(Exception ee) {
+                try {
+                    double trial = Double.parseDouble(idea.getValue().toString());
+                    result = String.format("%4.4f",trial);
+                }
+                catch(Exception e) {
+                    result = idea.getValue().toString();
+                }
+            }
+        }
+        return(result);
     }
 }

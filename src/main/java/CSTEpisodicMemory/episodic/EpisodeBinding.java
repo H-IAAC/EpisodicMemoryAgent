@@ -36,6 +36,10 @@ public class EpisodeBinding extends Codelet {
         Idea timeline = (Idea) bufferMO.getI();
         Idea stories = (Idea) storyMO.getI();
 
+        synchronized (stories){
+            synchronized (timeline){
+                synchronized (eventsIdea){
+
         Idea currentEpisode = stories.getL().get(0);
         for (Idea ep : stories.getL()){
             if((int)ep.getValue() > (int)currentEpisode.getValue())
@@ -99,10 +103,13 @@ public class EpisodeBinding extends Codelet {
             //Clear events buffer
             eventsIdea.setL(segmentedEvents);
         }
+                }
+            }
+        }
     }
 
     private boolean isSegmentationEvent(GraphIdea story, Idea event, Idea context) {
-        Idea impulse = context.get("Impulse").clone();
+        Idea impulse = context.get("Impulse");
         if (impulse != null) {
             if (!story.hasNodeContent(impulse)) {
                 return !(story.getContextNodes().size() < 1);

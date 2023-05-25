@@ -263,6 +263,8 @@ public class AgentMind extends Mind {
         collectJewelImpulse.addOutput(impulsesMO);
         insertCodelet(collectJewelImpulse, "Behavioral");
 
+        Memory extra;
+        extra = createMemoryObject("extra");
         //Explore
         Codelet exploreImpulse = new ExploreImpulse(roomsCategoriesIdea);
         exploreImpulse.addInput(knownJewelsMO);
@@ -278,6 +280,10 @@ public class AgentMind extends Mind {
         Codelet moveActionCodelet = new Move();
         moveActionCodelet.addInput(impulsesMO);
         moveActionCodelet.addOutput(legsMO);
+        moveActionCodelet.addInput(innerSenseMO);
+        moveActionCodelet.addInput(locationsMO);
+        moveActionCodelet.addInput(EPLTMO);
+        moveActionCodelet.addOutput(extra);
         insertCodelet(moveActionCodelet, "Behavioral");
 
         //Collect Action/Behaviour
