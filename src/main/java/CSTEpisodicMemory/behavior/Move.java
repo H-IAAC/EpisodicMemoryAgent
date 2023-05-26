@@ -78,7 +78,7 @@ public class Move extends Codelet {
     }
 
     private void planTrajectory(Idea choosenLoc) {
-        if (locations.size() > 6) {
+        if (locations.size() >= 4) {
             Idea bestTargetLoc = null;
             double bestTargetMem = 0;
             Idea bestStartLoc = null;
@@ -107,6 +107,25 @@ public class Move extends Codelet {
                     return ((Double) idea.get("Activation").getValue()).compareTo((Double) t1.get("Activation").getValue());
                 }
             });
+
+            try {
+                PrintWriter out = new PrintWriter("./locations");
+                Idea tt = new Idea("ttt", null);
+                tt.setL(epltmGraph.getLocationNodes());
+                String csv = IdeaHelper.csvPrint(tt, 6);
+                out.println(csv);
+                out.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                PrintWriter out = new PrintWriter("./epltm");
+                String csv = IdeaHelper.csvPrint(epltmGraph.graph, 4);
+                out.println(csv);
+                out.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
 
             extra.setI(epltmGraph.getLocationNodes());
             plan = locationNodes;

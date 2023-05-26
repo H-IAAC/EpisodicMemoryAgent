@@ -61,7 +61,7 @@ public class ExploreImpulse extends Codelet {
                 Vector2D curr = new Vector2D(
                         (float) inner.get("Position.X").getValue(),
                         (float) inner.get("Position.Y").getValue());
-                if (dest.sub(curr).magnitude() < 0.75) {
+                if (dest.sub(curr).magnitude() < 0.55) {
                     //removeSatisfiedImpulses();
                     Idea newDest = chooseLocation();
                     impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);
@@ -192,24 +192,6 @@ public class ExploreImpulse extends Codelet {
                 }
             });
 
-            try {
-                PrintWriter out = new PrintWriter("./locations");
-                Idea tt = new Idea("ttt", null);
-                tt.setL(epltmGraph.getLocationNodes());
-                String csv = IdeaHelper.csvPrint(tt, 6);
-                out.println(csv);
-                out.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                PrintWriter out = new PrintWriter("./epltm");
-                String csv = IdeaHelper.csvPrint(epltmGraph.graph, 6);
-                out.println(csv);
-                out.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
             extra.setI(epltmGraph.getLocationNodes());
 
             for (Idea ll : locationNodes){

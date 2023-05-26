@@ -64,7 +64,9 @@ public class GraphIdea {
 
     public Idea insertNode(Idea node, Idea coord, String type){
         Idea nodeIdea = new Idea("Node", nodeCount++, "AbstractObject", 1);
-        nodeIdea.add(new Idea("Content", node, "Configuration", 1));
+        Idea content = new Idea("Content", null, "Configuration", 1);
+        content.add(node);
+        nodeIdea.add(content);
         nodeIdea.add(coord);
         nodeIdea.add(new Idea("Type", type, "Property", 1));
         nodeIdea.add(new Idea("Links", null, "Configuration", 1));
@@ -78,7 +80,7 @@ public class GraphIdea {
         Idea nodeIdeaSource;
         if (!nodeSource.getName().equals("Node")) {
             Optional<Idea> nodeOpt = this.getNodes().stream()
-                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), nodeSource))
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), nodeSource))
                     .findFirst();
             nodeIdeaSource = nodeOpt.orElseGet(() -> insertEventNode(nodeSource));
         } else {
@@ -88,7 +90,7 @@ public class GraphIdea {
         Idea nodeIdeaDest;
         if (!nodeDest.getName().equals("Node")) {
             Optional<Idea> nodeOpt = this.getNodes().stream()
-                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), nodeDest))
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), nodeDest))
                     .findFirst();
             nodeIdeaDest = nodeOpt.orElseGet(() -> insertEventNode(nodeDest));
         } else {
@@ -108,7 +110,7 @@ public class GraphIdea {
         Idea nodeIdeaSource = null;
         if (!node.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
-                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), node)).findFirst();
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), node)).findFirst();
             if (nodeOpt.isPresent()){
                 nodeIdeaSource = nodeOpt.get();
             }
@@ -127,7 +129,7 @@ public class GraphIdea {
         Idea nodeIdeaDest;
         if (!node.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
-                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), node)).findFirst();
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), node)).findFirst();
             if (nodeOpt.isPresent()){
                 nodeIdeaDest = nodeOpt.get();
             } else {
@@ -155,7 +157,7 @@ public class GraphIdea {
 
     public boolean hasNodeContent(Idea idea){
         return this.getNodes().stream()
-                .map(e->(Idea) e.get("Content").getValue())
+                .map(e->getNodeContent(e))
                 .anyMatch(e->IdeaHelper.match(e,idea));
 
         //return graph.getL().stream().anyMatch(e->e.getL().contains(idea));
@@ -197,7 +199,7 @@ public class GraphIdea {
         Idea foundNode = node;
         if (!node.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
-                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), node)).findFirst();
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), node)).findFirst();
             if (nodeOpt.isPresent()){
                 foundNode = nodeOpt.get();
             } else {
@@ -259,7 +261,7 @@ public class GraphIdea {
         Idea foundNode = content;
         if (!content.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
-                    .filter(e -> IdeaHelper.match((Idea) e.get("Content").getValue(), content)).findFirst();
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), content)).findFirst();
             if (nodeOpt.isPresent()){
                 foundNode = nodeOpt.get();
             } else {
@@ -271,7 +273,7 @@ public class GraphIdea {
 
     public static Idea getNodeContent(Idea node){
         if (node.getName().equals("Node")){
-            return (Idea) node.get("Content").getValue();
+            return node.get("Content").getL().get(0);
         }
         return null;
     }
