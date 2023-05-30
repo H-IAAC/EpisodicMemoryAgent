@@ -13,6 +13,7 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class Move extends Codelet {
 
@@ -126,11 +127,30 @@ public class Move extends Codelet {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
+            try {
+                PrintWriter out = new PrintWriter("./graph");
+                StringBuilder a = new StringBuilder();
+                StringBuilder b = new StringBuilder();
+                for (Idea n : epltmGraph.graph.getL()){
+                    String name = n.get("Content").getL().get(0).getName();
+                    a.append("\n").append(name);
+                    Map<String, List<Idea>> ll = epltmGraph.getSuccesors(n);
+                    for (List<Idea> lll : ll.values()){
+                        for (Idea llll : lll){
+                            b.append("\n").append(name).append(" ").append(llll.get("Content").getL().get(0).getName());
+                        }
+                    }
+                }
+                out.println(a.append(b).toString());
+                out.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
 
             extra.setI(epltmGraph.getLocationNodes());
             plan = locationNodes;
             int firstIdx = plan.indexOf(epltmGraph.getNodeFromContent(bestStartLoc));
-            System.out.println("Start Idx " + firstIdx);
+            //System.out.println("Start Idx " + firstIdx);
             if (firstIdx > 0) {
                 plan.subList(0, firstIdx).clear();
             }
@@ -144,13 +164,13 @@ public class Move extends Codelet {
             double mm = nextMoveLoc.membership(currPos);
             if (mm == 1) {
                 plan.remove(0);
-                System.out.println("----");
-                System.out.println(mm);
-                System.out.println(IdeaHelper.fullPrint(nextMoveLoc));
-                System.out.println(plan);
+                //System.out.println("----");
+                //System.out.println(mm);
+                //System.out.println(IdeaHelper.fullPrint(nextMoveLoc));
+                //System.out.println(plan);
             }
 
-            Idea action = new Idea("Action", "Move", "Episode", 0);
+            Idea action = new Idea("Action", "Move", "Action", 1);
             action.add(new Idea("X", (float) nextMoveLoc.get("centerX").getValue()));
             action.add(new Idea("Y", (float) nextMoveLoc.get("centerY").getValue()));
             return action;
@@ -158,7 +178,7 @@ public class Move extends Codelet {
 
         float px = (float) impulse.get("State.Self.Position.X").getValue();
         float py = (float) impulse.get("State.Self.Position.Y").getValue();
-        Idea action = new Idea("Action", "Move", "Episode", 0);
+        Idea action = new Idea("Action", "Move", "Action", 1);
         action.add(new Idea("X", px));
         action.add(new Idea("Y", py));
         return action;

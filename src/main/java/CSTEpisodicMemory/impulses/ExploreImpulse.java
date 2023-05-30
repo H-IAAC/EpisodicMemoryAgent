@@ -53,22 +53,24 @@ public class ExploreImpulse extends Codelet {
 
         int numJewels = jewels.getL().size();
         if (numJewels == 0){
-            Idea impulse = (Idea) impulsesMO.getI(this.impulseCat);
-            if (impulse != null){
-                Vector2D dest = new Vector2D(
-                        (float) impulse.get("State.Self.Position.X").getValue(),
-                        (float) impulse.get("State.Self.Position.Y").getValue());
-                Vector2D curr = new Vector2D(
-                        (float) inner.get("Position.X").getValue(),
-                        (float) inner.get("Position.Y").getValue());
-                if (dest.sub(curr).magnitude() < 0.55) {
-                    //removeSatisfiedImpulses();
-                    Idea newDest = chooseLocation();
-                    impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);
+            synchronized (impulsesMO) {
+                Idea impulse = (Idea) impulsesMO.getI(this.impulseCat);
+                if (impulse != null) {
+                    Vector2D dest = new Vector2D(
+                            (float) impulse.get("State.Self.Position.X").getValue(),
+                            (float) impulse.get("State.Self.Position.Y").getValue());
+                    Vector2D curr = new Vector2D(
+                            (float) inner.get("Position.X").getValue(),
+                            (float) inner.get("Position.Y").getValue());
+                    if (dest.sub(curr).magnitude() < 0.55) {
+                        //removeSatisfiedImpulses();
+                        Idea newDest = chooseLocation();
+                        impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);
+                    }
+                } else {
+                    Idea dest = chooseLocation();
+                    impulsesMO.setI(createImpulse(dest, 0.1), 0.1, this.impulseCat);
                 }
-            } else {
-                Idea dest = chooseLocation();
-                impulsesMO.setI(createImpulse(dest, 0.1), 0.1, this.impulseCat);
             }
         } else {
             removeSatisfiedImpulses();
@@ -146,7 +148,7 @@ public class ExploreImpulse extends Codelet {
     }
 
     private Idea createImpulse(Idea position, double desirability) {
-        Idea impulse = new Idea("Impulse", this.impulseCat, "Episode", 0);
+        Idea impulse = new Idea("Impulse", this.impulseCat, "Goal", 0);
         Idea state = new Idea("State", null, "Timestamp", 0);
         Idea self = new Idea("Self", null, "AbstractObject", 1);
         self.add(position);

@@ -14,8 +14,7 @@ import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.TimelineBufferCodelet;
-import CSTEpisodicMemory.habits.LocationCategoryGenerator;
-import CSTEpisodicMemory.habits.LocationCategoryModification;
+import CSTEpisodicMemory.habits.*;
 import CSTEpisodicMemory.impulses.CollectJewelImpulse;
 import CSTEpisodicMemory.impulses.ExploreImpulse;
 import CSTEpisodicMemory.impulses.GoToJewelImpulse;
@@ -41,6 +40,7 @@ import com.google.common.graph.ValueGraphBuilder;
 import scala.Int;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -323,11 +323,30 @@ public class AgentMind extends Mind {
         locAdpatHabit.setValue(new LocationCategoryModification(locAdpatHabit));
         Idea locGenHabit = new Idea("LocationGeneratorHabit", null);
         locGenHabit.setValue(new LocationCategoryGenerator());
+        Idea propertiesLearningHabit = new Idea("PropertiesLearningHabit", null);
+        propertiesLearningHabit.setValue(new TrackedPropertiesAssimilateAccommodateHabit(propertiesLearningHabit));
+        propertiesLearningHabit.add(new Idea("Input_Category", null, "Configuration", 1));
+        propertiesLearningHabit.add(new Idea("categories", null, "Aggregation", 1));
+        Idea subHabits = new Idea("property_habits", null, "Aggregation", 1);
+        Idea assimilateSubHabit = new Idea("assimilate", null);
+        assimilateSubHabit.setValue(new AssimilatePropertyCategory(assimilateSubHabit));
+        assimilateSubHabit.add(new Idea("properties", null, "Property", 1));
+        assimilateSubHabit.add(new Idea("samples", null, "Property", 1));
+        Idea accommodateSubHabit = new Idea("accommodate", null);
+        accommodateSubHabit.setValue(new AccommodatePropertyCategory(accommodateSubHabit));
+        accommodateSubHabit.add(new Idea("properties", null, "Property", 1));
+        accommodateSubHabit.add(new Idea("samples", null, "Property", 1));
+        subHabits.add(assimilateSubHabit);
+        subHabits.add(accommodateSubHabit);
+        propertiesLearningHabit.add(subHabits);
 
-        Codelet episodicGistCodelet = new EpisodicGistExtraction(locAdpatHabit, locGenHabit);
+        Memory propertiesMO;
+        propertiesMO = createMemoryObject("PROPERTIES", new ArrayList<Idea>());
+        Codelet episodicGistCodelet = new EpisodicGistExtraction(locAdpatHabit, locGenHabit, propertiesLearningHabit);
         episodicGistCodelet.addInput(storyMO);
         episodicGistCodelet.addInput(locationsMO);
         episodicGistCodelet.addOutput(EPLTMO);
+        episodicGistCodelet.addInput(propertiesMO);
         insertCodelet(episodicGistCodelet, "Behavioural");
 
         bList.add(wallsDetectorCodelet);
@@ -361,6 +380,11 @@ public class AgentMind extends Mind {
 
     private Idea constructEventCategory(String name, List<String> properties, String type){
         Idea idea = new Idea(name, null, "Episode", 2);
+        String object = properties.get(0).split("\\.")[0];
+        idea.add(new Idea("ObservedObject", object, "Property", 1));
+        List<String> cleanProperties = properties.stream().map(s->s.substring(s.indexOf(".") + 1)).collect(Collectors.toList());
+        idea.add(new Idea("properties", cleanProperties, "Property", 1));
+
         switch (type){
             case "Linear":
                 idea.setValue(new LinearEventCategory(name, properties));

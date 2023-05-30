@@ -30,6 +30,7 @@ public class ExperimentMain {
         visu.addMemoryWatch("Impulses", 5);
         visu.addMemoryWatch("EPLTM", 4);
         visu.addMemoryWatch("Location", 3);
+        visu.addMemoryWatch("PROPERTIES", 3);
         visu.setVisible(true);
 
         GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);

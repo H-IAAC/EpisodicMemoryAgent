@@ -88,7 +88,7 @@ public class CollectJewelImpulse extends Codelet {
     }
 
     private Idea createImpulse(Idea jewel, double desirability) {
-        Idea impulse = new Idea("Impulse", this.impulseCat, "Episode", 0);
+        Idea impulse = new Idea("Impulse", this.impulseCat, "Goal", 0);
         Idea state = new Idea("State", null, "Timestep", 0);
         Idea stateJewel = new Idea("Jewel", jewel.getValue(), "AbstractObject", 1);
         stateJewel.add(jewel.get("ID").clone());
@@ -101,14 +101,18 @@ public class CollectJewelImpulse extends Codelet {
     }
 
     public void addIfNotPresent(Idea idea){
-        impulsesMO.setI(idea,
-                (double) idea.get("State.Desire").getValue(),
-                this.impulseCat + idea.get("State.ID").getValue());
+        synchronized (impulsesMO) {
+            impulsesMO.setI(idea,
+                    (double) idea.get("State.Desire").getValue(),
+                    this.impulseCat + idea.get("State.ID").getValue());
+        }
     }
 
     public void removeIfPresent(Idea jewel){
-        impulsesMO.setI(jewel,
-                -1.0,
-                this.impulseCat + jewel.get("ID").getValue());
+        synchronized (impulsesMO) {
+            impulsesMO.setI(jewel,
+                    -1.0,
+                    this.impulseCat + jewel.get("ID").getValue());
+        }
     }
 }

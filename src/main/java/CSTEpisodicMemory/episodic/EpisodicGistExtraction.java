@@ -1,9 +1,11 @@
 package CSTEpisodicMemory.episodic;
 
+import CSTEpisodicMemory.categories.EventCategory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryBuffer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
@@ -18,15 +20,18 @@ public class EpisodicGistExtraction extends Codelet {
     private Memory episodesMO;
     private Memory epLTM;
     private Memory locationMO;
+    private Memory propertiesMO;
 
     private Idea locCatAcomodate;
     private Idea newLocCategoryGenerator;
     private Idea prevEp = null;
     private Idea prevLastEvent = null;
+    private Idea trackedPropertiesAssimilateAccommodateHabit;
 
-    public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator) {
+    public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
         this.locCatAcomodate = locCatAcomodate;
         this.newLocCategoryGenerator = newLocCategoryGenerator;
+        this.trackedPropertiesAssimilateAccommodateHabit = trackedPropertiesAssimilateAccommodateHabit;
     }
 
     @Override
@@ -34,6 +39,7 @@ public class EpisodicGistExtraction extends Codelet {
         episodesMO = (MemoryObject) getInput("STORY");
         epLTM = (MemoryObject) getOutput("EPLTM");
         locationMO = (MemoryObject) getInput("LOCATION");
+        propertiesMO = (MemoryObject) getInput("PROPERTIES");
     }
 
     @Override
@@ -47,6 +53,7 @@ public class EpisodicGistExtraction extends Codelet {
         GraphIdea epLTMGraph = (GraphIdea) epLTM.getI();
         Idea stories = (Idea) episodesMO.getI();
         List<Idea> memLocations = new ArrayList<>((ArrayList) locationMO.getI());
+        List<Idea> propertiesCategories = new ArrayList<>((ArrayList) propertiesMO.getI());
 
         //System.out.println("--------------------");
         //System.out.println(IdeaHelper.csvPrint(epLTMGraph.graph,4).replace("\n"," "));
@@ -102,19 +109,31 @@ public class EpisodicGistExtraction extends Codelet {
             //Copy events and impulses to memory and add links
             for (Idea eventNode : story.getEventNodes()) {
                 Idea eventContent = getNodeContent(eventNode);
-                Idea LTEventContent = new Idea(eventContent.getName(), eventContent.getValue(), "Episode", 1);
-                LTEventContent.add(new Idea("Start", eventContent.getL().get(0).get("TimeStamp").getValue(), "TimeStep", 1));
-                LTEventContent.add(new Idea("End", eventContent.getL().get(1).get("TimeStamp").getValue(), "TimeStep", 1));
+                Idea eventCategory = (Idea) eventContent.getValue();
+                Idea LTEventContent = new Idea(eventContent.getName(),
+                        eventCategory.getName(),
+                        "Episode", 1);
+                LTEventContent.add(new Idea("Start",
+                        eventContent.getL().get(0).get("TimeStamp").getValue(),
+                        "TimeStep", 1));
+                LTEventContent.add(new Idea("End",
+                        eventContent.getL().get(1).get("TimeStamp").getValue(),
+                        "TimeStep", 1));
                 Idea LTEventNode = epLTMGraph.insertEventNode(LTEventContent);
                 instanceNodeToMemoryNode.put(eventNode, LTEventNode);
 
-                Idea eventsSelfObject = eventContent.getL().get(1).get("Self");
-                if (eventsSelfObject != null){
-                    Idea LTEventsSelfObject = new Idea("Self", null, "Object", 1);
-                    if (eventContent.getValue().equals("Rotate")){
-                        eventsSelfObject.get("Pitch");
-                    }
-                }
+                Idea catParam = trackedPropertiesAssimilateAccommodateHabit.get("Input_Category");
+                catParam.getL().clear();
+                catParam.add(eventCategory.get("ObservedObject"));
+                catParam.add(eventCategory.get("properties"));
+                Idea catss = trackedPropertiesAssimilateAccommodateHabit.get("categories");
+                catss.setL(propertiesCategories);
+
+                List<Idea> eventPropertiesCategories = trackedPropertiesAssimilateAccommodateHabit.exec(eventContent);
+                Idea propertyStartNode = epLTMGraph.insertNode(eventPropertiesCategories.get(0), "Property");
+                Idea propertyEndNode = epLTMGraph.insertNode(eventPropertiesCategories.get(1), "Property");
+                epLTMGraph.insetLink(LTEventNode, propertyStartNode, "Initial");
+                epLTMGraph.insetLink(LTEventNode, propertyEndNode, "Final");
 
                 if (startEvent == null) {
                     startEvent = LTEventNode;
@@ -171,6 +190,9 @@ public class EpisodicGistExtraction extends Codelet {
             stories.getL().remove(oldestEpisode);
             synchronized (locationMO) {
                 locationMO.setI(memLocations);
+            }
+            synchronized (propertiesMO) {
+                propertiesMO.setI(propertiesCategories);
             }
         }
     }

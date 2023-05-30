@@ -43,7 +43,7 @@ public class Collect extends Codelet {
         if (impulse != null) {
             if (impulse.get("State.Jewel") != null) {
                 if (impulse.get("State.Jewel.Condition").getValue().equals("In Bag")) {
-                    Idea action = new Idea("Action", "Collect", "Episode", 0);
+                    Idea action = new Idea("Action", "Collect", "Action", 1);
                     action.add(new Idea("Jewel_ID", impulse.get("State.Jewel.ID").getValue()));
                     handsMO.setI(action, (double) impulse.get("State.Desire").getValue(), this.name);
                     removeFromMemory((int) impulse.get("State.Jewel.ID").getValue());

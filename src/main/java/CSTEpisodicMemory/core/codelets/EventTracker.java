@@ -100,6 +100,7 @@ public class EventTracker extends Codelet {
                             constraints.add(inputIdeaBuffer.get(inputIdeaBuffer.size()-1));
                             Idea event = trackedEventCategory.instantiation(constraints);
                             event.setName("Event" + count++);
+                            event.setValue(trackedEventCategory);
                             inputIdeaBuffer.clear();
                             inputIdeaBuffer.add(currentInputIdea.clone());
                             initialEventIdea = null;

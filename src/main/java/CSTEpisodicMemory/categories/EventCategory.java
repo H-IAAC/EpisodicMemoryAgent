@@ -59,8 +59,9 @@ public abstract class EventCategory implements Category {
             Idea eventIdea = new Idea("Event", this.name, "Episode", 1);
             Idea time1 = new Idea("", 1, "TimeStep", 1);
             Idea time2 = new Idea("", 2, "TimeStep", 1);
-            time1.add(constraints.get(0));
-            time1.add(constraints.get(0).get("TimeStamp"));
+            //time1.add(constraints.get(0));
+            //time1.add(constraints.get(0).get("TimeStamp"));
+            time1.getL().addAll(extractRelevant(constraints.get(0)));
             time2.getL().addAll(extractRelevant(constraints.get(1)));
             eventIdea.add(time1);
             eventIdea.add(time2);
@@ -94,5 +95,9 @@ public abstract class EventCategory implements Category {
             i = i_;
         }
         return copy;
+    }
+
+    public String getName(){
+        return name;
     }
 }
