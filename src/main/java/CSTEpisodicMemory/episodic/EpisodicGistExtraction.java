@@ -22,6 +22,7 @@ public class EpisodicGistExtraction extends Codelet {
     private Idea prevEp = null;
     private Idea prevLastEvent = null;
     private Idea trackedPropertiesAssimilateAccommodateHabit;
+    private int impulseCount = 0;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
         this.locCatAcomodate = locCatAcomodate;
@@ -151,7 +152,9 @@ public class EpisodicGistExtraction extends Codelet {
                 }
             }
             for (Idea impulseNode : story.getContextNodes()){
-                Idea LTContextNode = epLTMGraph.insertContextNode(getNodeContent(impulseNode).clone());
+                Idea LTMImpulse = getNodeContent(impulseNode).clone();
+                LTMImpulse.setName(LTMImpulse.getName() + impulseCount++);
+                Idea LTContextNode = epLTMGraph.insertContextNode(LTMImpulse);
                 instanceNodeToMemoryNode.put(impulseNode, LTContextNode);
             }
 

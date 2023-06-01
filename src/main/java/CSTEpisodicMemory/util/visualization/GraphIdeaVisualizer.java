@@ -2,14 +2,14 @@ package CSTEpisodicMemory.util.visualization;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
+import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -31,6 +31,10 @@ public class GraphIdeaVisualizer extends JFrame {
     private GraphIdea graphIdea;
     private JComponent display;
     private Graph gg = new Graph();
+    private boolean physics = true;
+    private Node selected = null;
+    protected String[] types = new String[]{"Event", "Location", "Episode", "Context", "Property"};
+    protected List<String> selections = new ArrayList<>(Arrays.asList(types));
 
     public GraphIdeaVisualizer(int width, int heigth, GraphIdea graph) {
         this.width = width;
@@ -62,11 +66,40 @@ public class GraphIdeaVisualizer extends JFrame {
     private void initComponents(){
         setSize(width,heigth);
 
+        JToolBar toolBar = new JToolBar();
+        JToggleButton button = new JToggleButton("Physics");
+        button.setSelected(true);
+        button.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent itemEvent) {
+                physics = itemEvent.getStateChange() == ItemEvent.SELECTED;
+            }
+        });
+        toolBar.add(button);
+
+        for (int i = 0; i<5;i++){
+            JCheckBox cBox = new JCheckBox(types[i]);
+            cBox.setSelected(true);
+            int finalI = i;
+            cBox.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent itemEvent) {
+                    if (itemEvent.getStateChange() == ItemEvent.SELECTED)
+                        selections.add(types[finalI]);
+                    else
+                        selections.remove(types[finalI]);
+                }
+            });
+            toolBar.add(cBox);
+        }
+
+        getContentPane().add(toolBar, BorderLayout.NORTH);
         JComponent display = new JComponent() {
 
 
             @Override
             protected void paintComponent(Graphics g) {
+                g.setFont(new Font("Roboto", Font.BOLD, 14));
                 updtateGraph();
                 g.translate(width/2, heigth/2);
                 gg.draw((Graphics2D) g);
@@ -76,7 +109,6 @@ public class GraphIdeaVisualizer extends JFrame {
             private void updtateGraph(){
                 for (Idea node : graphIdea.getNodes()){
                     String nodeName = GraphIdea.getNodeContent(node).getName();
-                    if (!node.get("Type").getValue().equals("Episode")) {
                         if (!gg.hasNode(nodeName)) {
                             gg.insertNode(nodeName, (String) node.get("Type").getValue());
                             return;
@@ -84,7 +116,6 @@ public class GraphIdeaVisualizer extends JFrame {
                         Map<String, List<Idea>> links = graphIdea.getSuccesors(node);
                         for (List<Idea> linkedNodes : links.values()) {
                             for (Idea nodeB : linkedNodes) {
-                                if (!nodeB.get("Type").getValue().equals("Episode")) {
                                     String nodeBName = GraphIdea.getNodeContent(nodeB).getName();
                                     if (!gg.hasNode(nodeBName)) {
                                         gg.insertNode(nodeBName, (String) nodeB.get("Type").getValue());
@@ -94,10 +125,8 @@ public class GraphIdeaVisualizer extends JFrame {
                                         gg.insertLink(nodeName, nodeBName);
                                         return;
                                     }
-                                }
                             }
                         }
-                    }
                 }
             }
         };
@@ -109,13 +138,28 @@ public class GraphIdeaVisualizer extends JFrame {
             }
         });
 
+        display.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                System.out.println("Release");
+                if (selected != null) {
+                    selected.selected = false;
+                    selected = null;
+                }
+            }
+        });
+
         add(display);
     }
 
     protected void processPos(double x, double y){
         ArrayRealVector test = new ArrayRealVector(new double[]{x-width/2,y-heigth/2});
-        Node selected = gg.getSelectedNode(test);
-        if (selected != null){
+        Node newSelected = gg.getSelectedNode(test);
+        if (selected == null && newSelected != null){
+            selected = newSelected;
+            selected.pos = test;
+            selected.selected = true;
+        } else {
             selected.pos = test;
         }
     }
@@ -126,6 +170,7 @@ public class GraphIdeaVisualizer extends JFrame {
         protected String type;
         protected ArrayRealVector force;
         protected ArrayRealVector vel;
+        protected boolean selected = false;
 
         private static final Map<String, Color> COLORS = new HashMap<>(){
             {
@@ -165,13 +210,15 @@ public class GraphIdeaVisualizer extends JFrame {
         }
 
         protected void updatePos(){
-            RealVector drag = this.vel.mapMultiply(DRAG_COEF);
-            this.force = this.force.subtract(drag);
-            this.vel = this.vel.add(this.force);
-            if (this.vel.getNorm() > MAX_VEL){
-                this.vel = (ArrayRealVector) this.vel.mapDivide(this.vel.getNorm()).mapMultiply(MAX_VEL);
+            if (!selected) {
+                RealVector drag = this.vel.mapMultiply(DRAG_COEF);
+                this.force = this.force.subtract(drag);
+                this.vel = this.vel.add(this.force);
+                if (this.vel.getNorm() > MAX_VEL) {
+                    this.vel = (ArrayRealVector) this.vel.mapDivide(this.vel.getNorm()).mapMultiply(MAX_VEL);
+                }
+                this.pos = this.pos.add(this.vel);
             }
-            this.pos = this.pos.add(this.vel);
         }
     }
 
@@ -207,35 +254,52 @@ public class GraphIdeaVisualizer extends JFrame {
         }
 
         protected void draw(Graphics2D g){
-            this.updateForces();
-            this.nodes.forEach((n, node) -> node.updatePos());
-            this.links.forEach(l->l.draw(g));
-            this.nodes.forEach((n,node)->node.draw(g));
+            if (physics) {
+                this.updateForces();
+                this.nodes.forEach((n, node) -> {
+                    if (selections.contains(node.type))
+                        node.updatePos();
+                });
+            }
+            this.links.forEach(l-> {
+                if (selections.contains(l.a.type) && selections.contains(l.b.type))
+                    l.draw(g);
+            });
+            this.nodes.forEach((n,node)-> {
+                if (selections.contains(node.type))
+                    node.draw(g);
+            });
         }
 
         private void updateForces(){
             List<Node> otherNodes = new ArrayList<>(this.nodes.values());
             for (Node nodeA : this.nodes.values()){
-                ArrayRealVector centerAttraction = (ArrayRealVector) nodeA.pos.copy().mapMultiply(-1).mapDivide(nodeA.pos.getNorm()).mapMultiply(FORCE_CENTER);
-                nodeA.force = centerAttraction;
-                otherNodes.remove(nodeA);
+                if (selections.contains(nodeA.type)) {
+                    ArrayRealVector centerAttraction = (ArrayRealVector) nodeA.pos.copy().mapMultiply(-1).mapDivide(nodeA.pos.getNorm()).mapMultiply(FORCE_CENTER);
+                    nodeA.force = centerAttraction;
+                    otherNodes.remove(nodeA);
 
-                for (Node nodeB : otherNodes){
-                    ArrayRealVector dir = (ArrayRealVector) nodeB.pos.copy().subtract(nodeA.pos);
-                    if (dir.getNorm() < 2 * MAX_DIST){
-                        ArrayRealVector force = (ArrayRealVector) dir.mapDivide(dir.getNorm() * dir.getNorm());
-                        force = (ArrayRealVector) force.mapMultiply(REPEL_FORCE);
-                        nodeA.force = nodeA.force.subtract(force);
-                        nodeB.force = nodeB.force.add(force);
+                    for (Node nodeB : otherNodes) {
+                        if (selections.contains(nodeB.type)) {
+                            ArrayRealVector dir = (ArrayRealVector) nodeB.pos.copy().subtract(nodeA.pos);
+                            if (dir.getNorm() < 2 * MAX_DIST) {
+                                ArrayRealVector force = (ArrayRealVector) dir.mapDivide(dir.getNorm() * dir.getNorm());
+                                force = (ArrayRealVector) force.mapMultiply(REPEL_FORCE);
+                                nodeA.force = nodeA.force.subtract(force);
+                                nodeB.force = nodeB.force.add(force);
+                            }
+                        }
                     }
-                }
 
-                for (Link l : this.links){
-                    ArrayRealVector dis = l.a.pos.copy().subtract(l.b.pos);
-                    double diff = dis.getNorm() - MAX_DIST;
-                    dis = (ArrayRealVector) dis.mapDivide(dis.getNorm()).mapMultiply(diff).mapMultiply(LINK_FORCE);
-                    l.a.force = l.a.force.subtract(dis);
-                    l.b.force = l.b.force.add(dis);
+                    for (Link l : this.links) {
+                        if (selections.contains(l.a.type) && selections.contains(l.b.type)) {
+                            ArrayRealVector dis = l.a.pos.copy().subtract(l.b.pos);
+                            double diff = dis.getNorm() - MAX_DIST;
+                            dis = (ArrayRealVector) dis.mapDivide(dis.getNorm()).mapMultiply(diff).mapMultiply(LINK_FORCE);
+                            l.a.force = l.a.force.subtract(dis);
+                            l.b.force = l.b.force.add(dis);
+                        }
+                    }
                 }
             }
         }
