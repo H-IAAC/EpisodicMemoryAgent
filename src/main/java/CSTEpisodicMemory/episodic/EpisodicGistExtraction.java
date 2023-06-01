@@ -1,17 +1,12 @@
 package CSTEpisodicMemory.episodic;
 
-import CSTEpisodicMemory.categories.EventCategory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
-import br.unicamp.cst.core.entities.MemoryBuffer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
-import javax.swing.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 
@@ -132,8 +127,8 @@ public class EpisodicGistExtraction extends Codelet {
                 List<Idea> eventPropertiesCategories = trackedPropertiesAssimilateAccommodateHabit.exec(eventContent);
                 Idea propertyStartNode = epLTMGraph.insertNode(eventPropertiesCategories.get(0), "Property");
                 Idea propertyEndNode = epLTMGraph.insertNode(eventPropertiesCategories.get(1), "Property");
-                epLTMGraph.insetLink(LTEventNode, propertyStartNode, "Initial");
-                epLTMGraph.insetLink(LTEventNode, propertyEndNode, "Final");
+                epLTMGraph.insertLink(LTEventNode, propertyStartNode, "Initial");
+                epLTMGraph.insertLink(LTEventNode, propertyEndNode, "Final");
 
                 if (startEvent == null) {
                     startEvent = LTEventNode;
@@ -167,22 +162,22 @@ public class EpisodicGistExtraction extends Codelet {
                 for (String linkType : linksOut.keySet()){
                     for (Idea node : linksOut.get(linkType)){
                         Idea linkedMemoryNode = instanceNodeToMemoryNode.get(node);
-                        epLTMGraph.insetLink(eventMemoryNode, linkedMemoryNode, linkType);
+                        epLTMGraph.insertLink(eventMemoryNode, linkedMemoryNode, linkType);
                     }
                 }
             }
 
             //Create an Episode node
-            Idea ep = new Idea("Episode", (int) oldestEpisode.getValue(), "Episode", 1);
+            Idea ep = new Idea("Episode" + (int) oldestEpisode.getValue(), (int) oldestEpisode.getValue(), "Episode", 1);
             epLTMGraph.insertEpisodeNode(ep);
-            epLTMGraph.insetLink(ep, startEvent, "Begin");
-            epLTMGraph.insetLink(ep, endEvent, "End");
+            epLTMGraph.insertLink(ep, startEvent, "Begin");
+            epLTMGraph.insertLink(ep, endEvent, "End");
             if (prevEp == null){
                 prevEp = ep;
                 prevLastEvent = endEvent;
             } else {
-                epLTMGraph.insetLink(prevEp, ep, "Next");
-                epLTMGraph.insetLink(prevLastEvent, startEvent, "Next");
+                epLTMGraph.insertLink(prevEp, ep, "Next");
+                epLTMGraph.insertLink(prevLastEvent, startEvent, "Next");
                 prevEp = ep;
                 prevLastEvent = endEvent;
             }

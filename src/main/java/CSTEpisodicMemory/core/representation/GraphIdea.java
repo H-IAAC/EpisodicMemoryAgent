@@ -76,7 +76,7 @@ public class GraphIdea {
         return nodeIdea;
     }
 
-    public void insetLink(Idea nodeSource, Idea nodeDest, String type){
+    public void insertLink(Idea nodeSource, Idea nodeDest, String type){
         Idea nodeIdeaSource;
         if (!nodeSource.getName().equals("Node")) {
             Optional<Idea> nodeOpt = this.getNodes().stream()

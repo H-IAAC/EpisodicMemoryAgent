@@ -1,10 +1,16 @@
 package CSTEpisodicMemory.util.visualization;
 
 import CSTEpisodicMemory.Environment;
+import CSTEpisodicMemory.core.representation.GraphIdea;
+import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
+import br.unicamp.cst.representation.idea.Idea;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
@@ -53,6 +59,31 @@ public class GraphicMind extends JFrame {
     private void initComponents(){
         setSize(windowW,windowH);
 
+        JToolBar toolBar = new JToolBar();
+        JPopupMenu popup = new JPopupMenu();
+        popup.add(new JMenuItem(new AbstractAction("View Graph") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                Optional<Memory> selectedMem = m.getRawMemory().getAllMemoryObjects()
+                        .stream().filter(m->m.getName().equalsIgnoreCase("EPLTM"))
+                        .findFirst();
+                if (selectedMem.isPresent()) {
+                    GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
+                    GraphIdeaVisualizer tt = new GraphIdeaVisualizer(800, 800, gg);
+                }
+            }
+        }));
+        JButton button = new JButton("View");
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+        toolBar.add(button);
+
+        getContentPane().add(toolBar, BorderLayout.NORTH);
+
         JComponent display = new JComponent() {
             LocationGraphic loc = new LocationGraphic(m, envW,envH,windowW,windowH);
             AgentGraphic agentGraphic = new AgentGraphic(env, envW,envH,windowW,windowH);
@@ -93,7 +124,6 @@ public class GraphicMind extends JFrame {
         };
 
         add(display);
-
 
     }
 }

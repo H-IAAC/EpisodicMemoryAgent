@@ -78,14 +78,14 @@ public class EpisodeBinding extends Codelet {
                         if (!story.hasNodeContent(position)) {
                             story.insertLocationNode(position);
                         }
-                        story.insetLink(event, position, "SpatialContext");
+                        story.insertLink(event, position, "SpatialContext");
 
                         Idea impulse = contextIdea.get("Impulse").clone();
                         if (impulse != null) {
                             if (!story.hasNodeContent(impulse)) {
                                 story.insertContextNode(impulse);
                             }
-                            story.insetLink(event, impulse, "InternalContext");
+                            story.insertLink(event, impulse, "InternalContext");
                         }
                     }
                 }
@@ -149,7 +149,7 @@ public class EpisodeBinding extends Codelet {
                         closestBeforeSinkIdea = nodeContent.clone();
                     }
                 } else {
-                    story.insetLink(event, nodeContent, relation);
+                    story.insertLink(event, nodeContent, relation);
                 }
             }
             relation = temporalRelation(start2, end2, start1, end1);
@@ -160,15 +160,15 @@ public class EpisodeBinding extends Codelet {
                         closestBeforeSourceIdea = nodeContent.clone();
                     }
                 } else {
-                    story.insetLink(nodeContent, event, relation);
+                    story.insertLink(nodeContent, event, relation);
                 }
             }
         }
 
         if (closestBeforeSinkIdea != null)
-            story.insetLink(event, closestBeforeSinkIdea, "Before");
+            story.insertLink(event, closestBeforeSinkIdea, "Before");
         if (closestBeforeSourceIdea != null)
-            story.insetLink(closestBeforeSourceIdea, event, "Before");
+            story.insertLink(closestBeforeSourceIdea, event, "Before");
 
     }
 

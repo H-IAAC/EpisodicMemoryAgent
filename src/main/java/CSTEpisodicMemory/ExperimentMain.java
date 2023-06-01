@@ -3,6 +3,8 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.util.visualization.GraphIdeaVisualizer;
 import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
 import CSTEpisodicMemory.util.visualization.GraphicMind;
 import WS3DCoppelia.util.Constants;
@@ -11,37 +13,69 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ExperimentMain {
 
     public static void main(String[] args) {
-        Logger.getLogger("codelets").setLevel(Level.SEVERE);
-        // Create Environment
-        Environment env=new Environment(); //Creates only a creature and some apples
-        AgentMind a = new AgentMind(env);  // Creates the Agent Mind and start it
-        // The following lines create the MindViewer and configure it
-        //MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
-        //mv.setVisible(true);
-
-        IdeaVisualizer visu = new IdeaVisualizer(a);
-        visu.addMemoryWatch("Story", 6);
-        visu.addMemoryWatch("Impulses", 5);
-        visu.addMemoryWatch("EPLTM", 4);
-        visu.addMemoryWatch("Location", 3);
-        visu.addMemoryWatch("PROPERTIES", 3);
-        visu.setVisible(true);
-
-        GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                env.stopSimulation();
-            }
-        });
-        runTestCommands(env, a);
+        //test();
+        normal();
     }
+
+    private static void test(){
+        GraphIdea gg = new GraphIdea(new Idea("Graph", null));
+        Idea e1 = new Idea("Event1", null);
+        Idea e2 = new Idea("Event2", null);
+        Idea e3 = new Idea("Event3", null);
+        Idea l1 = new Idea("Location1", null);
+        Idea l2 = new Idea("Location2", null);
+        Idea l3 = new Idea("Location3", null);
+        Idea l4 = new Idea("Location4", null);
+        gg.insertEventNode(e1);
+        gg.insertEventNode(e2);
+        gg.insertEventNode(e3);
+        gg.insertLocationNode(l1);
+        gg.insertLocationNode(l2);
+        gg.insertLocationNode(l3);
+        gg.insertLocationNode(l4);
+        gg.insertLink(e1,l1,"loc");
+        gg.insertLink(e2,l2,"loc");
+        gg.insertLink(e3,l2,"loc");
+        gg.insertLink(e1,e2,"loc");
+        gg.insertLink(e1,e3,"loc");
+        gg.insertLink(e2,e3,"loc");
+        GraphIdeaVisualizer tt = new GraphIdeaVisualizer(800, 800, gg);
+    }
+     private static void normal(){
+         Logger.getLogger("codelets").setLevel(Level.SEVERE);
+         // Create Environment
+         Environment env=new Environment(); //Creates only a creature and some apples
+         AgentMind a = new AgentMind(env);  // Creates the Agent Mind and start it
+         // The following lines create the MindViewer and configure it
+         //MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
+         //mv.setVisible(true);
+
+         IdeaVisualizer visu = new IdeaVisualizer(a);
+         visu.addMemoryWatch("Story", 6);
+         visu.addMemoryWatch("Impulses", 5);
+         visu.addMemoryWatch("EPLTM", 4);
+         visu.addMemoryWatch("Location", 3);
+         visu.addMemoryWatch("PROPERTIES", 3);
+         visu.setVisible(true);
+
+         GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
+
+
+         Runtime.getRuntime().addShutdownHook(new Thread() {
+             public void run() {
+                 env.stopSimulation();
+             }
+         });
+         runTestCommands(env, a);
+
+     }
 
     public static void runTestCommands(Environment env, AgentMind a){
         env.world.createThing(Constants.JewelTypes.RED_JEWEL, 0.2f, 9.5f);

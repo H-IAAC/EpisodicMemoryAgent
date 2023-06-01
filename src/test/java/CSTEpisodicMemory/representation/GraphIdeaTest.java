@@ -36,12 +36,12 @@ public class GraphIdeaTest {
         graphIdea.insertEventNode(pos2);
         graphIdea.insertEventNode(pos3);
 
-        graphIdea.insetLink(event1, event2, "Next");
-        graphIdea.insetLink(event2, event3, "Next");
-        graphIdea.insetLink(event1, pos1, "Start");
-        graphIdea.insetLink(event1, pos2, "End");
-        graphIdea.insetLink(event2, pos2, "Start");
-        graphIdea.insetLink(event2, pos3, "End");
+        graphIdea.insertLink(event1, event2, "Next");
+        graphIdea.insertLink(event2, event3, "Next");
+        graphIdea.insertLink(event1, pos1, "Start");
+        graphIdea.insertLink(event1, pos2, "End");
+        graphIdea.insertLink(event2, pos2, "Start");
+        graphIdea.insertLink(event2, pos3, "End");
     }
 
     @Test
