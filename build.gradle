@@ -9,6 +9,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    id 'jacoco'
 }
 
 repositories {
@@ -28,7 +29,7 @@ repositories {
 
 dependencies {
     // Use JUnit test framework.
-    testImplementation 'junit:junit:4.13.2'
+    //testImplementation 'junit:junit:4.13.2'
 
     // This dependency is used by the application.
     implementation 'com.github.CST-Group:cst:40446d1'
@@ -36,7 +37,9 @@ dependencies {
     implementation 'com.github.CST-Group:WS3D-Coppelia:docs-SNAPSHOT'
     implementation 'org.json:json:20180813'
     implementation fileTree(dir: 'libs', include: '*.jar')
-    testImplementation group: 'junit', name: 'junit', version: '4.10'
+    //testImplementation group: 'junit', name: 'junit', version: '4.10'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
 }
 
 application {
@@ -58,3 +61,22 @@ jar {
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.outputLocation = layout.buildDirectory.dir('test-coverage')
+        dependsOn test // tests are required to run before generating the report
+    }
+}
+
+
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+    useJUnitPlatform()
+}
+

@@ -75,6 +75,9 @@ public class LocationGraphic {
                 Color p = new Color(0, 138, 0, (int) (240 * act) + 15);
                 g.setColor(p);
                 g.fill(draw);
+                g.setColor(Color.BLACK);
+                g.drawString(loc.getName(), (int) ((cy - r / 2) * windowW / envW), (int) ((cx - r / 2) * windowH / envH));
+                g.drawString(String.format("%.4f", act), (int) ((cy - r / 2) * windowW / envW), (int) ((cx - r / 2) * windowH / envH + 30));
             }
         }
 

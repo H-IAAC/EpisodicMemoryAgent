@@ -3,7 +3,7 @@ package CSTEpisodicMemory.habits;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static CSTEpisodicMemory.habits.LocationCategoryGenerator.START_RADIUS;
 import static org.junit.Assert.assertEquals;

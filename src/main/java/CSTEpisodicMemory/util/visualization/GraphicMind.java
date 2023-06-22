@@ -69,7 +69,7 @@ public class GraphicMind extends JFrame {
                         .findFirst();
                 if (selectedMem.isPresent()) {
                     GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
-                    GraphIdeaVisualizer tt = new GraphIdeaVisualizer(800, 800, gg);
+                    GraphIdeaVisualizer tt = new GraphIdeaVisualizer(800, 700, gg);
                 }
             }
         }));

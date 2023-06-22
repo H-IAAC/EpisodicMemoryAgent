@@ -6,7 +6,7 @@ import WS3DCoppelia.model.Thing;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GoToJewelImpulseTest {
 

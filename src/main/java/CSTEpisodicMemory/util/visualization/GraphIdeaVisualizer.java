@@ -172,7 +172,7 @@ public class GraphIdeaVisualizer extends JFrame {
         protected ArrayRealVector vel;
         protected boolean selected = false;
 
-        private static final Map<String, Color> COLORS = new HashMap<>(){
+        private final Map<String, Color> COLORS = new HashMap<>(){
             {
                 put("Event", Color.ORANGE);
                 put("Location", Color.GREEN);
@@ -233,8 +233,17 @@ public class GraphIdeaVisualizer extends JFrame {
         protected void draw(Graphics2D g){
             Line2D.Double line = new Line2D.Double(a.pos.getEntry(0), a.pos.getEntry(1),
                     b.pos.getEntry(0), b.pos.getEntry(1));
+            ArrayRealVector dir = b.pos.subtract(a.pos);
+            dir = (ArrayRealVector) dir.mapDivide(dir.getNorm()).mapMultiply(25);
+            Line2D.Double head = new Line2D.Double(b.pos.getEntry(0) - dir.getEntry(0),
+                    b.pos.getEntry(1) - dir.getEntry(1),
+                    b.pos.getEntry(0), b.pos.getEntry(1));
             g.setColor(Color.BLACK);
             g.draw(line);
+            g.setStroke(new BasicStroke(3));
+            g.setColor(new Color(0x1672D5));
+            g.draw(head);
+            g.setStroke(new BasicStroke(1));
         }
     }
 
@@ -277,6 +286,26 @@ public class GraphIdeaVisualizer extends JFrame {
                 if (selections.contains(nodeA.type)) {
                     ArrayRealVector centerAttraction = (ArrayRealVector) nodeA.pos.copy().mapMultiply(-1).mapDivide(nodeA.pos.getNorm()).mapMultiply(FORCE_CENTER);
                     nodeA.force = centerAttraction;
+                    nodeA.force = nodeA.force.subtract(nodeA.force);
+                    double yBand = 0;
+                    switch (nodeA.type){
+                        case "Episode":
+                            yBand = width * (-4.0/10);
+                            break;
+                        case "Context":
+                            yBand = width * (-2.0/10);
+                            break;
+                        case "Event":
+                            yBand = 0.0;
+                            break;
+                        case "Property":
+                            yBand = width * (2.0/10);
+                            break;
+                        case "Location":
+                            yBand = width * (4.0/10);
+                            break;
+                    }
+                    nodeA.force.setEntry(1, nodeA.force.getEntry(1) + 0.02*(yBand - nodeA.pos.getEntry(1)));
                     otherNodes.remove(nodeA);
 
                     for (Node nodeB : otherNodes) {

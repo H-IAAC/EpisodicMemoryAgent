@@ -4,6 +4,7 @@
 package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.util.visualization.EventVisualizer;
 import CSTEpisodicMemory.util.visualization.GraphIdeaVisualizer;
 import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
 import CSTEpisodicMemory.util.visualization.GraphicMind;
@@ -12,6 +13,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -67,6 +69,8 @@ public class ExperimentMain {
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
 
+
+         EventVisualizer ev = new EventVisualizer(1000, 200, a);
 
          Runtime.getRuntime().addShutdownHook(new Thread() {
              public void run() {
