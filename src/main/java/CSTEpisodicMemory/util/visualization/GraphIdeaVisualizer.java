@@ -185,7 +185,7 @@ public class GraphIdeaVisualizer extends JFrame {
         public Node(String name, String type) {
             Random rnd = new Random();
             int mult = 1;
-            this.pos = new ArrayRealVector(new double[]{rnd.nextDouble()*width*mult-width*mult/2f, rnd.nextDouble()*heigth*mult-heigth*mult/2f});
+            this.pos = new ArrayRealVector(new double[]{heigth*mult/2f-rnd.nextDouble()*20, rnd.nextDouble()*heigth*mult-heigth*mult/2f});
             this.name = name;
             this.type = type;
             this.force = new ArrayRealVector(new double[]{0,0});
@@ -290,22 +290,22 @@ public class GraphIdeaVisualizer extends JFrame {
                     double yBand = 0;
                     switch (nodeA.type){
                         case "Episode":
-                            yBand = width * (-4.0/10);
+                            yBand = (heigth - 100) * (-4.0/10);
                             break;
                         case "Context":
-                            yBand = width * (-2.0/10);
+                            yBand = (heigth - 100) * (-2.0/10);
                             break;
                         case "Event":
                             yBand = 0.0;
                             break;
                         case "Property":
-                            yBand = width * (2.0/10);
+                            yBand = (heigth - 100) * (2.0/10);
                             break;
                         case "Location":
-                            yBand = width * (4.0/10);
+                            yBand = (heigth - 100) * (4.0/10);
                             break;
                     }
-                    nodeA.force.setEntry(1, nodeA.force.getEntry(1) + 0.02*(yBand - nodeA.pos.getEntry(1)));
+                    nodeA.force.setEntry(1, nodeA.force.getEntry(1) + 0.001*(yBand - nodeA.pos.getEntry(1)));
                     otherNodes.remove(nodeA);
 
                     for (Node nodeB : otherNodes) {

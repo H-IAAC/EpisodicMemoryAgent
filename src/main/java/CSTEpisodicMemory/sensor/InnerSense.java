@@ -38,15 +38,20 @@ public class InnerSense extends Codelet{
     }
 
     public void proc() {
-        cis.get("Position").get("X").setValue(agent.getPosition().get(0));
-        cis.get("Position").get("Y").setValue(agent.getPosition().get(1));
-        cis.get("Pitch").setValue(agent.getPitch());
-        cis.get("Fuel").setValue(agent.getFuel());
-        int step = (int) cis.get("Step").getValue();
-        cis.get("Step").setValue(step + 1);
-        cis.get("TimeStamp").setValue(System.currentTimeMillis());
-        if (debug) {
-            System.out.println(cis.toStringFull());
+        synchronized (cis) {
+            cis.get("Position").get("X").setValue(agent.getPosition().get(0));
+            cis.get("Position").get("Y").setValue(agent.getPosition().get(1));
+            cis.get("Pitch").setValue(agent.getPitch());
+            cis.get("Fuel").setValue(agent.getFuel());
+            int step = (int) cis.get("Step").getValue();
+            cis.get("Step").setValue(step + 1);
+            cis.get("TimeStamp").setValue(System.currentTimeMillis());
+            if (debug) {
+                System.out.println(cis.toStringFull());
+            }
+        }
+        synchronized (innerSenseMO) {
+            innerSenseMO.setI(cis);
         }
     }
 

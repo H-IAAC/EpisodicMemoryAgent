@@ -65,6 +65,7 @@ public class ExperimentMain {
          visu.addMemoryWatch("EPLTM", 4);
          visu.addMemoryWatch("Location", 3);
          visu.addMemoryWatch("PROPERTIES", 3);
+         visu.addMemoryWatch("FOOD", 3);
          visu.setVisible(true);
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
@@ -82,6 +83,8 @@ public class ExperimentMain {
      }
 
     public static void runTestCommands(Environment env, AgentMind a){
+        env.world.createThing(Constants.FoodTypes.NPFOOD, 7.5f, 1.5f);
+        env.world.createThing(Constants.FoodTypes.NPFOOD, 7.5f, 9.5f);
         env.world.createThing(Constants.JewelTypes.RED_JEWEL, 0.2f, 9.5f);
         env.world.createThing(Constants.JewelTypes.BLUE_JEWEL, 0.4f, 9.5f);
         env.world.createThing(Constants.JewelTypes.GREEN_JEWEL, 0.6f, 9.5f);

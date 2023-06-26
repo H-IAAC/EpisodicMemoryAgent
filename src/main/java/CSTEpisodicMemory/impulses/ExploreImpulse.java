@@ -136,7 +136,7 @@ public class ExploreImpulse extends Codelet {
     private void removeSatisfiedImpulses() {
         List<Memory> impulsesMemories = impulsesMO.getAllMemories();
         Memory remove = null;
-        synchronized (impulsesMemories) {
+        synchronized (impulsesMO) {
             for (Memory impulseMem : impulsesMemories) {
                 Idea impulse = (Idea) impulseMem.getI();
                 if (impulse.getValue().equals(this.impulseCat))

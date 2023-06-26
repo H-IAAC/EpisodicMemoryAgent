@@ -5,6 +5,7 @@
 package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.behavior.Collect;
+import CSTEpisodicMemory.behavior.Eat;
 import CSTEpisodicMemory.behavior.Move;
 import CSTEpisodicMemory.categories.LinearEventCategory;
 import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
@@ -15,11 +16,10 @@ import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.TimelineBufferCodelet;
 import CSTEpisodicMemory.habits.*;
-import CSTEpisodicMemory.impulses.CollectJewelImpulse;
-import CSTEpisodicMemory.impulses.ExploreImpulse;
-import CSTEpisodicMemory.impulses.GoToJewelImpulse;
+import CSTEpisodicMemory.impulses.*;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
 import CSTEpisodicMemory.motor.LegsActuatorCodelet;
+import CSTEpisodicMemory.perception.FoodDetector;
 import CSTEpisodicMemory.perception.JewelDetector;
 import CSTEpisodicMemory.perception.RoomDetector;
 import CSTEpisodicMemory.perception.WallDetector;
@@ -74,6 +74,7 @@ public class AgentMind extends Mind {
         Memory innerSenseMO;
         Memory visionMO;
         Memory knownJewelsMO;
+        Memory foodMO;
         Memory jewelsCounterMO;
         Memory wallsMO;
         Memory eventsMO;
@@ -97,6 +98,9 @@ public class AgentMind extends Mind {
         innerSenseMO = createMemoryObject("INNER", innerSenseIdea);
         //Vision sensor
         visionMO = createMemoryObject("VISION");
+        //Detected Foods
+        Idea foodsIdea = new Idea("Foods", null, 5);
+        foodMO = createMemoryObject("FOOD", foodsIdea);
         //Detected Jewels
         Idea jewelsIdea = new Idea("Jewels", null, 5);
         knownJewelsMO = createMemoryObject("KNOWN_JEWELS", jewelsIdea);
@@ -186,6 +190,12 @@ public class AgentMind extends Mind {
         leafletSenseCodelet.addOutput(leafletsMO);
         insertCodelet(leafletSenseCodelet, "Sensory");
 
+        //Food Detector Codelet
+        Codelet foodDetectorCodelet = new FoodDetector();
+        foodDetectorCodelet.addInput(visionMO);
+        foodDetectorCodelet.addOutput(foodMO);
+        insertCodelet(foodDetectorCodelet, "Perception");
+
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
         jewelDetectorCodelet.addInput(visionMO);
@@ -256,12 +266,26 @@ public class AgentMind extends Mind {
         goToJewelImpulse.addOutput(impulsesMO);
         insertCodelet(goToJewelImpulse, "Behavioral");
 
+        //Go to Food
+        Codelet goToFoodImpulse = new GoToFoodImpulse();
+        goToFoodImpulse.addInput(innerSenseMO);
+        goToFoodImpulse.addInput(foodMO);
+        goToFoodImpulse.addOutput(impulsesMO);
+        insertCodelet(goToFoodImpulse, "Behavioral");
+
         //Collect Jewel
         Codelet collectJewelImpulse = new CollectJewelImpulse();
         collectJewelImpulse.addInput(innerSenseMO);
         collectJewelImpulse.addInput(knownJewelsMO);
         collectJewelImpulse.addOutput(impulsesMO);
         insertCodelet(collectJewelImpulse, "Behavioral");
+
+        //Collect Food
+        Codelet collectFoodImpulse = new EatFoodImpulse();
+        collectFoodImpulse.addInput(innerSenseMO);
+        collectFoodImpulse.addInput(foodMO);
+        collectFoodImpulse.addOutput(impulsesMO);
+        insertCodelet(collectFoodImpulse, "Behavioral");
 
         Memory extra;
         extra = createMemoryObject("extra");
@@ -293,6 +317,13 @@ public class AgentMind extends Mind {
         collectActionCodelet.addOutput(handsMO);
         collectActionCodelet.addOutput(jewelsCounterMO);
         insertCodelet(collectActionCodelet, "Behavioral");
+
+        //Eat Action
+        Codelet eatAction = new Eat();
+        eatAction.addInput(impulsesMO);
+        eatAction.addInput(foodMO);
+        eatAction.addOutput(handsMO);
+        insertCodelet(eatAction, "Behavioral");
 
         //Hands Motor Codelet
         Codelet handsMotorCodelet = new HandsActuatorCodelet(env.creature);

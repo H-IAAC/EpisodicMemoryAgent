@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.motor;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import WS3DCoppelia.model.Agent;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -35,12 +36,17 @@ public class HandsActuatorCodelet extends Codelet {
     public void proc() {
         Idea action = (Idea) handsMO.getI();
         if (action != null) {
+            System.out.println(IdeaHelper.fullPrint(action));
             String command = (String) action.getValue();
             if (command != null) {
                 if (avaiableActions.contains(command)) {
                     if (command.equals("Collect")) {
                         int jewelID = (int) action.get("Jewel_ID").getValue();
                         creature.sackIt(jewelID);
+                    }
+                    if (command.equals("Eat")){
+                        int foodID = (int) action.get("Food_ID").getValue();
+                        creature.eatIt(foodID);
                     }
                 }
             }

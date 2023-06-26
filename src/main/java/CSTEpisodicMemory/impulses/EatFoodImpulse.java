@@ -6,31 +6,27 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static CSTEpisodicMemory.util.IdeaHelper.csvPrint;
+public class EatFoodImpulse extends Codelet {
 
-public class CollectJewelImpulse extends Codelet {
-
+    private Memory foodMO;
     private Memory innerSenseMO;
-    private Memory jewelsMO;
-    private MemoryContainer impulsesMO;
-    private Idea inner;
-    private Idea jewels;
+    private MemoryContainer impulseMO;
 
     private double minDesire = 0.9, maxDesire = 1.0;
-    private String impulseCat = "Collect";
+    private String impulseCat = "Eat";
 
     @Override
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");
-        this.inner = (Idea) innerSenseMO.getI();
-        this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
-        this.jewels = (Idea) jewelsMO.getI();
-        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
+        this.foodMO = (MemoryObject) getInput("FOOD");
+        this.impulseMO = (MemoryContainer) getOutput("IMPULSES");
+
     }
 
     @Override
@@ -42,30 +38,33 @@ public class CollectJewelImpulse extends Codelet {
     public void proc() {
         removeSatisfiedImpulses();
 
-        int numJewels = jewels.getL().size();
-        if (numJewels > 0){
-            for (Idea jewel : jewels.getL()){
-                double desirability = calculateDesirability(jewel);
+        Idea foods = (Idea) foodMO.getI();
+        int numFoods = foods.getL().size();
+        if (numFoods > 0){
+            for (Idea food : foods.getL()){
+                double desirability = calculateDesirability(food);
                 if (desirability > -1.0){
                     desirability = desirability * (maxDesire - minDesire) + minDesire;
-                    Idea impulse = createImpulse(jewel, desirability);
+                    Idea impulse = createImpulse(food, desirability);
                     addIfNotPresent(impulse);
                 } else {
-                    removeIfPresent(jewel);
+                    removeIfPresent(food);
                 }
             }
         }
     }
 
+
     private void removeSatisfiedImpulses() {
         List<Memory> toRemove = new ArrayList<>();
-        List<Integer> jewelsID = jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).collect(Collectors.toList());
-        List<Memory> impulsesMemories = impulsesMO.getAllMemories();
-        synchronized (impulsesMO) {
+        Idea foods = (Idea) foodMO.getI();
+        List<Integer> foodID = foods.getL().stream().map(e-> (int) e.get("ID").getValue()).collect(Collectors.toList());
+        List<Memory> impulsesMemories = impulseMO.getAllMemories();
+        synchronized (impulseMO) {
             for (Memory impulseMem : impulsesMemories){
                 Idea impulse = (Idea) impulseMem.getI();
                 if (impulse.getValue().equals(this.impulseCat)){
-                    if (!jewelsID.contains((int) impulse.get("State.Jewel.ID").getValue())){
+                    if (!foodID.contains((int) impulse.get("State.Food.ID").getValue())){
                         toRemove.add(impulseMem);
                     }
                 }
@@ -74,45 +73,46 @@ public class CollectJewelImpulse extends Codelet {
         }
     }
 
-    private double calculateDesirability(Idea jewel) {
+    private double calculateDesirability(Idea food) {
         double maxDesire = -1.0;
+        Idea inner = (Idea) innerSenseMO.getI();
         Vector2D selfPos = new Vector2D(
                 (float) inner.get("Position.X").getValue(),
                 (float) inner.get("Position.Y").getValue());
-        Vector2D jewelPos = new Vector2D(
-                (float) jewel.get("Position.X").getValue(),
-                (float) jewel.get("Position.Y").getValue());
-        if (selfPos.sub(jewelPos).magnitude() < 0.45)
+        Vector2D foodPos = new Vector2D(
+                (float) food.get("Position.X").getValue(),
+                (float) food.get("Position.Y").getValue());
+        if (selfPos.sub(foodPos).magnitude() < 0.45)
             maxDesire = 1.0;
         return maxDesire;
     }
 
-    private Idea createImpulse(Idea jewel, double desirability) {
+    private Idea createImpulse(Idea food, double desirability) {
         Idea impulse = new Idea("Impulse", this.impulseCat, "Goal", 0);
         Idea state = new Idea("State", null, "Timestep", 0);
-        Idea stateJewel = new Idea("Jewel", jewel.getValue(), "AbstractObject", 1);
-        stateJewel.add(jewel.get("ID").clone());
-        stateJewel.add(new Idea("Condition", "In Bag", "Property", 1));
-        state.add(stateJewel);
-        state.add(jewel.get("ID").clone());
+        Idea stateFood = new Idea("Food", food.getValue(), "AbstractObject", 1);
+        stateFood.add(food.get("ID").clone());
+        stateFood.add(new Idea("Condition", "Consumed", "Property", 1));
+        state.add(stateFood);
+        state.add(food.get("ID").clone());
         state.add(new Idea("Desire", desirability, "Property", 1));
         impulse.add(state);
         return impulse;
     }
 
     public void addIfNotPresent(Idea idea){
-        synchronized (impulsesMO) {
-            impulsesMO.setI(idea,
+        synchronized (impulseMO) {
+            impulseMO.setI(idea,
                     (double) idea.get("State.Desire").getValue(),
                     this.impulseCat + idea.get("State.ID").getValue());
         }
     }
 
-    public void removeIfPresent(Idea jewel){
-        synchronized (impulsesMO) {
-            impulsesMO.setI(jewel,
+    public void removeIfPresent(Idea food){
+        synchronized (impulseMO) {
+            impulseMO.setI(food,
                     -1.0,
-                    this.impulseCat + jewel.get("ID").getValue());
+                    this.impulseCat + food.get("ID").getValue());
         }
     }
 }

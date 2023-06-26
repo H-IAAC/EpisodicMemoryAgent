@@ -62,7 +62,7 @@ public class GoToJewelImpulse extends Codelet {
         List<Memory> toRemove = new ArrayList<>();
         List<Integer> jewelsID = jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).collect(Collectors.toList());
         List<Memory> impulsesMemories = impulsesMO.getAllMemories();
-        synchronized (impulsesMemories) {
+        synchronized (impulsesMO) {
             for (Memory impulseMem : impulsesMemories){
                 Idea impulse = (Idea) impulseMem.getI();
                 if (impulse.getValue().equals(this.impulseCat)){
