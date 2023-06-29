@@ -36,7 +36,7 @@ public class HandsActuatorCodelet extends Codelet {
     public void proc() {
         Idea action = (Idea) handsMO.getI();
         if (action != null) {
-            System.out.println(IdeaHelper.fullPrint(action));
+            //System.out.println(IdeaHelper.fullPrint(action));
             String command = (String) action.getValue();
             if (command != null) {
                 if (avaiableActions.contains(command)) {

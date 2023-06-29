@@ -174,11 +174,11 @@ public class GraphIdeaVisualizer extends JFrame {
 
         private final Map<String, Color> COLORS = new HashMap<>(){
             {
-                put("Event", Color.ORANGE);
-                put("Location", Color.GREEN);
-                put("Episode", Color.RED);
-                put("Context", Color.MAGENTA);
-                put("Property", Color.BLUE);
+                put("Event", new Color(0xFFCA3A));
+                put("Location", new Color(0x8AC926));
+                put("Episode", new Color(0xFA3F45));
+                put("Context", new Color(0x6A4C93));
+                put("Property", new Color(0x1982C4));
             }
         };
 

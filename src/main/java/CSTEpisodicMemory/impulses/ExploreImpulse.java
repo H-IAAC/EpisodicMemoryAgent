@@ -113,7 +113,7 @@ public class ExploreImpulse extends Codelet {
         boolean isInRoom = false;
         while (!isInRoom) {
             if (selected != null) {
-                choosenLoc = selected.instantiation();
+                choosenLoc = selected.getInstance();
             } else {
                 choosenLoc = new Idea("Position", null, "Property", 0);
                 float x = 10 * new Random().nextFloat();

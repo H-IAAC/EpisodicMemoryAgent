@@ -15,7 +15,7 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
     }
 
     @Override
-    public List<Idea> exec(Idea idea) {
+    public Idea exec(Idea idea) {
         Idea assimilateHabit = owner.get("property_habits.assimilate");
         Idea accommodateHabit = owner.get("property_habits.accommodate");
         String observedObject = (String) owner.get("Input_Category.ObservedObject").getValue();
@@ -35,9 +35,9 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
 
         synchronized (propertyCategories) {
             if (propertyCategories.size() == 0) {
-                Idea newPropertyCategory1 = assimilateHabit.exec0(objectInstance1);
+                Idea newPropertyCategory1 = assimilateHabit.exec(objectInstance1);
                 step1PropertyCategory = newPropertyCategory1;
-                Idea newPropertyCategory2 = assimilateHabit.exec0(objectInstance2);
+                Idea newPropertyCategory2 = assimilateHabit.exec(objectInstance2);
                 step2PropertyCategory = newPropertyCategory2;
                 propertyCategories.add(step1PropertyCategory);
                 propertyCategories.add(step2PropertyCategory);
@@ -64,26 +64,31 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
                 if (bestFitMembership1 >= 0.95) {
                     accommodateHabit.get("samples").getL().clear();
                     accommodateHabit.get("samples").add(objectInstance1);
-                    accommodateHabit.exec0(bestFitCategory1);
+                    accommodateHabit.exec(bestFitCategory1);
                     step1PropertyCategory = bestFitCategory1;
                 } else {
-                    Idea newPropertyCategory = assimilateHabit.exec0(objectInstance1);
+                    Idea newPropertyCategory = assimilateHabit.exec(objectInstance1);
                     step1PropertyCategory = newPropertyCategory;
                     propertyCategories.add(step1PropertyCategory);
                 }
                 if (bestFitMembership2 >= 0.95) {
                     accommodateHabit.get("samples").getL().clear();
                     accommodateHabit.get("samples").add(objectInstance2);
-                    accommodateHabit.exec0(bestFitCategory2);
+                    accommodateHabit.exec(bestFitCategory2);
                     step2PropertyCategory = bestFitCategory2;
                 } else {
-                    Idea newPropertyCategory = assimilateHabit.exec0(objectInstance2);
+                    Idea newPropertyCategory = assimilateHabit.exec(objectInstance2);
                     step2PropertyCategory = newPropertyCategory;
                     propertyCategories.add(step2PropertyCategory);
                 }
             }
         }
-        return Arrays.asList(step1PropertyCategory, step2PropertyCategory);
+        Idea returnIdea = new Idea("Properties_cat");
+        Idea idea0 = new Idea("0", step1PropertyCategory);
+        Idea idea1 = new Idea("1", step2PropertyCategory);
+        returnIdea.add(idea0);
+        returnIdea.add(idea1);
+        return returnIdea;
     }
 
 }

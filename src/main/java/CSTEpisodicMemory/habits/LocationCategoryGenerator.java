@@ -14,7 +14,7 @@ public class LocationCategoryGenerator implements Habit {
     public static double START_RADIUS = 0.7d;
 
     @Override
-    public List<Idea> exec(Idea idea) {
+    public Idea exec(Idea idea) {
         if (idea.getName().equals("Position")) {
             float startX = (float) idea.get("X").getValue();
             float startY = (float) idea.get("Y").getValue();
@@ -28,7 +28,7 @@ public class LocationCategoryGenerator implements Habit {
                 private Idea owner = newLocation;
 
                 @Override
-                public Idea getInstance(List<Idea> constraints) {
+                public Idea getInstance(Idea constraints) {
                     float centerX = (float) owner.get("centerX").getValue();
                     float centerY = (float) owner.get("centerY").getValue();
                     double radius = (double) owner.get("radius").getValue();
@@ -62,7 +62,7 @@ public class LocationCategoryGenerator implements Habit {
                     return membership + offset;
                 }
             });
-            return Arrays.asList(newLocation);
+            return newLocation;
         }
         return null;
     }

@@ -69,7 +69,7 @@ public class EpisodicGistExtraction extends Codelet {
             List<Idea> epLocations = story.getLocationNodes();
             for (Idea loc : epLocations) {
                 if (memLocations.size() == 0) {
-                    Idea newLocCat = newLocCategoryGenerator.exec0(getNodeContent(loc));
+                    Idea newLocCat = newLocCategoryGenerator.exec(getNodeContent(loc));
                     Idea firstLoc = epLTMGraph.insertLocationNode(newLocCat);
                     memLocations.add(newLocCat);
                     instanceNodeToMemoryNode.put(loc, firstLoc);
@@ -85,12 +85,12 @@ public class EpisodicGistExtraction extends Codelet {
                         }
                     }
 
-                    if (bestFitMembership >= 0.8) {
+                    if (bestFitMembership >= 0.95) {
                         locCatAcomodate.getL().clear();
                         locCatAcomodate.add(getNodeContent(loc));
-                        locCatAcomodate.exec0(bestFitCategory);
+                        locCatAcomodate.exec(bestFitCategory);
                     } else {
-                        Idea newLocCat = newLocCategoryGenerator.exec0(getNodeContent(loc));
+                        Idea newLocCat = newLocCategoryGenerator.exec(getNodeContent(loc));
                         Idea newLocNode = epLTMGraph.insertLocationNode(newLocCat);
                         memLocations.add(newLocCat);
                         bestFitCategory = newLocCat;
@@ -125,9 +125,9 @@ public class EpisodicGistExtraction extends Codelet {
                 Idea catss = trackedPropertiesAssimilateAccommodateHabit.get("categories");
                 catss.setL(propertiesCategories);
 
-                List<Idea> eventPropertiesCategories = trackedPropertiesAssimilateAccommodateHabit.exec(eventContent);
-                Idea propertyStartNode = epLTMGraph.insertNode(eventPropertiesCategories.get(0), "Property");
-                Idea propertyEndNode = epLTMGraph.insertNode(eventPropertiesCategories.get(1), "Property");
+                Idea eventPropertiesCategories = trackedPropertiesAssimilateAccommodateHabit.exec(eventContent);
+                Idea propertyStartNode = epLTMGraph.insertNode((Idea) eventPropertiesCategories.get("0").getValue(), "Property");
+                Idea propertyEndNode = epLTMGraph.insertNode((Idea) eventPropertiesCategories.get("1").getValue(), "Property");
                 epLTMGraph.insertLink(LTEventNode, propertyStartNode, "Initial");
                 epLTMGraph.insertLink(LTEventNode, propertyEndNode, "Final");
 

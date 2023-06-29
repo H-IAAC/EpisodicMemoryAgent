@@ -52,7 +52,8 @@ public class GoToJewelImpulse extends Codelet {
                     Idea impulse = createImpulse(jewel, desirability);
                     addIfNotPresent(impulse);
                 } else {
-                    removeIfPresent(jewel);
+                    Idea impulse = createImpulse(jewel, -1);
+                    removeIfPresent(impulse);
                 }
             }
         }
@@ -121,7 +122,7 @@ public class GoToJewelImpulse extends Codelet {
         synchronized (impulsesMO) {
             impulsesMO.setI(jewel,
                     -1.0,
-                    this.impulseCat + jewel.get("ID").getValue());
+                    this.impulseCat + jewel.get("State.ID").getValue());
         }
     }
 }

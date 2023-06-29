@@ -1,7 +1,7 @@
 package CSTEpisodicMemory.util;
 
 import br.unicamp.cst.representation.idea.Idea;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import scala.Int;
 
 import java.util.Arrays;

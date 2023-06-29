@@ -18,7 +18,7 @@ public class AccommodatePropertyCategory implements Habit {
     }
 
     @Override
-    public List<Idea> exec(Idea idea) {
+    public Idea exec(Idea idea) {
         if (idea.getCategory().equalsIgnoreCase("Property") && idea.getValue() instanceof Category){
             List<String> properties = (List<String>) owner.get("properties").getValue();
             for (Idea sample : owner.get("samples").getL()){
@@ -40,8 +40,8 @@ public class AccommodatePropertyCategory implements Habit {
                     }
                 }
             }
-            return Arrays.asList(idea);
+            return idea;
         }
-        return new ArrayList<>();
+        return null;
     }
 }

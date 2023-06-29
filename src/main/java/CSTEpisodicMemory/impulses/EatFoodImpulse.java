@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -48,7 +49,8 @@ public class EatFoodImpulse extends Codelet {
                     Idea impulse = createImpulse(food, desirability);
                     addIfNotPresent(impulse);
                 } else {
-                    removeIfPresent(food);
+                    Idea impulse = createImpulse(food, -1);
+                    removeIfPresent(impulse);
                 }
             }
         }
@@ -112,7 +114,7 @@ public class EatFoodImpulse extends Codelet {
         synchronized (impulseMO) {
             impulseMO.setI(food,
                     -1.0,
-                    this.impulseCat + food.get("ID").getValue());
+                    this.impulseCat + food.get("State.ID").getValue());
         }
     }
 }

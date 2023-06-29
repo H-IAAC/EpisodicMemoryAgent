@@ -45,7 +45,8 @@ public class GoToFoodImpulse extends Codelet {
                     Idea impulse = createImpulse(food, desirability);
                     addIfNotPresent(impulse);
                 } else {
-                    removeIfPresent(food);
+                    Idea impulse = createImpulse(food, -1);
+                    removeIfPresent(impulse);
                 }
             }
         }
@@ -113,7 +114,7 @@ public class GoToFoodImpulse extends Codelet {
         synchronized (impulsesMO) {
             impulsesMO.setI(food,
                     -1.0,
-                    this.impulseCat + food.get("ID").getValue());
+                    this.impulseCat + food.get("State.ID").getValue());
         }
     }
 }

@@ -20,7 +20,7 @@ public class LocationCategoryHabitsTest {
         seedIdea.add(new Idea("X", 1f));
         seedIdea.add(new Idea("Y", 2f));
 
-        Idea locCat1 = locGenHabit.exec0(seedIdea);
+        Idea locCat1 = locGenHabit.exec(seedIdea);
         assertTrue(locCat1.getValue() instanceof Category);
         assertEquals(1d, locCat1.membership(seedIdea), 0.01);
 
@@ -40,7 +40,7 @@ public class LocationCategoryHabitsTest {
         newSample.add(new Idea("Y", 1.9f));
 
         locModHabit.add(newSample);
-        locCat1 = locModHabit.exec0(locCat1);
+        locCat1 = locModHabit.exec(locCat1);
 
         assertEquals(1*0.8+1.2*0.2, (float) locCat1.get("centerX").getValue(), 0.01);
         assertEquals(2*0.8+1.9*0.2, (float) locCat1.get("centerY").getValue(), 0.01);

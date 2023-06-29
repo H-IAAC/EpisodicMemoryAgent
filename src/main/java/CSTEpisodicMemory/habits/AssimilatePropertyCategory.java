@@ -20,12 +20,15 @@ public class AssimilatePropertyCategory implements Habit {
     }
 
     @Override
-    public List<Idea> exec(Idea idea) {
+    public Idea exec(Idea idea) {
         List<String> propertiesList = (List<String>) owner.get("properties").getValue();
         String name = propertiesList.get(0).split("\\.")[0];
 
         Idea newCat = new Idea(name + count++, null, "Properties", 2);
-        newCat.add(new Idea("radius", START_RADIUS, "Property", 1));
+        if (name.equals("Pitch"))
+            newCat.add(new Idea("radius", 0.1, "Property", 1));
+        else
+            newCat.add(new Idea("radius", START_RADIUS, "Property", 1));
 
         Idea center = new Idea("center", null, "Aggregation", 1);
         for (String property : propertiesList){
@@ -37,7 +40,7 @@ public class AssimilatePropertyCategory implements Habit {
         newCat.setValue(new Category() {
             private Idea owner = newCat;
             @Override
-            public Idea getInstance(List<Idea> constraints) {
+            public Idea getInstance(Idea constraints) {
                 Idea instance = new Idea(name, null, "Property", 0);
 
                 double radius = (double) owner.get("radius").getValue();
@@ -95,6 +98,6 @@ public class AssimilatePropertyCategory implements Habit {
                 return membership;
             }
         });
-        return Arrays.asList(newCat);
+        return newCat;
     }
 }

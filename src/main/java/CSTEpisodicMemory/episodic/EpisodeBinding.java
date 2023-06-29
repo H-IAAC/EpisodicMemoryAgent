@@ -6,6 +6,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -80,7 +81,12 @@ public class EpisodeBinding extends Codelet {
                         }
                         story.insertLink(event, position, "SpatialContext");
 
-                        Idea impulse = contextIdea.get("Impulse").clone();
+                        Idea impulse = null;
+                        try {
+                            impulse = contextIdea.get("Impulse").clone();
+                        }catch (Exception e){
+                            System.out.println(contextIdea);
+                        }
                         if (impulse != null) {
                             if (!story.hasNodeContent(impulse)) {
                                 story.insertContextNode(impulse);

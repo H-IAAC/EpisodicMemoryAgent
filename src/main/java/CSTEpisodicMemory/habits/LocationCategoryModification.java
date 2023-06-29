@@ -19,7 +19,7 @@ public class LocationCategoryModification implements Habit {
     }
 
     @Override
-    public List<Idea> exec(Idea idea) {
+    public Idea exec(Idea idea) {
         if (idea.getName().contains("Location") && idea.getValue() instanceof Category){
             for (Idea sample : owner.getL()){
                 //System.out.println(IdeaHelper.fullPrint(sample));
@@ -32,8 +32,8 @@ public class LocationCategoryModification implements Habit {
                 idea.get("centerX").setValue(centerX*(1-lr) + sx*lr);
                 idea.get("centerY").setValue(centerY*(1-lr) + sy*lr);
             }
-            return Arrays.asList(idea);
+            return idea;
         }
-        return new ArrayList<>();
+        return null;
     }
 }

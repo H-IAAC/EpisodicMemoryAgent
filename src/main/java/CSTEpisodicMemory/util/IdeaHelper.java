@@ -163,8 +163,14 @@ public class IdeaHelper {
         if (a.getId() == b.getId())
             return true;
 
+        boolean testValue = false;
+        if (a.getValue() == null && b.getValue() == null)
+            testValue = true;
+        else if (a.getValue() != null && b.getValue() != null)
+            if (a.getValue().equals(b.getValue()))
+                testValue = true;
         if (a.getName().equals(b.getName())
-                && a.getValue().equals(b.getValue())
+                && testValue
                 && a.getType() == b.getType()){
 
             for (Idea s : a.getL()){

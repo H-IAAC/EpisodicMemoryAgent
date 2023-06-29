@@ -33,7 +33,7 @@ public class RoomCategoryIdeaFunctions implements Category {
     }
 
     @Override
-    public Idea getInstance(List<Idea> constraints) {
+    public Idea getInstance(Idea constraints) {
         return null;
     }
 }

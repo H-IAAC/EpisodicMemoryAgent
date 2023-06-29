@@ -32,10 +32,12 @@ dependencies {
     //testImplementation 'junit:junit:4.13.2'
 
     // This dependency is used by the application.
-    implementation 'com.github.CST-Group:cst:40446d1'
+    implementation 'com.github.CST-Group:cst:34275dd'
     //implementation 'com.github.CST-Group:cst-desktop:1.0.4'
     implementation 'com.github.CST-Group:WS3D-Coppelia:docs-SNAPSHOT'
     implementation 'org.json:json:20180813'
+    implementation 'org.graphstream:gs-core:2.0'
+    implementation 'org.graphstream:gs-ui-swing:2.0'
     implementation fileTree(dir: 'libs', include: '*.jar')
     //testImplementation group: 'junit', name: 'junit', version: '4.10'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
