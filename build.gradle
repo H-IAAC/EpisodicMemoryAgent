@@ -33,6 +33,7 @@ dependencies {
 
     // This dependency is used by the application.
     implementation 'com.github.CST-Group:cst:34275dd'
+    implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
     //implementation 'com.github.CST-Group:cst-desktop:1.0.4'
     implementation 'com.github.CST-Group:WS3D-Coppelia:docs-SNAPSHOT'
     implementation 'org.json:json:20180813'

@@ -26,7 +26,7 @@ public class AssimilatePropertyCategory implements Habit {
 
         Idea newCat = new Idea(name + count++, null, "Properties", 2);
         if (name.equals("Pitch"))
-            newCat.add(new Idea("radius", 0.1, "Property", 1));
+            newCat.add(new Idea("radius", 0.05, "Property", 1));
         else
             newCat.add(new Idea("radius", START_RADIUS, "Property", 1));
 
@@ -93,7 +93,7 @@ public class AssimilatePropertyCategory implements Habit {
                 }
 
                 double radius = (double) owner.get("radius").getValue();
-                double membership = Math.exp(-sum) + Math.exp(-radius*radius);
+                double membership = Math.exp(-sum) * Math.exp(radius*radius);
 
                 return membership;
             }

@@ -63,17 +63,22 @@ public class GraphIdea {
     }
 
     public Idea insertNode(Idea node, Idea coord, String type){
-        Idea nodeIdea = new Idea("Node", nodeCount++, "AbstractObject", 1);
-        Idea content = new Idea("Content", null, "Configuration", 1);
-        content.add(node);
-        nodeIdea.add(content);
-        nodeIdea.add(coord);
-        nodeIdea.add(new Idea("Type", type, "Property", 1));
-        nodeIdea.add(new Idea("Links", null, "Configuration", 1));
-        nodeIdea.add(new Idea("Activation", 0d, "Property", 0));
-        graph.add(nodeIdea);
-        coordinateMap.put(coord, nodeIdea);
-        return nodeIdea;
+        Idea existentNode = getNodeFromContent(node);
+        if (existentNode == null) {
+            Idea nodeIdea = new Idea("Node", nodeCount++, "AbstractObject", 1);
+            Idea content = new Idea("Content", null, "Configuration", 1);
+            content.add(node);
+            nodeIdea.add(content);
+            nodeIdea.add(coord);
+            nodeIdea.add(new Idea("Type", type, "Property", 1));
+            nodeIdea.add(new Idea("Links", null, "Configuration", 1));
+            nodeIdea.add(new Idea("Activation", 0d, "Property", 0));
+            graph.add(nodeIdea);
+            coordinateMap.put(coord, nodeIdea);
+            return nodeIdea;
+        } else {
+            return existentNode;
+        }
     }
 
     public void insertLink(Idea nodeSource, Idea nodeDest, String type){

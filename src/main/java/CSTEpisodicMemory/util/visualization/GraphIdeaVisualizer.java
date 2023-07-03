@@ -21,9 +21,10 @@ public class GraphIdeaVisualizer extends JFrame {
 
     private static final double div = 50;
     protected static final double FORCE_CENTER = 1.1 / div;
-    protected static final double REPEL_FORCE = 200 / div;
-    protected static final double LINK_FORCE = 0.01 / div;
+    protected static final double REPEL_FORCE = 250 / div;
+    protected static final double LINK_FORCE = 0.10 / div;
     protected static final double DRAG_COEF = 2 / div;
+    protected static final double BAND_FORCE = 0.; //0.001;
     protected static final double MAX_DIST = 100;
     protected static final double MAX_VEL = 5;
 
@@ -305,7 +306,7 @@ public class GraphIdeaVisualizer extends JFrame {
                             yBand = (heigth - 100) * (4.0/10);
                             break;
                     }
-                    nodeA.force.setEntry(1, nodeA.force.getEntry(1) + 0.001*(yBand - nodeA.pos.getEntry(1)));
+                    nodeA.force.setEntry(1, nodeA.force.getEntry(1) + BAND_FORCE*(yBand - nodeA.pos.getEntry(1)));
                     otherNodes.remove(nodeA);
 
                     for (Node nodeB : otherNodes) {

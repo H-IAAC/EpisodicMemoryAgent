@@ -73,6 +73,12 @@ public class GraphicMind extends JFrame {
                 }
             }
         }));
+        popup.add(new JMenuItem(new AbstractAction("View Plot") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                CategoriesPerEventView cc = new CategoriesPerEventView(m);
+            }
+        }));
         JButton button = new JButton("View");
         button.addMouseListener(new MouseAdapter() {
             @Override

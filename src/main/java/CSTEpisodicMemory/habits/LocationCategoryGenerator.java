@@ -58,8 +58,8 @@ public class LocationCategoryGenerator implements Habit {
                     if (Math.hypot(x-centerX,y-centerY) <= radius)
                         return 1.0;
                     double membership = Math.exp(-((x-centerX)*(x-centerX)) - ((y-centerY)*(y-centerY)));
-                    double offset = Math.exp(-radius*radius);
-                    return membership + offset;
+                    double offset = Math.exp(radius*radius);
+                    return membership * offset;
                 }
             });
             return newLocation;

@@ -4,10 +4,7 @@
 package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.visualization.EventVisualizer;
-import CSTEpisodicMemory.util.visualization.GraphIdeaVisualizer;
-import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
-import CSTEpisodicMemory.util.visualization.GraphicMind;
+import CSTEpisodicMemory.util.visualization.*;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -21,6 +18,7 @@ import java.util.logging.Logger;
 
 public class ExperimentMain {
 
+    static AgentMind a;
     public static void main(String[] args) {
         //test();
         normal();
@@ -54,7 +52,7 @@ public class ExperimentMain {
          Logger.getLogger("codelets").setLevel(Level.SEVERE);
          // Create Environment
          Environment env=new Environment(); //Creates only a creature and some apples
-         AgentMind a = new AgentMind(env);  // Creates the Agent Mind and start it
+         a = new AgentMind(env);  // Creates the Agent Mind and start it
          // The following lines create the MindViewer and configure it
          //MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
          //mv.setVisible(true);
@@ -66,6 +64,7 @@ public class ExperimentMain {
          visu.addMemoryWatch("Location", 3);
          visu.addMemoryWatch("PROPERTIES", 3);
          visu.addMemoryWatch("FOOD", 3);
+         visu.addMemoryWatch("Events", 5);
          visu.setVisible(true);
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
@@ -135,6 +134,8 @@ public class ExperimentMain {
         } catch (InterruptedException ex) {
             Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        CategoriesPerEventView cc = new CategoriesPerEventView(a);
 
         Idea impulse_ = new Idea("Impulse", "Explore", "Episode", 0);
         Idea state_ = new Idea("State", null, "Timestep", 0);
