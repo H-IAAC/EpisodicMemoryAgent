@@ -28,7 +28,7 @@ public class LocationCategoryHabitsTest {
         assertEquals(1d, locCat1.membership(seedIdea), 0.01);
 
         seedIdea.get("X").setValue((float) (1+2*START_RADIUS));
-        double expected = Math.exp(-4*START_RADIUS*START_RADIUS) + Math.exp(-START_RADIUS*START_RADIUS);
+        double expected = Math.exp(-4*START_RADIUS*START_RADIUS) * Math.exp(START_RADIUS*START_RADIUS);
         assertEquals(expected, locCat1.membership(seedIdea), 0.01);
 
 

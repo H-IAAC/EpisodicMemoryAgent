@@ -111,6 +111,29 @@ public class GraphIdea {
         linksOfType.add(nodeIdeaDest);
     }
 
+    public List<Idea> getChildrenWithLink(Idea node, String linkType){
+        Idea nodeIdeaSource = null;
+        if (!node.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = graph.getL().stream()
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), node)).findFirst();
+            if (nodeOpt.isPresent()){
+                nodeIdeaSource = nodeOpt.get();
+            }
+        } else {
+            nodeIdeaSource = node;
+        }
+
+        if (nodeIdeaSource != null){
+            List<Idea> linksOut = nodeIdeaSource.get("Links").getL().stream()
+                    .filter(l->l.getName().equals(linkType))
+                    .map(l->l.getL())
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            return linksOut;
+        }
+        return new ArrayList<>();
+    }
+
     public Map<String, List<Idea>> getSuccesors(Idea node){
         Idea nodeIdeaSource = null;
         if (!node.getName().equals("Node")) {

@@ -18,6 +18,7 @@ public class EventVisualizer extends JFrame {
     private int width;
     private int heigth;
     private List<Idea> events;
+    private List<Idea> episodes;
     private Mind a;
 
     public EventVisualizer(int width, int heigth, Mind m) {
@@ -57,11 +58,16 @@ public class EventVisualizer extends JFrame {
                 if (selectedMem.isPresent()) {
                     GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
                     events = new ArrayList<>(gg.getEventNodes()).stream().map(e->GraphIdea.getNodeContent(e)).collect(Collectors.toList());
+                    episodes = new ArrayList<>(gg.getEpisodeNodes()).stream()
+                            .map(e->gg.getSuccesors(e).get("Begin").get(0))
+                            .map(e->GraphIdea.getNodeContent(e))
+                            .collect(Collectors.toList());
                 }
 
                 Graphics2D g2d = (Graphics2D) g;
                 events.sort(Comparator.comparingLong(e->(long) e.get("Start").getValue()));
                 long firstTimeStamp = 0;
+                double scale = 0.2;
                 List<Long> lastEnd = new ArrayList<>();
                 int newW = 0;
                 int lastLevel = 0;
@@ -80,12 +86,11 @@ public class EventVisualizer extends JFrame {
                         level = lastLevel + 1;
                     int startY =  level * 25 + 5;
                     lastLevel = level;
-                    double scale = 0.2;
                     Rectangle2D.Double eventSpan = new Rectangle2D.Double(start * scale,
                             startY,
                             (end-start) * scale - 10,
                             20);
-                    g2d.setColor(Color.YELLOW);
+                    g2d.setColor(new Color(0xFFCA3A));
                     g2d.fill(eventSpan);
                     g2d.setColor(Color.BLACK);
                     g2d.draw(eventSpan);
@@ -94,6 +99,15 @@ public class EventVisualizer extends JFrame {
                     lastEnd.add(end);
                 }
                 w = newW;
+
+                for (Idea ep : episodes){
+                    long start = (long) ep.get("Start").getValue();
+                    start -= firstTimeStamp;
+                    g2d.setColor(new Color(0xFA3F45));
+                    g2d.setStroke(new BasicStroke(3));
+                    g2d.drawLine((int) (start*scale), 0, (int) (start*scale),200);
+                    g2d.setStroke(new BasicStroke(1));
+                }
             }
         };
 

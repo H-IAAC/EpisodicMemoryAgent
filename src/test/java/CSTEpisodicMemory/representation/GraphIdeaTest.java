@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -76,5 +77,16 @@ public class GraphIdeaTest {
         graphIdea.resetActivations();
         nodes = graphIdea.getNodes();
         assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
+    }
+
+    @Test
+    public void testGraphLinkTraversal(){
+        List<Idea> children = graphIdea.getChildrenWithLink(event1, "Next");
+
+        assertEquals(children.size(), 1);
+        assertTrue(getNodeContent(children.get(0)).equals(event2));
+
+        assertEquals(graphIdea.getChildrenWithLink(event1, "FakeLink").size(), 0);
+        assertEquals(graphIdea.getChildrenWithLink(new Idea("FakeNode"), "FakeLink").size(), 0);
     }
 }
