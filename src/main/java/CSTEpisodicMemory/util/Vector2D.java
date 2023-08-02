@@ -1,7 +1,5 @@
 package CSTEpisodicMemory.util;
 
-import org.sat4j.core.Vec;
-
 public class Vector2D {
 
     private double x = 0;

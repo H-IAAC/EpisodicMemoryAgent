@@ -11,7 +11,7 @@ import br.unicamp.cst.representation.idea.Idea;
 
 public class LeafletSense extends Codelet {
 
-    private Agent agent;
+    private final Agent agent;
     private Memory leafletSenseMO;
     private Idea leaflets;
 

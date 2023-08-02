@@ -20,8 +20,9 @@ public class GoToJewelImpulse extends Codelet {
     private Idea leaflets;
     private Idea jewels;
 
-    private double minDesire = 0.7, maxDesire = 0.8;
-    private String impulseCat = "GoTo";
+    private final double minDesire = 0.7;
+    private final double maxDesire = 0.8;
+    private final String impulseCat = "GoTo";
 
     @Override
     public void accessMemoryObjects() {

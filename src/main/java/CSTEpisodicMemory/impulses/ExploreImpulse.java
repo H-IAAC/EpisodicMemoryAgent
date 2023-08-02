@@ -1,7 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -9,8 +8,6 @@ import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.*;
 
 public class ExploreImpulse extends Codelet {
@@ -23,8 +20,8 @@ public class ExploreImpulse extends Codelet {
     private Memory epltMO;
     private Memory extra;
 
-    private List<Idea> roomCategories;
-    private String impulseCat = "Explore";
+    private final List<Idea> roomCategories;
+    private final String impulseCat = "Explore";
 
     public ExploreImpulse(List<Idea> roomCategories) {
         this.roomCategories = roomCategories;
@@ -85,7 +82,7 @@ public class ExploreImpulse extends Codelet {
         //Sample a location based on reward value
         List<Double> weigths = new LinkedList<>();
         Idea selected = null;
-        if(locations.size() > 0) {
+        if(!locations.isEmpty()) {
             synchronized (locations) {
                 double total = 0d;
                 for (Idea catLoc : locations){
@@ -94,7 +91,7 @@ public class ExploreImpulse extends Codelet {
                     weigths.add(total);
                 }
                 //5% chance of choosing a random, possibly unexplored, location
-                double rndChance = Math.exp(-locations.size()/10) + 0.05;
+                double rndChance = Math.exp(-locations.size()/10.0) + 0.05;
                 double rnd = new Random().nextDouble() * total*(1+rndChance);
                 //System.out.println(weigths);
                 //System.out.println(rnd);
@@ -160,7 +157,7 @@ public class ExploreImpulse extends Codelet {
 
     private void planTrajectory(Idea choosenLoc) {
         List<Idea> locations = (List<Idea>) locationsMO.getI();
-        if (locations.size() > 0) {
+        if (!locations.isEmpty()) {
             GraphIdea epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());
 
             Idea currPos = ((Idea) innerMO.getI()).clone().get("Position");
@@ -187,12 +184,7 @@ public class ExploreImpulse extends Codelet {
             epltmGraph.propagateActivations(Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext","Next","Begin","End"),
                     Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext","End","Begin","Next"));
             List<Idea> locationNodes = epltmGraph.getLocationNodes();
-            locationNodes.sort(new Comparator<Idea>() {
-                @Override
-                public int compare(Idea idea, Idea t1) {
-                    return ((Double) idea.get("Activation").getValue()).compareTo((Double) t1.get("Activation").getValue());
-                }
-            });
+            locationNodes.sort(Comparator.comparing(idea -> ((Double) idea.get("Activation").getValue())));
 
             extra.setI(epltmGraph.getLocationNodes());
 

@@ -1,7 +1,6 @@
 package CSTEpisodicMemory.util.visualization;
 
 import CSTEpisodicMemory.Environment;
-import br.unicamp.cst.core.entities.Mind;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -11,11 +10,13 @@ import java.util.List;
 
 public class AgentGraphic{
 
-    private Environment env;
-    private double envW, envH;
-    private int windowW, windowH;
+    private final Environment env;
+    private final double envW;
+    private final double envH;
+    private final int windowW;
+    private final int windowH;
 
-    private int size = 30;
+    private final int size = 30;
 
     public AgentGraphic(Environment env, double envW, double envH, int windowW, int windowH) {
         this.env = env;
@@ -33,8 +34,8 @@ public class AgentGraphic{
 
         Path2D.Double ag = new Path2D.Double();
         ag.moveTo(size*0.712, 0);
-        ag.lineTo(-0.288*size,size/2);
-        ag.lineTo(-0.288*size, -size/2);
+        ag.lineTo(-0.288*size,size/2.0);
+        ag.lineTo(-0.288*size, -size/2.0);
         ag.closePath();
 
         Line2D.Double head = new Line2D.Double(0,0,size*0.712,0);

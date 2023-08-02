@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static CSTEpisodicMemory.util.IdeaHelper.csvPrint;
-
 public class CollectJewelImpulse extends Codelet {
 
     private Memory innerSenseMO;
@@ -21,8 +19,9 @@ public class CollectJewelImpulse extends Codelet {
     private Idea inner;
     private Idea jewels;
 
-    private double minDesire = 0.9, maxDesire = 1.0;
-    private String impulseCat = "Collect";
+    private final double minDesire = 0.9;
+    private final double maxDesire = 1.0;
+    private final String impulseCat = "Collect";
 
     @Override
     public void accessMemoryObjects() {

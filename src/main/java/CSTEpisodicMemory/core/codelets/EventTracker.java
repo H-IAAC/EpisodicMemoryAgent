@@ -21,7 +21,7 @@ public class EventTracker extends Codelet {
 
     private int bufferSize = 1;
     private int bufferStepSize = 1;
-    private List<Idea> inputIdeaBuffer = new LinkedList<Idea>();
+    private List<Idea> inputIdeaBuffer = new LinkedList<>();
     private Idea initialEventIdea;
     private Idea currentInputIdea;
     private static int count = 1;
@@ -76,7 +76,7 @@ public class EventTracker extends Codelet {
     @Override
     public void proc() {
         //Initialize event track buffer
-        if (inputIdeaBuffer.size() == 0) {
+        if (inputIdeaBuffer.isEmpty()) {
             inputIdeaBuffer.add(currentInputIdea.clone());
         } else {
             if (inputIdeaBuffer.size() < this.bufferSize) {

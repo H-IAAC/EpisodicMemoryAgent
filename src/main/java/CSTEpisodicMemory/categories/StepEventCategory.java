@@ -41,18 +41,13 @@ public class StepEventCategory extends EventCategory {
         double magA = propertiesVector.get(0).getNorm();
         double magB = propertiesVector.get(1).getNorm();
         double magC = propertiesVector.get(2).getNorm();
-        boolean check = Math.abs(magC - magB) < 0.01; //Tolerance value
-        switch (type){
-            case 0:
-                check = check & Math.abs(magB - magA) > this.stepSizeThreashold;
-                break;
-            case 1:
-                check = check & (magB - magA) > this.stepSizeThreashold;
-                break;
-            case 2:
-                check = check & (magA - magB) > this.stepSizeThreashold;
-                break;
-        }
+        boolean check = Math.abs(magC - magB) < 0.01;
+        check = switch (type) {
+            case 0 -> check & Math.abs(magB - magA) > this.stepSizeThreashold;
+            case 1 -> check & (magB - magA) > this.stepSizeThreashold;
+            case 2 -> check & (magA - magB) > this.stepSizeThreashold;
+            default -> Math.abs(magC - magB) < 0.01; //Tolerance value
+        };
 
         return check;
     }

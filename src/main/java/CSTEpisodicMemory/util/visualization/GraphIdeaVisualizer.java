@@ -1,21 +1,21 @@
 package CSTEpisodicMemory.util.visualization;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.IdeaHelper;
-import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
-import java.util.*;
 import java.util.List;
 import java.util.Timer;
+import java.util.*;
 
 public class GraphIdeaVisualizer extends JFrame {
 
@@ -28,10 +28,11 @@ public class GraphIdeaVisualizer extends JFrame {
     protected static final double MAX_DIST = 100;
     protected static final double MAX_VEL = 5;
 
-    private int width, heigth;
-    private GraphIdea graphIdea;
+    private final int width;
+    private final int heigth;
+    private final GraphIdea graphIdea;
     private JComponent display;
-    private Graph gg = new Graph();
+    private final Graph gg = new Graph();
     private boolean physics = true;
     private Node selected = null;
     protected String[] types = new String[]{"Event", "Location", "Episode", "Context", "Property"};
@@ -45,13 +46,13 @@ public class GraphIdeaVisualizer extends JFrame {
         initComponents();
 
         java.util.Timer t = new Timer();
-        GraphIdeaVisualizer.mainTimerTask tt = new GraphIdeaVisualizer.mainTimerTask(this);
+        GraphIdeaVisualizer.mainTimerTask tt = new mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 500, 50);
 
         setVisible(true);
     }
 
-    class mainTimerTask extends TimerTask {
+    static class mainTimerTask extends TimerTask {
 
         GraphIdeaVisualizer l;
 
@@ -70,26 +71,18 @@ public class GraphIdeaVisualizer extends JFrame {
         JToolBar toolBar = new JToolBar();
         JToggleButton button = new JToggleButton("Physics");
         button.setSelected(true);
-        button.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent itemEvent) {
-                physics = itemEvent.getStateChange() == ItemEvent.SELECTED;
-            }
-        });
+        button.addItemListener(itemEvent -> physics = itemEvent.getStateChange() == ItemEvent.SELECTED);
         toolBar.add(button);
 
         for (int i = 0; i<5;i++){
             JCheckBox cBox = new JCheckBox(types[i]);
             cBox.setSelected(true);
             int finalI = i;
-            cBox.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent itemEvent) {
-                    if (itemEvent.getStateChange() == ItemEvent.SELECTED)
-                        selections.add(types[finalI]);
-                    else
-                        selections.remove(types[finalI]);
-                }
+            cBox.addItemListener(itemEvent -> {
+                if (itemEvent.getStateChange() == ItemEvent.SELECTED)
+                    selections.add(types[finalI]);
+                else
+                    selections.remove(types[finalI]);
             });
             toolBar.add(cBox);
         }
@@ -154,7 +147,7 @@ public class GraphIdeaVisualizer extends JFrame {
     }
 
     protected void processPos(double x, double y){
-        ArrayRealVector test = new ArrayRealVector(new double[]{x-width/2,y-heigth/2});
+        ArrayRealVector test = new ArrayRealVector(new double[]{x-width/2.0,y-heigth/2.0});
         Node newSelected = gg.getSelectedNode(test);
         if (selected == null && newSelected != null){
             selected = newSelected;
@@ -288,24 +281,14 @@ public class GraphIdeaVisualizer extends JFrame {
                     ArrayRealVector centerAttraction = (ArrayRealVector) nodeA.pos.copy().mapMultiply(-1).mapDivide(nodeA.pos.getNorm()).mapMultiply(FORCE_CENTER);
                     nodeA.force = centerAttraction;
                     nodeA.force = nodeA.force.subtract(nodeA.force);
-                    double yBand = 0;
-                    switch (nodeA.type){
-                        case "Episode":
-                            yBand = (heigth - 100) * (-4.0/10);
-                            break;
-                        case "Context":
-                            yBand = (heigth - 100) * (-2.0/10);
-                            break;
-                        case "Event":
-                            yBand = 0.0;
-                            break;
-                        case "Property":
-                            yBand = (heigth - 100) * (2.0/10);
-                            break;
-                        case "Location":
-                            yBand = (heigth - 100) * (4.0/10);
-                            break;
-                    }
+                    double yBand = switch (nodeA.type) {
+                        case "Episode" -> (heigth - 100) * (-4.0 / 10);
+                        case "Context" -> (heigth - 100) * (-2.0 / 10);
+                        case "Event" -> 0.0;
+                        case "Property" -> (heigth - 100) * (2.0 / 10);
+                        case "Location" -> (heigth - 100) * (4.0 / 10);
+                        default -> 0;
+                    };
                     nodeA.force.setEntry(1, nodeA.force.getEntry(1) + BAND_FORCE*(yBand - nodeA.pos.getEntry(1)));
                     otherNodes.remove(nodeA);
 

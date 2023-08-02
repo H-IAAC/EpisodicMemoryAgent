@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 
 public class EventVisualizer extends JFrame {
 
-    private int width;
-    private int heigth;
+    private final int width;
+    private final int heigth;
     private List<Idea> events;
     private List<Idea> episodes;
-    private Mind a;
+    private final Mind a;
 
     public EventVisualizer(int width, int heigth, Mind m) {
         this.width = width;
@@ -29,7 +29,7 @@ public class EventVisualizer extends JFrame {
         initComponents();
 
         java.util.Timer t = new Timer();
-        EventVisualizer.mainTimerTask tt = new EventVisualizer.mainTimerTask(this);
+        EventVisualizer.mainTimerTask tt = new mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 250, 50);
 
         setVisible(true);
@@ -40,7 +40,7 @@ public class EventVisualizer extends JFrame {
 
         JPanel panel = new JPanel(){
 
-            protected int w = 0;
+            private int w = 0;
             @Override
             public Dimension getPreferredSize(){
                 if (width > w)
@@ -57,10 +57,10 @@ public class EventVisualizer extends JFrame {
                         .findFirst();
                 if (selectedMem.isPresent()) {
                     GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
-                    events = new ArrayList<>(gg.getEventNodes()).stream().map(e->GraphIdea.getNodeContent(e)).collect(Collectors.toList());
+                    events = new ArrayList<>(gg.getEventNodes()).stream().map(GraphIdea::getNodeContent).collect(Collectors.toList());
                     episodes = new ArrayList<>(gg.getEpisodeNodes()).stream()
                             .map(e->gg.getSuccesors(e).get("Begin").get(0))
-                            .map(e->GraphIdea.getNodeContent(e))
+                            .map(GraphIdea::getNodeContent)
                             .collect(Collectors.toList());
                 }
 
@@ -95,7 +95,7 @@ public class EventVisualizer extends JFrame {
                     g2d.setColor(Color.BLACK);
                     g2d.draw(eventSpan);
                     g2d.drawString(event.getName(), (float) (start*scale) + 5, startY+13);
-                    newW += (end - start) / 5;
+                    newW += (int) ((end - start) / 5);
                     lastEnd.add(end);
                 }
                 w = newW;
@@ -117,7 +117,7 @@ public class EventVisualizer extends JFrame {
         setVisible(true);
     }
 
-    class mainTimerTask extends TimerTask {
+    static class mainTimerTask extends TimerTask {
 
         EventVisualizer l;
 

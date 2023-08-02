@@ -4,14 +4,12 @@ import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Habit;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class AccommodatePropertyCategory implements Habit {
 
-    private Idea owner;
-    private double lr = 0.2;
+    private final Idea owner;
+    private final double lr = 0.2;
 
     public AccommodatePropertyCategory(Idea owner) {
         this.owner = owner;
@@ -31,7 +29,7 @@ public class AccommodatePropertyCategory implements Habit {
                         idea.get("center."+property).setValue(newCenter);
                     }
                     if (sampleValue instanceof Double){
-                        double newCenter = (double) ((double) centerValue*(1-lr) + (double) sampleValue*lr);
+                        double newCenter = (double) centerValue*(1-lr) + (double) sampleValue*lr;
                         idea.get("center."+property).setValue(newCenter);
                     }
                     if (sampleValue instanceof Integer){

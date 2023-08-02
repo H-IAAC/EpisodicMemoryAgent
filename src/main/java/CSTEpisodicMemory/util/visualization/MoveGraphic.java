@@ -12,9 +12,11 @@ import java.util.List;
 
 public class MoveGraphic {
 
-    private Mind m;
-    private double envW, envH;
-    private int windowW, windowH;
+    private final Mind m;
+    private final double envW;
+    private final double envH;
+    private final int windowW;
+    private final int windowH;
 
     public MoveGraphic(Mind m, double envW, double envH, int windowW, int windowH) {
         this.m = m;

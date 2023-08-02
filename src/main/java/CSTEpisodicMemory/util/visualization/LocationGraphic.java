@@ -5,7 +5,6 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
@@ -13,9 +12,11 @@ import java.util.List;
 
 public class LocationGraphic {
 
-    private Mind m;
-    private double envW, envH;
-    private int windowW, windowH;
+    private final Mind m;
+    private final double envW;
+    private final double envH;
+    private final int windowW;
+    private final int windowH;
 
     public LocationGraphic(Mind m, double envW, double envH, int windowW, int windowH) {
         this.m = m;
@@ -66,8 +67,10 @@ public class LocationGraphic {
                 float cy = (float) loc.get("centerY").getValue();
                 double r = (double) loc.get("radius").getValue();
 
-                Ellipse2D.Double draw = new Ellipse2D.Double((cy - r / 2) * windowW / envW,
-                        (cx - r / 2) * windowH / envH,
+                double px = (cy - r / 2) * windowW / envW;
+                double py = (cx - r / 2) * windowH / envH;
+                Ellipse2D.Double draw = new Ellipse2D.Double(px,
+                        py,
                         r * windowW / envW,
                         r * windowH / envH);
 
@@ -76,8 +79,8 @@ public class LocationGraphic {
                 g.setColor(p);
                 g.fill(draw);
                 g.setColor(Color.BLACK);
-                g.drawString(loc.getName(), (int) ((cy - r / 2) * windowW / envW), (int) ((cx - r / 2) * windowH / envH));
-                g.drawString(String.format("%.4f", act), (int) ((cy - r / 2) * windowW / envW), (int) ((cx - r / 2) * windowH / envH + 30));
+                g.drawString(loc.getName(), (int) (px), (int) (py));
+                g.drawString(String.format("%.4f", act), (int) (px), (int) (py + 30));
             }
         }
 

@@ -8,14 +8,15 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GoalGraphic {
 
-    private Mind m;
-    private double envW, envH;
-    private int windowW, windowH;
+    private final Mind m;
+    private final double envW;
+    private final double envH;
+    private final int windowW;
+    private final int windowH;
 
     public GoalGraphic(Mind m, double envW, double envH, int windowW, int windowH) {
         this.m = m;

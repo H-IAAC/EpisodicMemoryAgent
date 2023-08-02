@@ -1,13 +1,11 @@
 package CSTEpisodicMemory.impulses;
 
-import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +17,9 @@ public class EatFoodImpulse extends Codelet {
     private Memory innerSenseMO;
     private MemoryContainer impulseMO;
 
-    private double minDesire = 0.9, maxDesire = 1.0;
-    private String impulseCat = "Eat";
+    private final double minDesire = 0.9;
+    private final double maxDesire = 1.0;
+    private final String impulseCat = "Eat";
 
     @Override
     public void accessMemoryObjects() {

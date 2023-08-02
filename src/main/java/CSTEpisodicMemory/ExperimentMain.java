@@ -10,9 +10,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,11 +70,7 @@ public class ExperimentMain {
 
          EventVisualizer ev = new EventVisualizer(1000, 200, a);
 
-         Runtime.getRuntime().addShutdownHook(new Thread() {
-             public void run() {
-                 env.stopSimulation();
-             }
-         });
+         Runtime.getRuntime().addShutdownHook(new Thread(env::stopSimulation));
          runTestCommands(env, a);
 
      }

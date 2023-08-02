@@ -44,9 +44,7 @@ public class CategoriesPerEventView {
             plt.plot().add(x,y, "o");
             try {
                 plt.show();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (PythonExecutionException e) {
+            } catch (IOException | PythonExecutionException e) {
                 throw new RuntimeException(e);
             }
         }

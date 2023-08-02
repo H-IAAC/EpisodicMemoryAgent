@@ -4,7 +4,6 @@ import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Habit;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -12,7 +11,7 @@ public class AssimilatePropertyCategory implements Habit {
 
     private static final double START_RADIUS = 0.5;
 
-    private Idea owner;
+    private final Idea owner;
     private int count = 0;
 
     public AssimilatePropertyCategory(Idea owner) {
@@ -38,7 +37,7 @@ public class AssimilatePropertyCategory implements Habit {
         newCat.add(center);
 
         newCat.setValue(new Category() {
-            private Idea owner = newCat;
+            private final Idea owner = newCat;
             @Override
             public Idea getInstance(Idea constraints) {
                 Idea instance = new Idea(name, null, "Property", 0);
@@ -93,9 +92,8 @@ public class AssimilatePropertyCategory implements Habit {
                 }
 
                 double radius = (double) owner.get("radius").getValue();
-                double membership = Math.exp(-sum) * Math.exp(radius*radius);
 
-                return membership;
+                return Math.exp(-sum) * Math.exp(radius*radius);
             }
         });
         return newCat;

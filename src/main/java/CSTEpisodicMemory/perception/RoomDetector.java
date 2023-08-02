@@ -1,6 +1,5 @@
 package CSTEpisodicMemory.perception;
 
-import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;

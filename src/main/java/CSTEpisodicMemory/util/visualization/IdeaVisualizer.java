@@ -7,14 +7,13 @@ package CSTEpisodicMemory.util.visualization;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Memory;
-import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.util.viewer.representation.idea.IdeaPanel;
 import com.google.gson.Gson;
 
 import javax.swing.*;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +26,8 @@ import java.util.Optional;
 public class IdeaVisualizer extends javax.swing.JFrame {
 
     private IdeaPanel ideaPanel;
-    private Mind mind;
-    private Map<String, Integer> memoryLevels = new HashMap<>();
+    private final Mind mind;
+    private final Map<String, Integer> memoryLevels = new HashMap<>();
     
     /**
      * Creates new form IdeaVisualizer
@@ -63,11 +62,7 @@ public class IdeaVisualizer extends javax.swing.JFrame {
 
         list1Model = new DefaultListModel();
         jList1.setModel(list1Model);
-        jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                jList1ValueChanged(evt);
-            }
-        });
+        jList1.addListSelectionListener(this::jList1ValueChanged);
         jScrollPane1.setViewportView(jList1);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);

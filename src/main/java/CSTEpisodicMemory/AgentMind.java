@@ -33,13 +33,13 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.Mind;
-import br.unicamp.cst.representation.idea.*;
 import br.unicamp.cst.representation.idea.Idea;
 import com.google.common.graph.MutableValueGraph;
-import com.google.common.graph.ValueGraphBuilder;
-import scala.Int;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 public class AgentMind extends Mind {
 
     private boolean debug = false;
-    public List<Codelet> bList = new ArrayList<Codelet>();
+    public List<Codelet> bList = new ArrayList<>();
 
     public AgentMind(Environment env, boolean debug){
         this.debug = debug;

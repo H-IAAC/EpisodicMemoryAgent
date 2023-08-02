@@ -5,8 +5,6 @@ import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.List;
-
 import static java.lang.Math.abs;
 
 public class RoomCategoryIdeaFunctions implements Category {

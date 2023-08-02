@@ -17,7 +17,7 @@ public class GraphIdea {
 
     public GraphIdea(Idea graph){
         this.graph = graph;
-        if (graph.getL().size()>0){
+        if (!graph.getL().isEmpty()){
             for (Idea i : graph.getL()){
                 if (i.getName().equals("Node")) {
                     nodeCount++;
@@ -30,7 +30,7 @@ public class GraphIdea {
 
     public GraphIdea(GraphIdea clone){
         this.graph = IdeaHelper.cloneIdea(clone.graph);
-        if (graph.getL().size()>0){
+        if (!graph.getL().isEmpty()){
             for (Idea i : graph.getL()){
                 if (i.getName().equals("Node")) {
                     nodeCount++;
@@ -126,7 +126,7 @@ public class GraphIdea {
         if (nodeIdeaSource != null){
             List<Idea> linksOut = nodeIdeaSource.get("Links").getL().stream()
                     .filter(l->l.getName().equals(linkType))
-                    .map(l->l.getL())
+                    .map(Idea::getL)
                     .flatMap(List::stream)
                     .collect(Collectors.toList());
             return linksOut;
@@ -158,11 +158,7 @@ public class GraphIdea {
         if (!node.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
                     .filter(e -> IdeaHelper.match(getNodeContent(e), node)).findFirst();
-            if (nodeOpt.isPresent()){
-                nodeIdeaDest = nodeOpt.get();
-            } else {
-                nodeIdeaDest = null;
-            }
+            nodeIdeaDest = nodeOpt.orElse(null);
         } else {
             nodeIdeaDest = node;
         }
@@ -185,7 +181,7 @@ public class GraphIdea {
 
     public boolean hasNodeContent(Idea idea){
         return this.getNodes().stream()
-                .map(e->getNodeContent(e))
+                .map(GraphIdea::getNodeContent)
                 .anyMatch(e->IdeaHelper.match(e,idea));
 
         //return graph.getL().stream().anyMatch(e->e.getL().contains(idea));
@@ -228,11 +224,7 @@ public class GraphIdea {
         if (!node.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
                     .filter(e -> IdeaHelper.match(getNodeContent(e), node)).findFirst();
-            if (nodeOpt.isPresent()){
-                foundNode = nodeOpt.get();
-            } else {
-                foundNode = null;
-            }
+            foundNode = nodeOpt.orElse(null);
         }
 
         if (foundNode != null){
@@ -290,11 +282,7 @@ public class GraphIdea {
         if (!content.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
                     .filter(e -> IdeaHelper.match(getNodeContent(e), content)).findFirst();
-            if (nodeOpt.isPresent()){
-                foundNode = nodeOpt.get();
-            } else {
-                foundNode = null;
-            }
+            foundNode = nodeOpt.orElse(null);
         }
         return foundNode;
     }
@@ -307,14 +295,14 @@ public class GraphIdea {
     }
 
     public String toString(){
-        String nodes = "";
-        String links = "";
+        StringBuilder nodes = new StringBuilder();
+        StringBuilder links = new StringBuilder();
         for (Idea i : graph.getL()){
             if (i.getName().equals("Node")){
-                nodes += " [Node_" + i.getValue() + " - " + i.get("Coordinate").getValue() + "]";
+                nodes.append(" [Node_").append(i.getValue()).append(" - ").append(i.get("Coordinate").getValue()).append("]");
             }
             if(i.getName().equals("Link")){
-                links += "  [Link_" + i.getValue() + " " + ((Idea)i.get("Source").getValue()).getValue() + " [" + i.get("Type").getValue() +"]> " + ((Idea)i.get("Sink").getValue()).getValue() + "]";
+                links.append("  [Link_").append(i.getValue()).append(" ").append(((Idea) i.get("Source").getValue()).getValue()).append(" [").append(i.get("Type").getValue()).append("]> ").append(((Idea) i.get("Sink").getValue()).getValue()).append("]");
             }
         }
         return nodes + "\n" + links;

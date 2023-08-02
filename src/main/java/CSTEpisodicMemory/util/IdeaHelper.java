@@ -6,28 +6,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class IdeaHelper {
 
-    transient static List<Object> listtoavoidloops = new ArrayList<Object>();
-    transient static int maxLevel;
+    static List<Object> listtoavoidloops = new ArrayList<>();
+    static int maxLevel;
 
     public static String fullPrint(Idea idea){
-        listtoavoidloops = new ArrayList<Object>();
+        listtoavoidloops = new ArrayList<>();
         return fullPrint(idea, "");
     }
 
     private static String fullPrint(Idea idea, String pre){
         String ideaString = idea.toString() + "[" + printValue(idea) + "]";
-        String out = pre + typeScopeString(idea) + ideaString + "\n";
+        StringBuilder out = new StringBuilder(pre + typeScopeString(idea) + ideaString + "\n");
         if (!listtoavoidloops.contains(idea.getId())) {
             listtoavoidloops.add(idea.getId());
             for (Idea l : idea.getL()) {
-                out += fullPrint(l, pre + "  ");
+                out.append(fullPrint(l, pre + "  "));
             }
         }
-        return out;
+        return out.toString();
     }
 
     public static String printValue(Idea idea){
@@ -53,54 +52,24 @@ public class IdeaHelper {
     }
 
     private static String typeScopeString(Idea idea){
-        switch (idea.getType()) {
-            case 0:
-                //Object 1
-                return "Ex ■: ";
-            case 1:
-                //Property 1
-                return "Ex ◪: ";
-            case 2:
-                //Link
-                return "Link: ";
-            case 3:
-                //Dimension
-                return "◖: ";
-            case 4:
-                //Episode 1
-                return "Ex ->: ";
-            case 5:
-                //Composite
-                return "Comp: ";
-            case 6:
-                //Aggregate
-                return "Aggr: ";
-            case 7:
-                //Config
-                return "Config: ";
-            case 8:
-                //Time
-                return "◷: ";
-            case 9:
-                //Property 2
-                return "Law ◪: ";
-            case 10:
-                //Object 2
-                return "Law ■: ";
-            case 11:
-                //Episode 2
-                return "Law ->: ";
-            case 12:
-                //Property 0
-                return "Hipp ◪: ";
-            case 13:
-                //Object 0
-                return "Hipp ■: ";
-            case 14:
-                //Episode 0
-                return "Hipp ->: ";
-        }
-        return "No cat: ";
+        return switch (idea.getType()) {
+            case 0 -> "Ex ■: "; //Object 1
+            case 1 -> "Ex ◪: "; //Property
+            case 2 -> "Link: "; //Link
+            case 3 -> "◖: "; //Dimension
+            case 4 -> "Ex ->: "; //Episode 1
+            case 5 -> "Comp: "; //Composite
+            case 6 -> "Aggr: "; //Aggregate
+            case 7 -> "Config: "; //Config
+            case 8 -> "◷: "; //Time
+            case 9 -> "Law ◪: "; //Property 2
+            case 10 -> "Law ■: "; //Object 2
+            case 11 -> "Law ->: "; //Episode 2
+            case 12 -> "Hipp ◪: "; //Property 0
+            case 13 -> "Hipp ■: "; //Object 0
+            case 14 -> "Hipp ->: "; //Episode 0
+            default -> "No cat: ";
+        };
     }
 
     public static String csvPrint(Idea idea){
@@ -126,7 +95,7 @@ public class IdeaHelper {
             for (Idea l : idea.getL()) {
                 lCsv.append("\n").append(csvPrint(l, prefix + "    ", listtoavoidloops, currLevel+1)).append(",");
             }
-            if (idea.getL().size() > 0) {
+            if (!idea.getL().isEmpty()) {
                 lCsv.deleteCharAt(lCsv.length() - 1);
                 csv += prefix + "  \"l\": [" + lCsv + "\n" + prefix + "  ],\n";
             } else {

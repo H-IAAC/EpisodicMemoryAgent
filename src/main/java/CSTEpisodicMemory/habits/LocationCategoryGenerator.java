@@ -4,8 +4,6 @@ import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Habit;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class LocationCategoryGenerator implements Habit {
@@ -30,7 +28,7 @@ public class LocationCategoryGenerator implements Habit {
             newLocation.add(new Idea("Reward", new Random().nextDouble(), "Property", 1));
 
             newLocation.setValue(new Category() {
-                private Idea owner = newLocation;
+                private final Idea owner = newLocation;
 
                 @Override
                 public Idea getInstance(Idea constraints) {

@@ -1,19 +1,17 @@
 package CSTEpisodicMemory.episodic;
 
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TimelineBufferCodelet extends Codelet {
 
-    private List<String> inputMemoriesNames;
+    private final List<String> inputMemoriesNames;
     private List<Memory> inputsMO;
     private Memory bufferMO;
 

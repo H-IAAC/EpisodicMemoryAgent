@@ -12,9 +12,9 @@ public class LegsActuatorCodelet extends Codelet {
 
     private MemoryContainer legsMO;
 
-    private Agent creature;
+    private final Agent creature;
 
-    private List<String> avaiableActions = Arrays.asList("Move");
+    private final List<String> avaiableActions = List.of("Move");
 
     public LegsActuatorCodelet(Agent creature) {
         this.creature = creature;

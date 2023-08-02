@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  */
 public class Environment {
     public WS3DCoppelia world;
-    public Agent creature = null;
+    public Agent creature;
     public boolean initialized = false;
 
     public Environment() {
@@ -28,9 +28,7 @@ public class Environment {
         try {
             world.startSimulation();
             initialized = true;
-        } catch (IOException ex) {
-            Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (CborException ex) {
+        } catch (IOException | CborException ex) {
             Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
         }
         //System.out.println("Robot " + creature.getName() + " is ready to go.");

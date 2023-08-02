@@ -1,12 +1,10 @@
 package CSTEpisodicMemory.motor;
 
-import CSTEpisodicMemory.util.IdeaHelper;
 import WS3DCoppelia.model.Agent;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,9 +12,9 @@ public class HandsActuatorCodelet extends Codelet {
 
     private MemoryContainer handsMO;
 
-    private List<String> avaiableActions = Arrays.asList("Collect", "Eat", "Deliver");
+    private final List<String> avaiableActions = Arrays.asList("Collect", "Eat", "Deliver");
 
-    private Agent creature;
+    private final Agent creature;
 
     public HandsActuatorCodelet(Agent creature) {
         this.creature = creature;

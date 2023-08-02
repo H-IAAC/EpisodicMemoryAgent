@@ -3,12 +3,11 @@ package CSTEpisodicMemory.habits;
 import br.unicamp.cst.representation.idea.Habit;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
 
-    private Idea owner;
+    private final Idea owner;
 
     public TrackedPropertiesAssimilateAccommodateHabit(Idea owner) {
         this.owner = owner;
@@ -26,19 +25,17 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
         accommodateHabit.get("properties").setValue(properties);
 
         Idea step1 = idea.getL().get(0);
-        Idea step1PropertyCategory = null;
+        Idea step1PropertyCategory;
         Idea step2 = idea.getL().get(1);
-        Idea step2PropertyCategory = null;
+        Idea step2PropertyCategory;
 
         Idea objectInstance1 = step1.get(observedObject);
         Idea objectInstance2 = step2.get(observedObject);
 
         synchronized (propertyCategories) {
-            if (propertyCategories.size() == 0) {
-                Idea newPropertyCategory1 = assimilateHabit.exec(objectInstance1);
-                step1PropertyCategory = newPropertyCategory1;
-                Idea newPropertyCategory2 = assimilateHabit.exec(objectInstance2);
-                step2PropertyCategory = newPropertyCategory2;
+            if (propertyCategories.isEmpty()) {
+                step1PropertyCategory = assimilateHabit.exec(objectInstance1);
+                step2PropertyCategory = assimilateHabit.exec(objectInstance2);
                 propertyCategories.add(step1PropertyCategory);
                 propertyCategories.add(step2PropertyCategory);
             } else {
@@ -67,8 +64,7 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
                     accommodateHabit.exec(bestFitCategory1);
                     step1PropertyCategory = bestFitCategory1;
                 } else {
-                    Idea newPropertyCategory = assimilateHabit.exec(objectInstance1);
-                    step1PropertyCategory = newPropertyCategory;
+                    step1PropertyCategory = assimilateHabit.exec(objectInstance1);
                     propertyCategories.add(step1PropertyCategory);
                 }
                 if (bestFitMembership2 >= 0.95) {
@@ -77,8 +73,7 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
                     accommodateHabit.exec(bestFitCategory2);
                     step2PropertyCategory = bestFitCategory2;
                 } else {
-                    Idea newPropertyCategory = assimilateHabit.exec(objectInstance2);
-                    step2PropertyCategory = newPropertyCategory;
+                    step2PropertyCategory = assimilateHabit.exec(objectInstance2);
                     propertyCategories.add(step2PropertyCategory);
                 }
             }

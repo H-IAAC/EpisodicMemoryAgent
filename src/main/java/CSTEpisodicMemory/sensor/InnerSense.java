@@ -16,7 +16,7 @@ import br.unicamp.cst.representation.idea.Idea;
  */
 public class InnerSense extends Codelet{
     private Memory innerSenseMO;
-    private Agent agent;
+    private final Agent agent;
     private Idea cis;
     private boolean debug = false;
 

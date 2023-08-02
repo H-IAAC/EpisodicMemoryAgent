@@ -3,19 +3,19 @@
  */
 package CSTEpisodicMemory;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import static org.junit.Assert.*;
 
 public class EnvironmentTest {
 
     @Test
     public void environmentInitializedTest() {
         Environment env = new Environment();
-        assertNotNull(env.creature);
-        assertNotNull(env.world);
-        assertTrue(env.initialized);
+        Assertions.assertNotNull(env.creature);
+        Assertions.assertNotNull(env.world);
+        Assertions.assertTrue(env.initialized);
 
         env.stopSimulation();
-        assertFalse(env.initialized);
+        Assertions.assertFalse(env.initialized);
     }
 }

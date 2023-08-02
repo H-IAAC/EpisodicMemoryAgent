@@ -17,11 +17,11 @@ public class EpisodicGistExtraction extends Codelet {
     private Memory locationMO;
     private Memory propertiesMO;
 
-    private Idea locCatAcomodate;
-    private Idea newLocCategoryGenerator;
+    private final Idea locCatAcomodate;
+    private final Idea newLocCategoryGenerator;
     private Idea prevEp = null;
     private Idea prevLastEvent = null;
-    private Idea trackedPropertiesAssimilateAccommodateHabit;
+    private final Idea trackedPropertiesAssimilateAccommodateHabit;
     private int impulseCount = 0;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
@@ -68,7 +68,7 @@ public class EpisodicGistExtraction extends Codelet {
             //Extract locations
             List<Idea> epLocations = story.getLocationNodes();
             for (Idea loc : epLocations) {
-                if (memLocations.size() == 0) {
+                if (memLocations.isEmpty()) {
                     Idea newLocCat = newLocCategoryGenerator.exec(getNodeContent(loc));
                     Idea firstLoc = epLTMGraph.insertLocationNode(newLocCat);
                     memLocations.add(newLocCat);
@@ -171,19 +171,16 @@ public class EpisodicGistExtraction extends Codelet {
             }
 
             //Create an Episode node
-            Idea ep = new Idea("Episode" + (int) oldestEpisode.getValue(), (int) oldestEpisode.getValue(), "Episode", 1);
+            Idea ep = new Idea("Episode" + (int) oldestEpisode.getValue(), oldestEpisode.getValue(), "Episode", 1);
             epLTMGraph.insertEpisodeNode(ep);
             epLTMGraph.insertLink(ep, startEvent, "Begin");
             epLTMGraph.insertLink(ep, endEvent, "End");
-            if (prevEp == null){
-                prevEp = ep;
-                prevLastEvent = endEvent;
-            } else {
+            if (prevEp != null) {
                 epLTMGraph.insertLink(prevEp, ep, "Next");
                 epLTMGraph.insertLink(prevLastEvent, startEvent, "Next");
-                prevEp = ep;
-                prevLastEvent = endEvent;
             }
+            prevEp = ep;
+            prevLastEvent = endEvent;
 
             stories.getL().remove(oldestEpisode);
             synchronized (locationMO) {

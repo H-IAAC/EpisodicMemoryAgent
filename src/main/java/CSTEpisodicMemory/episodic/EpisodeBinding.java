@@ -6,7 +6,6 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,10 +65,10 @@ public class EpisodeBinding extends Codelet {
                         .filter(e -> ((long) e.getValue()) <= eventEnd)
                         .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
 
-                if (context.isPresent() && isSegmentationEvent(story, event, context.get())){
+                if (context.isPresent() && isSegmentationEvent(story, context.get())){
                     segmentedEvents.add(event);
                 } else {
-                    List<Idea> otherNodes = new ArrayList<Idea>(story.getEventNodes());
+                    List<Idea> otherNodes = new ArrayList<>(story.getEventNodes());
                     story.insertEventNode(event);
                     createTemporalRelations(event, otherNodes, story);
 
@@ -99,7 +98,7 @@ public class EpisodeBinding extends Codelet {
         }
 
         //Segment Episode
-        if (segmentedEvents.size() > 0){
+        if (!segmentedEvents.isEmpty()){
             //Create new episode
             Idea newStory = new Idea("Story", null, "Composition", 1);
             Idea newEpisode = new Idea("Episode", (int)currentEpisode.getValue() +1, "Episode", 1);
@@ -114,11 +113,11 @@ public class EpisodeBinding extends Codelet {
         }
     }
 
-    private boolean isSegmentationEvent(GraphIdea story, Idea event, Idea context) {
+    private boolean isSegmentationEvent(GraphIdea story, Idea context) {
         Idea impulse = context.get("Impulse");
         if (impulse != null) {
             if (!story.hasNodeContent(impulse)) {
-                return !(story.getContextNodes().size() < 1);
+                return !(story.getContextNodes().isEmpty());
             }
         }
         return false;
@@ -133,9 +132,9 @@ public class EpisodeBinding extends Codelet {
                 end1 = (Long) step.get("TimeStamp").getValue();
         }
 
-        Long closestBeforeSink = Long.MAX_VALUE;
+        long closestBeforeSink = Long.MAX_VALUE;
         Idea closestBeforeSinkIdea = null;
-        Long closestBeforeSource = Long.MAX_VALUE;
+        long closestBeforeSource = Long.MAX_VALUE;
         Idea closestBeforeSourceIdea = null;
         for (Idea node : otherNodes){
             Idea nodeContent = GraphIdea.getNodeContent(node);
@@ -148,7 +147,7 @@ public class EpisodeBinding extends Codelet {
             }
 
             String relation = temporalRelation(start1, end1, start2, end2);
-            if (!relation.equals("")){
+            if (!relation.isEmpty()){
                 if (relation.equals("Before")){
                     if (start2 - end1 < closestBeforeSink) {
                         closestBeforeSink = start2 - end1;
@@ -159,7 +158,7 @@ public class EpisodeBinding extends Codelet {
                 }
             }
             relation = temporalRelation(start2, end2, start1, end1);
-            if (!relation.equals("")){
+            if (!relation.isEmpty()){
                 if (relation.equals("Before")){
                     if (start1 - end2 < closestBeforeSource) {
                         closestBeforeSource = start1 - end2;

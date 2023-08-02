@@ -1,6 +1,5 @@
 package CSTEpisodicMemory.behavior;
 
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -48,14 +47,14 @@ public class Eat extends Codelet {
     private void removeFromMemory(int id) {
         Idea foods = (Idea) foodMO.getI();
         List<Idea> modifiedL = new ArrayList<>();
-        String foodType = "";
+        //String foodType = "";
         synchronized (foods){
             for (Idea food : foods.getL()){
                 if (((int) food.get("ID").getValue()) != id){
                     modifiedL.add(food.clone());
-                } else {
-                    foodType = (String) food.getValue();
-                }
+                } //else {
+                    //foodType = (String) food.getValue();
+                //}
             }
             foods.setL(modifiedL);
         }

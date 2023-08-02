@@ -16,8 +16,9 @@ public class GoToFoodImpulse extends Codelet {
     private Memory foodMO;
     private MemoryContainer impulsesMO;
 
-    private double minDesire = 0, maxDesire = 1;
-    private String impulseCat = "GoTo";
+    private final double minDesire = 0;
+    private final double maxDesire = 1;
+    private final String impulseCat = "GoTo";
 
     @Override
     public void accessMemoryObjects() {

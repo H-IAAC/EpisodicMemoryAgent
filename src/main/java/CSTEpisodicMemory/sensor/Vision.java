@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class Vision extends Codelet {
     private Memory visionMO;
-    private Agent agent;
+    private final Agent agent;
 
 
     public Vision(Agent nc) {

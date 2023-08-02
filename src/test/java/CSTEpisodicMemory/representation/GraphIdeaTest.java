@@ -2,14 +2,13 @@ package CSTEpisodicMemory.representation;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import br.unicamp.cst.representation.idea.Idea;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GraphIdeaTest {
 
@@ -48,45 +47,45 @@ public class GraphIdeaTest {
     @Test
     public void testLinks(){
         Map<String, List<Idea>> links = graphIdea.getSuccesors(event1);
-        assertEquals(3, links.size());
+        Assertions.assertEquals(3, links.size());
 
         Set<String> types = links.keySet();
-        assertTrue(types.contains("Next"));
-        assertTrue(types.contains("Start"));
-        assertTrue(types.contains("End"));
+        Assertions.assertTrue(types.contains("Next"));
+        Assertions.assertTrue(types.contains("Start"));
+        Assertions.assertTrue(types.contains("End"));
 
         List<Idea> dest = links.values().stream().flatMap(Collection::stream).map(GraphIdea::getNodeContent).collect(Collectors.toList());
         System.out.println(dest);
-        assertTrue(dest.contains(event2));
-        assertTrue(dest.contains(pos1));
-        assertTrue(dest.contains(pos2));
+        Assertions.assertTrue(dest.contains(event2));
+        Assertions.assertTrue(dest.contains(pos1));
+        Assertions.assertTrue(dest.contains(pos2));
     }
 
     @Test
     public void testActivation(){
         List<Idea> nodes = graphIdea.getNodes();
-        assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
+        Assertions.assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
 
         graphIdea.setNodeActivation(pos1, 1d);
-        assertTrue((double) graphIdea.getNodeFromContent(pos1).get("Activation").getValue() == 1d);
+        Assertions.assertEquals(1d, (double) graphIdea.getNodeFromContent(pos1).get("Activation").getValue(), 0.0);
 
         graphIdea.propagateActivations(Arrays.asList("Next", "Start", "End"), Arrays.asList("Next", "Start", "End"));
         double event3Activatio = (double) graphIdea.getNodeFromContent(event3).get("Activation").getValue();
-        assertTrue(event3Activatio == 0.9*0.9*0.9d);
+        Assertions.assertEquals(0.9 * 0.9 * 0.9d, event3Activatio, 0.0);
 
         graphIdea.resetActivations();
         nodes = graphIdea.getNodes();
-        assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
+        Assertions.assertTrue(nodes.stream().allMatch(n->(double) n.get("Activation").getValue() == 0d));
     }
 
     @Test
     public void testGraphLinkTraversal(){
         List<Idea> children = graphIdea.getChildrenWithLink(event1, "Next");
 
-        assertEquals(children.size(), 1);
-        assertTrue(getNodeContent(children.get(0)).equals(event2));
+        Assertions.assertEquals(children.size(), 1);
+        Assertions.assertEquals(getNodeContent(children.get(0)), event2);
 
-        assertEquals(graphIdea.getChildrenWithLink(event1, "FakeLink").size(), 0);
-        assertEquals(graphIdea.getChildrenWithLink(new Idea("FakeNode"), "FakeLink").size(), 0);
+        Assertions.assertEquals(graphIdea.getChildrenWithLink(event1, "FakeLink").size(), 0);
+        Assertions.assertEquals(graphIdea.getChildrenWithLink(new Idea("FakeNode"), "FakeLink").size(), 0);
     }
 }

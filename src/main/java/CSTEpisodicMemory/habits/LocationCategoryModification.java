@@ -1,18 +1,13 @@
 package CSTEpisodicMemory.habits;
 
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Habit;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class LocationCategoryModification implements Habit {
 
-    private Idea owner;
-    private float lr = 0.2f;
+    private final Idea owner;
+    private final float lr = 0.2f;
 
     public LocationCategoryModification(Idea owner){
         this.owner = owner;

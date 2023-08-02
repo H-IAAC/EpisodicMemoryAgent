@@ -6,8 +6,6 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.awt.event.MouseWheelEvent;
-
 import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 
 public class EpisodeRetrieval extends Codelet {

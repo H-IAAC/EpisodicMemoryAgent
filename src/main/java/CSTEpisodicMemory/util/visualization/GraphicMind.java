@@ -4,7 +4,6 @@ import CSTEpisodicMemory.Environment;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
-import br.unicamp.cst.representation.idea.Idea;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,17 +11,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
 import java.util.List;
 import java.util.Timer;
+import java.util.*;
 
 public class GraphicMind extends JFrame {
 
-    private double envW, envH;
-    private int windowW, windowH;
+    private final double envW;
+    private final double envH;
+    private final int windowW;
+    private final int windowH;
     private JComponent window;
-    private Mind m;
-    private Environment env;
+    private final Mind m;
+    private final Environment env;
 
     private LocationGraphic loc;
 
@@ -37,13 +38,13 @@ public class GraphicMind extends JFrame {
         initComponents();
 
         java.util.Timer t = new Timer();
-        GraphicMind.mainTimerTask tt = new GraphicMind.mainTimerTask(this);
+        GraphicMind.mainTimerTask tt = new mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 200, 100);
 
         setVisible(true);
     }
 
-    class mainTimerTask extends TimerTask {
+    static class mainTimerTask extends TimerTask {
 
         GraphicMind l;
 
@@ -107,7 +108,7 @@ public class GraphicMind extends JFrame {
                 agentGraphic.draw(g2d);
             }
 
-            protected void drawWalls(Graphics2D g){
+            private void drawWalls(Graphics2D g){
                 double sx = windowW/envW;
                 double sy = windowH/envH;
                 List<Rectangle2D.Double> walls = Arrays.asList(
