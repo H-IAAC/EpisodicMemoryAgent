@@ -28,6 +28,17 @@ public class EpisodeRetrievalTest {
     List<Idea> locCat = new ArrayList<>();
     List<Idea> propCat = new ArrayList<>();
 
+    List<Idea> eventCategories = Arrays.asList(new Idea("EventCategory1"),
+            new Idea("EventCategory2"),
+            new Idea("EventCategory3"),
+            new Idea("EventCategory4"));
+
+    public EpisodeRetrievalTest(){
+        for (Idea eventCat : eventCategories){
+            eventCat.add(new Idea("ObservedObject", "object"));
+        }
+    }
+
     private void createMind(){
         m = new Mind();
         cueMO = m.createMemoryObject("CUE");
@@ -47,13 +58,16 @@ public class EpisodeRetrievalTest {
     }
 
     private void setMemories(){
-        LocationCategoryGenerator locGen = new LocationCategoryGenerator();
-        locCat.add(locGen.exec(null));
-        locCat.add(locGen.exec(null));
-        locCat.add(locGen.exec(null));
-        locCat.add(locGen.exec(null));
+        Idea epltmIdea = new Idea("EPLTM", null, "Epsisode", 1);
+        GraphIdea epltm = new GraphIdea(epltmIdea);
 
-        locationsMO.setI(locCat);
+        LocationCategoryGenerator locGen = new LocationCategoryGenerator();
+        locCat = new ArrayList<>();
+        for (int i = 0; i<4; i++){
+            Idea newCat = locGen.exec(null);
+            locCat.add(newCat);
+            epltm.insertLocationNode(newCat);
+        }
 
         Idea assimilateSubHabit = new Idea("assimilate", null);
         assimilateSubHabit.setValue(new AssimilatePropertyCategory(assimilateSubHabit));
@@ -64,15 +78,15 @@ public class EpisodeRetrievalTest {
         Idea toLearn = new Idea("object", "test", "AbstractObject", 1);
         toLearn.add(new Idea("p1", 0, "QualityDimension", 1));
         toLearn.add(new Idea("p2", 1, "QualityDimension", 1));
+
+        propCat = new ArrayList<>();
         for (int i = 0; i<16;i++) {
             toLearn.get("p1").setValue(i);
             toLearn.get("p2").setValue(i);
-            propCat.add(assimilateSubHabit.exec(toLearn));
+            Idea newCat = assimilateSubHabit.exec(toLearn);
+            propCat.add(newCat);
+            epltm.insertPropertyNode(newCat);
         }
-        propertiesMO.setI(propCat);
-
-        Idea epltmIdea = new Idea("EPLTM", null, "Epsisode", 1);
-        GraphIdea epltm = new GraphIdea(epltmIdea);
 
         //Episodic Memory example
         Idea ep1 = epltm.insertEpisodeNode(new Idea("Episode1", null, "Episode", 1));
@@ -80,15 +94,15 @@ public class EpisodeRetrievalTest {
         Idea ep3 = epltm.insertEpisodeNode(new Idea("Episode3", null, "Episode", 1));
         Idea ep4 = epltm.insertEpisodeNode(new Idea("Episode4", null, "Episode", 1));
 
-        Idea event1 = epltm.insertEventNode(new Idea("Event1", "EventCat1", "Episode", 1));
-        Idea event2 = epltm.insertEventNode(new Idea("Event2", "EventCat2", "Episode", 1));
-        Idea event3 = epltm.insertEventNode(new Idea("Event3", "EventCat3", "Episode", 1));
-        Idea event4 = epltm.insertEventNode(new Idea("Event4", "EventCat1", "Episode", 1));
-        Idea event5 = epltm.insertEventNode(new Idea("Event5", "EventCat2", "Episode", 1));
-        Idea event6 = epltm.insertEventNode(new Idea("Event6", "EventCat1", "Episode", 1));
-        Idea event7 = epltm.insertEventNode(new Idea("Event7", "EventCat2", "Episode", 1));
-        Idea event8 = epltm.insertEventNode(new Idea("Event8", "EventCat3", "Episode", 1));
-        Idea event9 = epltm.insertEventNode(new Idea("Event9", "EventCat1", "Episode", 1));
+        Idea event1 = epltm.insertEventNode(new Idea("Event1", eventCategories.get(0), "Episode", 1));
+        Idea event2 = epltm.insertEventNode(new Idea("Event2", eventCategories.get(1), "Episode", 1));
+        Idea event3 = epltm.insertEventNode(new Idea("Event3", eventCategories.get(2), "Episode", 1));
+        Idea event4 = epltm.insertEventNode(new Idea("Event4", eventCategories.get(0), "Episode", 1));
+        Idea event5 = epltm.insertEventNode(new Idea("Event5", eventCategories.get(1), "Episode", 1));
+        Idea event6 = epltm.insertEventNode(new Idea("Event6", eventCategories.get(0), "Episode", 1));
+        Idea event7 = epltm.insertEventNode(new Idea("Event7", eventCategories.get(1), "Episode", 1));
+        Idea event8 = epltm.insertEventNode(new Idea("Event8", eventCategories.get(2), "Episode", 1));
+        Idea event9 = epltm.insertEventNode(new Idea("Event9", eventCategories.get(0), "Episode", 1));
 
         epltm.insertLink(ep1, event1, "Begin");
         epltm.insertLink(ep1, event3, "End");
@@ -139,29 +153,36 @@ public class EpisodeRetrievalTest {
         epltm.insertLink(event8, locCat.get(0), "Location");
         epltm.insertLink(event9, locCat.get(1), "Location");
 
+        locationsMO.setI(locCat);
+
+        propertiesMO.setI(propCat);
+
         eplMO.setI(epltm);
     }
 
     @Test
-    public void retrieveTest(){
+    public void eventRetrieveTest(){
         createMind();
         setMemories();
 
         //create a Cue
-        Idea cue = new Idea("EventTest", "EventCat2", "Episode", 1);
+        Idea cue = new Idea("EventTest", eventCategories.get(1), "Episode", 1);
         Idea step1 = new Idea("", 1, "TimeStep", 1);
         Idea step2 = new Idea("", 2, "TimeStep", 1);
-        Idea obj = new Idea("TestObject", null, "AbstractObject", 1);
+        Idea obj = new Idea("object", null, "AbstractObject", 1);
         obj.add(new Idea("p1", 2, "QualityDimension", 1));
         obj.add(new Idea("p2", 2, "QualityDimension", 1));
         Idea obj2 = obj.clone();
         obj2.get("p1").setValue(8);
         obj2.get("p2").setValue(8);
-
         step1.add(obj);
         step2.add(obj2);
+        cue.add(step1);
+        cue.add(step2);
 
-        cueMO.setI(new GraphIdea(cue));
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertEventNode(cue);
+        cueMO.setI(cueGraph);
         long start = System.currentTimeMillis();
         while (recallMO.getI() == null){
             assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
@@ -198,5 +219,149 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(propCat.get(9).membership(endEventInitialProperty), 1.0);
         Assertions.assertEquals(propCat.get(10).membership(endEventFinalProperty), 1.0);
 
+    }
+
+    @Test
+    public void unsuccessfulRetrievalTest(){
+        createMind();
+        setMemories();
+
+        //create a Cue
+        Idea cue = new Idea("EventTest", eventCategories.get(3), "Episode", 1);
+        Idea step1 = new Idea("", 1, "TimeStep", 1);
+        Idea step2 = new Idea("", 2, "TimeStep", 1);
+        Idea obj = new Idea("object", null, "AbstractObject", 1);
+        obj.add(new Idea("p1", -3, "QualityDimension", 1));
+        obj.add(new Idea("p2", -3, "QualityDimension", 1));
+        Idea obj2 = obj.clone();
+        obj2.get("p1").setValue(-3);
+        obj2.get("p2").setValue(-3);
+        step1.add(obj);
+        step2.add(obj2);
+        cue.add(step1);
+        cue.add(step2);
+
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertEventNode(cue);
+        cueMO.setI(cueGraph);
+        long start = System.currentTimeMillis();
+        while (recallMO.getI() == null){
+            assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
+        }
+
+        GraphIdea storyRecall = (GraphIdea) recallMO.getI();
+
+        Assertions.assertEquals(storyRecall.getNodes().size(), 0);
+
+    }
+
+    @Test
+    public void episodeRetrievalTest(){
+        createMind();
+        setMemories();
+
+        //create a Cue
+        Idea cueEp = new Idea("EpisodeTest", null, "Episode", 1);
+        Idea firstEvent = new Idea("EventTest1", eventCategories.get(1), 1);
+        Idea finalEvent = new Idea("EventTest2", eventCategories.get(0), 1);
+
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertEpisodeNode(cueEp);
+        cueGraph.insertEventNode(firstEvent);
+        cueGraph.insertEventNode(finalEvent);
+        cueGraph.insertLink(cueEp, firstEvent, "Begin");
+        cueGraph.insertLink(cueEp, finalEvent, "End");
+        cueMO.setI(cueGraph);
+
+        long start = System.currentTimeMillis();
+        while (recallMO.getI() == null){
+            assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
+        }
+
+        GraphIdea storyRecall = (GraphIdea) recallMO.getI();
+
+        //Check if is correct episode
+        List<Idea> ep = storyRecall.getEpisodeNodes();
+        Assertions.assertEquals(ep.size(), 1);
+        Idea epContent = getNodeContent(ep.get(0));
+        Assertions.assertEquals(epContent.getName(), "Episode4");
+
+        //Check events
+        List<Idea> begin = storyRecall.getChildrenWithLink(epContent, "Begin");
+        Assertions.assertEquals(begin.size(), 1);
+        Idea beginEvent = getNodeContent(begin.get(0));
+        Assertions.assertEquals(beginEvent.getName(), "Event7");
+        List<Idea> end = storyRecall.getChildrenWithLink(epContent, "End");
+        Assertions.assertEquals(end.size(), 1);
+        Idea endEvent = getNodeContent(begin.get(0));
+        Assertions.assertEquals(endEvent.getName(), "Event9");
+
+        Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
+
+        //Check Properties
+        Idea beginEventInitialProperty = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
+        Idea beginEventFinalProperty = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
+        Idea endEventInitialProperty = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
+        Idea endEventFinalProperty = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
+
+        Assertions.assertEquals(propCat.get(11).membership(beginEventInitialProperty), 1.0);
+        Assertions.assertEquals(propCat.get(12).membership(beginEventFinalProperty), 1.0);
+        Assertions.assertEquals(propCat.get(14).membership(endEventInitialProperty), 1.0);
+        Assertions.assertEquals(propCat.get(15).membership(endEventFinalProperty), 1.0);
+    }
+
+    @Test
+    public void eventSequenceRetrivalTest(){
+        createMind();
+        setMemories();
+
+        //create a Cue
+        Idea cueEvent1 = new Idea("TestEvent1", eventCategories.get(1), 1);
+        Idea cueEvent2 = new Idea("TestEvent2", eventCategories.get(2), 1);
+        Idea cueEvent3 = new Idea("TestEvent3", eventCategories.get(0), 1);
+
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertEpisodeNode(cueEvent1);
+        cueGraph.insertEpisodeNode(cueEvent2);
+        cueGraph.insertEpisodeNode(cueEvent3);
+        cueGraph.insertLink(cueEvent1, cueEvent2, "Meet");
+        cueGraph.insertLink(cueEvent2, cueEvent3, "Meet");
+        cueMO.setI(cueGraph);
+
+        long start = System.currentTimeMillis();
+        while (recallMO.getI() == null){
+            assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
+        }
+
+        GraphIdea storyRecall = (GraphIdea) recallMO.getI();
+
+        //Check if is correct episode
+        List<Idea> ep = storyRecall.getEpisodeNodes();
+        Assertions.assertEquals(ep.size(), 1);
+        Idea epContent = getNodeContent(ep.get(0));
+        Assertions.assertEquals(epContent.getName(), "Episode4");
+
+        //Check events
+        List<Idea> begin = storyRecall.getChildrenWithLink(epContent, "Begin");
+        Assertions.assertEquals(begin.size(), 1);
+        Idea beginEvent = getNodeContent(begin.get(0));
+        Assertions.assertEquals(beginEvent.getName(), "Event7");
+        List<Idea> end = storyRecall.getChildrenWithLink(epContent, "End");
+        Assertions.assertEquals(end.size(), 1);
+        Idea endEvent = getNodeContent(begin.get(0));
+        Assertions.assertEquals(endEvent.getName(), "Event9");
+
+        Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
+
+        //Check Properties
+        Idea beginEventInitialProperty = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
+        Idea beginEventFinalProperty = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
+        Idea endEventInitialProperty = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
+        Idea endEventFinalProperty = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
+
+        Assertions.assertEquals(propCat.get(11).membership(beginEventInitialProperty), 1.0);
+        Assertions.assertEquals(propCat.get(12).membership(beginEventFinalProperty), 1.0);
+        Assertions.assertEquals(propCat.get(14).membership(endEventInitialProperty), 1.0);
+        Assertions.assertEquals(propCat.get(15).membership(endEventFinalProperty), 1.0);
     }
 }

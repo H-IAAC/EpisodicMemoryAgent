@@ -93,7 +93,7 @@ public class AssimilatePropertyCategory implements Habit {
 
                 double radius = (double) owner.get("radius").getValue();
 
-                return Math.exp(-sum) * Math.exp(radius*radius);
+                return Math.min(Math.exp(-sum) * Math.exp(radius*radius), 1.0);
             }
         });
         return newCat;

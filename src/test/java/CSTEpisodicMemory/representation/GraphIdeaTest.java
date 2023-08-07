@@ -1,6 +1,8 @@
 package CSTEpisodicMemory.representation;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.habits.AssimilatePropertyCategory;
+import CSTEpisodicMemory.habits.LocationCategoryGenerator;
 import br.unicamp.cst.representation.idea.Idea;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -87,5 +89,122 @@ public class GraphIdeaTest {
 
         Assertions.assertEquals(graphIdea.getChildrenWithLink(event1, "FakeLink").size(), 0);
         Assertions.assertEquals(graphIdea.getChildrenWithLink(new Idea("FakeNode"), "FakeLink").size(), 0);
+    }
+
+    @Test
+    public void emptyGraphTest(){
+        GraphIdea test = new GraphIdea(new Idea("Graph"));
+
+        Assertions.assertEquals(test.getNodes().size(), 0);
+    }
+
+    @Test
+    public void episodeSubGraphTest(){
+        Idea epltmIdea = new Idea("EPLTM", null, "Epsisode", 1);
+        GraphIdea epltm = new GraphIdea(epltmIdea);
+
+        LocationCategoryGenerator locGen = new LocationCategoryGenerator();
+        List<Idea> locCat = new ArrayList<>();
+        for (int i = 0; i<4; i++){
+            Idea newCat = locGen.exec(null);
+            locCat.add(newCat);
+            epltm.insertLocationNode(newCat);
+        }
+
+        Idea assimilateSubHabit = new Idea("assimilate", null);
+        assimilateSubHabit.setValue(new AssimilatePropertyCategory(assimilateSubHabit));
+        assimilateSubHabit.add(new Idea("properties", null, "Property", 1));
+        assimilateSubHabit.add(new Idea("samples", null, "Property", 1));
+
+        assimilateSubHabit.get("properties").setValue(Arrays.asList("p1","p2"));
+        Idea toLearn = new Idea("object", "test", "AbstractObject", 1);
+        toLearn.add(new Idea("p1", 0, "QualityDimension", 1));
+        toLearn.add(new Idea("p2", 1, "QualityDimension", 1));
+
+        List<Idea> eventCategories = Arrays.asList(new Idea("EventCategory1"),
+                new Idea("EventCategory2"),
+                new Idea("EventCategory3"),
+                new Idea("EventCategory4"));
+
+        for (Idea eventCat : eventCategories){
+            eventCat.add(new Idea("ObservedObject", "object"));
+        }
+
+        List<Idea> propCat = new ArrayList<>();
+        for (int i = 0; i<16;i++) {
+            toLearn.get("p1").setValue(i);
+            toLearn.get("p2").setValue(i);
+            Idea newCat = assimilateSubHabit.exec(toLearn);
+            propCat.add(newCat);
+            epltm.insertPropertyNode(newCat);
+        }
+
+        //Episodic Memory example
+        Idea ep1 = epltm.insertEpisodeNode(new Idea("Episode1", null, "Episode", 1));
+        Idea ep2 = epltm.insertEpisodeNode(new Idea("Episode2", null, "Episode", 1));
+        Idea ep3 = epltm.insertEpisodeNode(new Idea("Episode3", null, "Episode", 1));
+        Idea ep4 = epltm.insertEpisodeNode(new Idea("Episode4", null, "Episode", 1));
+
+        Idea event1 = epltm.insertEventNode(new Idea("Event1", eventCategories.get(0), "Episode", 1));
+        Idea event2 = epltm.insertEventNode(new Idea("Event2", eventCategories.get(1), "Episode", 1));
+        Idea event3 = epltm.insertEventNode(new Idea("Event3", eventCategories.get(2), "Episode", 1));
+        Idea event4 = epltm.insertEventNode(new Idea("Event4", eventCategories.get(0), "Episode", 1));
+        Idea event5 = epltm.insertEventNode(new Idea("Event5", eventCategories.get(1), "Episode", 1));
+        Idea event6 = epltm.insertEventNode(new Idea("Event6", eventCategories.get(0), "Episode", 1));
+        Idea event7 = epltm.insertEventNode(new Idea("Event7", eventCategories.get(1), "Episode", 1));
+        Idea event8 = epltm.insertEventNode(new Idea("Event8", eventCategories.get(2), "Episode", 1));
+        Idea event9 = epltm.insertEventNode(new Idea("Event9", eventCategories.get(0), "Episode", 1));
+
+        epltm.insertLink(ep1, event1, "Begin");
+        epltm.insertLink(ep1, event3, "End");
+        epltm.insertLink(ep2, event4, "Begin");
+        epltm.insertLink(ep2, event4, "End");
+        epltm.insertLink(ep3, event5, "Begin");
+        epltm.insertLink(ep3, event6, "End");
+        epltm.insertLink(ep4, event7, "Begin");
+        epltm.insertLink(ep4, event9, "End");
+
+        epltm.insertLink(event1, event2, "Meet");
+        epltm.insertLink(event1, event3, "Before");
+        epltm.insertLink(event2, event3, "Meet");
+        epltm.insertLink(event3, event4, "Before");
+        epltm.insertLink(event4, event5, "Before");
+        epltm.insertLink(event5, event6, "Before");
+        epltm.insertLink(event6, event7, "Before");
+        epltm.insertLink(event7, event8, "Meet");
+        epltm.insertLink(event7, event9, "Before");
+        epltm.insertLink(event8, event9, "Meet");
+
+        epltm.insertLink(event1, propCat.get(0),"Initial");
+        epltm.insertLink(event1, propCat.get(1),"Final");
+        epltm.insertLink(event2, propCat.get(2),"Initial");
+        epltm.insertLink(event2, propCat.get(3),"Final");
+        epltm.insertLink(event3, propCat.get(4),"Initial");
+        epltm.insertLink(event3, propCat.get(5),"Final");
+        epltm.insertLink(event4, propCat.get(6),"Initial");
+        epltm.insertLink(event4, propCat.get(7),"Final");
+        epltm.insertLink(event5, propCat.get(2),"Initial");
+        epltm.insertLink(event5, propCat.get(8),"Final");
+        epltm.insertLink(event6, propCat.get(9),"Initial");
+        epltm.insertLink(event6, propCat.get(10),"Final");
+        epltm.insertLink(event7, propCat.get(11),"Initial");
+        epltm.insertLink(event7, propCat.get(12),"Final");
+        epltm.insertLink(event8, propCat.get(12),"Initial");
+        epltm.insertLink(event8, propCat.get(13),"Final");
+        epltm.insertLink(event9, propCat.get(14),"Initial");
+        epltm.insertLink(event9, propCat.get(15),"Final");
+
+        epltm.insertLink(event1, locCat.get(0), "Location");
+        epltm.insertLink(event2, locCat.get(0), "Location");
+        epltm.insertLink(event3, locCat.get(1), "Location");
+        epltm.insertLink(event4, locCat.get(2), "Location");
+        epltm.insertLink(event5, locCat.get(2), "Location");
+        epltm.insertLink(event6, locCat.get(3), "Location");
+        epltm.insertLink(event7, locCat.get(3), "Location");
+        epltm.insertLink(event8, locCat.get(0), "Location");
+        epltm.insertLink(event9, locCat.get(1), "Location");
+
+
+        epltm.getEpisodeSubGraph(ep3);
     }
 }
