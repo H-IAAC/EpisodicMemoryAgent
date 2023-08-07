@@ -115,6 +115,32 @@ public class GraphIdea {
         linksOfType.add(nodeIdeaDest);
     }
 
+    public void removeLink(Idea source, Idea dest){
+        Idea nodeIdeaSource;
+        if (!source.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = this.getNodes().stream()
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), source))
+                    .findFirst();
+            nodeIdeaSource = nodeOpt.orElseGet(() -> insertEventNode(source));
+        } else {
+            nodeIdeaSource = source;
+        }
+
+        Idea nodeIdeaDest;
+        if (!dest.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = this.getNodes().stream()
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), dest))
+                    .findFirst();
+            nodeIdeaDest = nodeOpt.orElseGet(() -> insertEventNode(dest));
+        } else {
+            nodeIdeaDest = dest;
+        }
+
+        for (Idea links : nodeIdeaSource.get("Links").getL()){
+            links.getL().remove(nodeIdeaDest);
+        }
+    }
+
     public List<Idea> getChildrenWithLink(Idea node, String linkType){
         Idea nodeIdeaSource = null;
         if (!node.getName().equals("Node")) {
@@ -223,6 +249,13 @@ public class GraphIdea {
                 .collect(Collectors.toList());
     }
 
+    public List<Idea> getPropertiesNodes(){
+        return graph.getL().stream()
+                .filter(e->e.getName().equals("Node"))
+                .filter(e->e.get("Type").getValue().equals("Property"))
+                .collect(Collectors.toList());
+    }
+
     public void setNodeActivation(Idea node, double val){
         Idea foundNode = node;
         if (!node.getName().equals("Node")) {
@@ -304,12 +337,14 @@ public class GraphIdea {
 
         if (foundNode != null){
             GraphIdea subGraph = new GraphIdea(new Idea(foundNode.getName()));
-            subGraph.insertEpisodeNode(getNodeContent(foundNode));
+            Idea subEp = subGraph.insertEpisodeNode(getNodeContent(foundNode));
 
             Idea start = getChildrenWithLink(foundNode, "Begin").get(0);
             Idea end = getChildrenWithLink(foundNode, "End").get(0);
-            subGraph.insertLink(foundNode, start, "Begin");
-            subGraph.insertLink(foundNode, end, "End");
+            Idea subStart = subGraph.insertEventNode(getNodeContent(start));
+            Idea subEnd = subGraph.insertEventNode(getNodeContent(end));
+            subGraph.insertLink(subEp, subStart, "Begin");
+            subGraph.insertLink(subEp, subEnd, "End");
             List<Idea> queue = new ArrayList<>();
             queue.add(start);
             while (!queue.isEmpty()){
@@ -317,10 +352,17 @@ public class GraphIdea {
                 Map<String, List<Idea>> links = getSuccesors(root);
                 for (String linkType : links.keySet()){
                     for (Idea node : links.get(linkType)){
-                        subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
-                        subGraph.insertLink(root, node, linkType);
-                        if (node != end && node.get("Type").getValue().equals("Event"))
-                            queue.add(node);
+                        if (root == end ){
+                            if (!node.get("Type").getValue().equals("Event")) {
+                                subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
+                                subGraph.insertLink(getNodeContent(root), getNodeContent(node), linkType);
+                            }
+                        } else {
+                            subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
+                            subGraph.insertLink(getNodeContent(root), getNodeContent(node), linkType);
+                            if (node.get("Type").getValue().equals("Event"))
+                                queue.add(node);
+                        }
                     }
                 }
             }

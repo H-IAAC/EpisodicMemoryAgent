@@ -205,6 +205,34 @@ public class GraphIdeaTest {
         epltm.insertLink(event9, locCat.get(1), "Location");
 
 
-        epltm.getEpisodeSubGraph(ep3);
+        GraphIdea subGraph = epltm.getEpisodeSubGraph(ep3);
+
+        List<Idea> ep = subGraph.getEpisodeNodes();
+        Assertions.assertEquals(1, ep.size());
+        Idea epContent = getNodeContent(ep.get(0));
+        Assertions.assertEquals(epContent.getName(), "Episode3");
+
+        //Check events
+        List<Idea> begin = subGraph.getChildrenWithLink(epContent, "Begin");
+        Assertions.assertEquals(1, begin.size());
+        Idea beginEvent = getNodeContent(begin.get(0));
+        Assertions.assertEquals("Event5", beginEvent.getName());
+        List<Idea> end = subGraph.getChildrenWithLink(epContent, "End");
+        Assertions.assertEquals(end.size(), 1);
+        Idea endEvent = getNodeContent(end.get(0));
+        Assertions.assertEquals(endEvent.getName(), "Event6");
+
+        Assertions.assertEquals(subGraph.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
+
+        //Check Properties
+        Idea beginEventInitialProperty = subGraph.getChildrenWithLink(begin.get(0), "Initial").get(0);
+        Idea beginEventFinalProperty = subGraph.getChildrenWithLink(begin.get(0), "Final").get(0);
+        Idea endEventInitialProperty = subGraph.getChildrenWithLink(end.get(0), "Initial").get(0);
+        Idea endEventFinalProperty = subGraph.getChildrenWithLink(end.get(0), "Final").get(0);
+
+        Assertions.assertEquals(propCat.get(2), getNodeContent(beginEventInitialProperty));
+        Assertions.assertEquals(propCat.get(8), getNodeContent(beginEventFinalProperty));
+        Assertions.assertEquals(propCat.get(9), getNodeContent(endEventInitialProperty));
+        Assertions.assertEquals(propCat.get(10), getNodeContent(endEventFinalProperty));
     }
 }

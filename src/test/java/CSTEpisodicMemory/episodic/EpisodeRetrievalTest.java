@@ -192,18 +192,18 @@ public class EpisodeRetrievalTest {
 
         //Check if is correct episode
         List<Idea> ep = storyRecall.getEpisodeNodes();
-        Assertions.assertEquals(ep.size(), 1);
+        Assertions.assertEquals(1, ep.size());
         Idea epContent = getNodeContent(ep.get(0));
         Assertions.assertEquals(epContent.getName(), "Episode3");
 
         //Check events
         List<Idea> begin = storyRecall.getChildrenWithLink(epContent, "Begin");
-        Assertions.assertEquals(begin.size(), 1);
+        Assertions.assertEquals(1, begin.size());
         Idea beginEvent = getNodeContent(begin.get(0));
-        Assertions.assertEquals(beginEvent.getName(), "Event5");
+        Assertions.assertEquals("Event5", beginEvent.getName());
         List<Idea> end = storyRecall.getChildrenWithLink(epContent, "End");
         Assertions.assertEquals(end.size(), 1);
-        Idea endEvent = getNodeContent(begin.get(0));
+        Idea endEvent = getNodeContent(end.get(0));
         Assertions.assertEquals(endEvent.getName(), "Event6");
 
         Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
@@ -214,10 +214,10 @@ public class EpisodeRetrievalTest {
         Idea endEventInitialProperty = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
         Idea endEventFinalProperty = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
 
-        Assertions.assertEquals(propCat.get(2).membership(beginEventInitialProperty), 1.0);
-        Assertions.assertEquals(propCat.get(8).membership(beginEventFinalProperty), 1.0);
-        Assertions.assertEquals(propCat.get(9).membership(endEventInitialProperty), 1.0);
-        Assertions.assertEquals(propCat.get(10).membership(endEventFinalProperty), 1.0);
+        Assertions.assertEquals(propCat.get(2).membership(getNodeContent(beginEventInitialProperty)), 1.0);
+        Assertions.assertEquals(propCat.get(8).membership(getNodeContent(beginEventFinalProperty)), 1.0);
+        Assertions.assertEquals(propCat.get(9).membership(getNodeContent(endEventInitialProperty)), 1.0);
+        Assertions.assertEquals(propCat.get(10).membership(getNodeContent(endEventFinalProperty)), 1.0);
 
     }
 
@@ -293,7 +293,7 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(beginEvent.getName(), "Event7");
         List<Idea> end = storyRecall.getChildrenWithLink(epContent, "End");
         Assertions.assertEquals(end.size(), 1);
-        Idea endEvent = getNodeContent(begin.get(0));
+        Idea endEvent = getNodeContent(end.get(0));
         Assertions.assertEquals(endEvent.getName(), "Event9");
 
         Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
@@ -348,7 +348,7 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(beginEvent.getName(), "Event7");
         List<Idea> end = storyRecall.getChildrenWithLink(epContent, "End");
         Assertions.assertEquals(end.size(), 1);
-        Idea endEvent = getNodeContent(begin.get(0));
+        Idea endEvent = getNodeContent(end.get(0));
         Assertions.assertEquals(endEvent.getName(), "Event9");
 
         Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
