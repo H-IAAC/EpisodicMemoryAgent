@@ -394,4 +394,29 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(propCat.get(14).membership(getNodeContent(endEventInitialProperty)), 1.0);
         Assertions.assertEquals(propCat.get(15).membership(getNodeContent(endEventFinalProperty)), 1.0);
     }
+
+    @Test
+    public void multipleEpisodesTest(){
+        createMind();
+        setMemories();
+
+        //create a Cue
+        Idea cueEvent1 = new Idea("TestEvent1", eventCategories.get(2), 1);
+        Idea cueEvent2 = new Idea("TestEvent2", eventCategories.get(0), 1);
+        Idea cueEvent3 = new Idea("TestEvent3", eventCategories.get(1), 1);
+
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertEventNode(cueEvent1);
+        cueGraph.insertEventNode(cueEvent2);
+        cueGraph.insertEventNode(cueEvent3);
+        cueGraph.insertLink(cueEvent1, cueEvent2, "Before");
+        cueGraph.insertLink(cueEvent2, cueEvent3, "Before");
+        cueMO.setI(cueGraph);
+
+        long start = System.currentTimeMillis();
+        while (recallMO.getI() == null){
+            assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
+        }
+
+    }
 }

@@ -61,6 +61,14 @@ public class EpisodeRetrieval extends Codelet {
             if (eventContent.getL().isEmpty()) {
                 if (eventCategory != null) {
                     List<Idea> sameCatEvents = epGraph.getEventNodes().stream().filter(e -> getNodeContent(e).getValue().equals(eventCategory)).collect(Collectors.toList());
+                    if (!cue.getEpisodeNodes().isEmpty()){
+                        if (cue.getPredecessors(eventNode).containsKey("Begin")){
+                            sameCatEvents = sameCatEvents.stream().filter(e -> epGraph.getPredecessors(e).containsKey("Begin")).collect(Collectors.toList());
+                        }
+                        if (cue.getPredecessors(eventNode).containsKey("End")){
+                            sameCatEvents = sameCatEvents.stream().filter(e -> epGraph.getPredecessors(e).containsKey("End")).collect(Collectors.toList());
+                        }
+                    }
                     sameCatEvents.sort(Comparator.comparingInt(n-> (int) n.get("Coordinate").getValue()));
                     Collections.reverse(sameCatEvents);
                     bestMatches.put(eventNode, sameCatEvents);
@@ -123,51 +131,85 @@ public class EpisodeRetrieval extends Codelet {
             }
         } else if (bestMatches.size() > 1) {
             LinkedList<Idea> events = new LinkedList<>(bestMatches.keySet());
-            int[] p = new int[bestMatches.size()];
-            Arrays.fill(p, 0);
+            ///int[] p = new int[bestMatches.size()];
+            ///Arrays.fill(p, 0);
+            Map<Idea, Integer> currCheckPos = bestMatches.keySet().stream().collect(Collectors.toMap(e->e,e->0));
             boolean valid = true;
             int totalCombinations = bestMatches.values().stream().map(List::size).reduce((a,b)->a*b).get();
             for (int c = 0; c < totalCombinations; c++) {
                 int k = c;
-                for (int i = p.length - 1; i >= 0; i--) {
-                    int totalInPosI = bestMatches.get(events.get(i)).size();
-                    p[i] = k % totalInPosI;
+                for (Idea event : currCheckPos.keySet()){
+                    int totalInPosI = bestMatches.get(event).size();
+                    currCheckPos.put(event, k % totalInPosI);
                     k = k / totalInPosI;
                 }
+               /// for (int i = p.length - 1; i >= 0; i--) {
+               ///     int totalInPosI = bestMatches.get(events.get(i)).size();
+               ///     p[i] = k % totalInPosI;
+               ///     k = k / totalInPosI;
+               /// }
 
                 LinkedList<Idea> recalls = new LinkedList<>();
-                for (int i = 0; i < events.size(); i++) {
-                    recalls.add(bestMatches.get(events.get(i)).get(p[i]));
+                for (Idea event : currCheckPos.keySet()){
+                    recalls.add(bestMatches.get(event).get(currCheckPos.get(event)));
                 }
+                ///for (int i = 0; i < events.size(); i++) {
+                ///    recalls.add(bestMatches.get(events.get(i)).get(p[i]));
+                ///}
                 valid = true;
-                for (int i = 0; i < events.size(); i++) {
-                    Idea eventA = getNodeContent(events.get(i));
-                    Map<String, List<Idea>> links = cue.getSuccesors(events.get(i));
-                    Idea recallA = getNodeContent(recalls.get(i));
-                    long startRecallA = getStartTime(recallA);
-                    long endRecallA = getEndTime(recallA);
-                    for (int j = 0; j < events.size(); j++) {
-                        Idea eventB = events.get(j);
-                        String cueRelation = links.entrySet().stream()
-                                .filter(e -> e.getValue().contains(eventB))
-                                .map(Map.Entry::getKey)
-                                .findFirst()
-                                .orElse("");
-                        Idea recallB = getNodeContent(recalls.get(j));
-                        long startRecallB = getStartTime(recallB);
-                        long endRecallB = getEndTime(recallB);
-                        if (!cueRelation.isEmpty() && !cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
-                            valid = false;
-                            break;
+                //Check episodes
+                for (Idea ep : cue.getEpisodeNodes()){
+                    List<Idea> beginLink = cue.getChildrenWithLink(ep, "Begin");
+                    Idea beginEp = null;
+                    if (!beginLink.isEmpty()){
+                        Idea beginCue = beginLink.get(0);
+                        beginEp = epGraph.getPredecessors(bestMatches.get(beginCue).get(currCheckPos.get(beginCue))).get("Begin").get(0);
+                    }
+                    List<Idea> endLink = cue.getChildrenWithLink(ep, "End");
+                    Idea endEp = null;
+                    if (!endLink.isEmpty()){
+                        Idea endCue = endLink.get(0);
+                        endEp = epGraph.getPredecessors(bestMatches.get(endCue).get(currCheckPos.get(endCue))).get("End").get(0);
+                    }
+                    if (beginEp != endEp){
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if (valid) {
+                    for (int i = 0; i < events.size(); i++) {
+                        Idea eventA = getNodeContent(events.get(i));
+                        Map<String, List<Idea>> links = cue.getSuccesors(events.get(i));
+                        Idea recallA = getNodeContent(recalls.get(i));
+                        long startRecallA = getStartTime(recallA);
+                        long endRecallA = getEndTime(recallA);
+                        for (int j = 0; j < events.size(); j++) {
+                            Idea eventB = events.get(j);
+                            String cueRelation = links.entrySet().stream()
+                                    .filter(e -> e.getValue().contains(eventB))
+                                    .map(Map.Entry::getKey)
+                                    .findFirst()
+                                    .orElse("");
+                            Idea recallB = getNodeContent(recalls.get(j));
+                            long startRecallB = getStartTime(recallB);
+                            long endRecallB = getEndTime(recallB);
+                            if (!cueRelation.isEmpty() && !cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
+                                valid = false;
+                                break;
+                            }
                         }
                     }
                 }
 
                 if (valid){
                     epGraph.resetActivations();
-                    for (int i = 0; i < p.length; i++) {
-                        epGraph.setNodeActivation(bestMatches.get(events.get(i)).get(p[i]), 1.0);
+                    for (Idea event : currCheckPos.keySet()){
+                        epGraph.setNodeActivation(bestMatches.get(event).get(currCheckPos.get(event)), 1.0);
                     }
+                    ///for (int i = 0; i < p.length; i++) {
+                    ///    epGraph.setNodeActivation(bestMatches.get(events.get(i)).get(p[i]), 1.0);
+                    ///}
                     epGraph.propagateActivations(Arrays.asList("Before", "Meet", "Overlap", "Start", "During", "Finish", "Equal"), Arrays.asList("Begin", "End"));
                     double maxActivation = epGraph.getEpisodeNodes().stream().mapToDouble(epGraph::getNodeActivation).max().getAsDouble();
                     if (maxActivation > 0) {
@@ -192,8 +234,11 @@ public class EpisodeRetrieval extends Codelet {
                         } else if (activatedEpisodes.size() > 1) {
                             GraphIdea recall = new GraphIdea(new Idea("Recall"));
                             for (Idea ep : activatedEpisodes){
-                                epGraph.getEpisodeSubGraph(ep);
+                                GraphIdea episodeGraph = epGraph.getEpisodeSubGraph(ep);
+                                recall.addAll(episodeGraph);
                             }
+                            recalledEpisode = recall;
+                            break;
                         }
 
                     }
