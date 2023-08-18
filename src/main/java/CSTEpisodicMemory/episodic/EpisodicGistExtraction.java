@@ -115,12 +115,20 @@ public class EpisodicGistExtraction extends Codelet {
                 LTEventContent.add(new Idea("End",
                         eventContent.getL().get(1).get("TimeStamp").getValue(),
                         "TimeStep", 1));
+                Idea objectLink = new Idea("Object", null, "Link", 1);
+                String objectName = eventContent.getL().get(0).getL().stream()
+                        .filter(o->o.getName().equals("TimeStamp"))
+                        .map(Idea::getName)
+                        .findFirst()
+                        .orElse("");
+                objectLink.add(new Idea(objectName));
+                LTEventContent.add(objectLink);
                 Idea LTEventNode = epLTMGraph.insertEventNode(LTEventContent);
                 instanceNodeToMemoryNode.put(eventNode, LTEventNode);
 
                 Idea catParam = trackedPropertiesAssimilateAccommodateHabit.get("Input_Category");
                 catParam.getL().clear();
-                catParam.add(eventCategory.get("ObservedObject"));
+                ///catParam.add(eventCategory.get("ObservedObject"));
                 catParam.add(eventCategory.get("properties"));
                 Idea catss = trackedPropertiesAssimilateAccommodateHabit.get("categories");
                 catss.setL(propertiesCategories);

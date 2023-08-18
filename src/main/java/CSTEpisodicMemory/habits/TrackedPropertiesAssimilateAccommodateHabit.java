@@ -17,7 +17,7 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
     public Idea exec(Idea idea) {
         Idea assimilateHabit = owner.get("property_habits.assimilate");
         Idea accommodateHabit = owner.get("property_habits.accommodate");
-        String observedObject = (String) owner.get("Input_Category.ObservedObject").getValue();
+        ///String observedObject = (String) owner.get("Input_Category.ObservedObject").getValue();
         List<Idea> propertyCategories = owner.get("categories").getL();
         List<String> properties = (List<String>) owner.get("Input_Category.properties").getValue();
 
@@ -29,8 +29,8 @@ public class TrackedPropertiesAssimilateAccommodateHabit implements Habit {
         Idea step2 = idea.getL().get(1);
         Idea step2PropertyCategory;
 
-        Idea objectInstance1 = step1.get(observedObject);
-        Idea objectInstance2 = step2.get(observedObject);
+        Idea objectInstance1 = step1.getL().get(0);/// step1.get(observedObject);
+        Idea objectInstance2 = step2.getL().get(0);/// step2.get(observedObject);
 
         synchronized (propertyCategories) {
             if (propertyCategories.isEmpty()) {

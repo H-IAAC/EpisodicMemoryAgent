@@ -43,12 +43,19 @@ public abstract class EventCategory implements Category {
     private ArrayRealVector extractProperties(Idea idea) {
         ArrayRealVector propertyVector = new ArrayRealVector();
         for (String property : vectorPropertiesList){
-            if (idea.get(property).getValue() instanceof Float)
-                propertyVector = (ArrayRealVector) propertyVector.append((float) idea.get(property).getValue());
-            if (idea.get(property).getValue() instanceof Integer)
-                propertyVector = (ArrayRealVector) propertyVector.append((int) idea.get(property).getValue());
-            if (idea.get(property).getValue() instanceof Double)
-                propertyVector = (ArrayRealVector) propertyVector.append((double) idea.get(property).getValue());
+            Idea object = idea.getL().get(0);
+            if (object.get(property).getValue() instanceof Float)
+                propertyVector = (ArrayRealVector) propertyVector.append((float) object.get(property).getValue());
+            if (object.get(property).getValue() instanceof Integer)
+                propertyVector = (ArrayRealVector) propertyVector.append((int) object.get(property).getValue());
+            if (object.get(property).getValue() instanceof Double)
+                propertyVector = (ArrayRealVector) propertyVector.append((double) object.get(property).getValue());
+            ///if (idea.get(property).getValue() instanceof Float)
+            ///    propertyVector = (ArrayRealVector) propertyVector.append((float) idea.get(property).getValue());
+            ///if (idea.get(property).getValue() instanceof Integer)
+            ///    propertyVector = (ArrayRealVector) propertyVector.append((int) idea.get(property).getValue());
+            ///if (idea.get(property).getValue() instanceof Double)
+            ///    propertyVector = (ArrayRealVector) propertyVector.append((double) idea.get(property).getValue());
         }
         return propertyVector;
     }
@@ -85,7 +92,8 @@ public abstract class EventCategory implements Category {
         Idea i = copy;
         Idea j = original;
         String[] spath = path.split("\\.");
-        for (int k=1; k<spath.length; k++){
+        for (int k=0; k<spath.length; k++){
+        ///for (int k=1; k<spath.length; k++){
             Idea i_ = i.get(spath[k]);
             j = j.get(spath[k]);
             if (i_ == null){
