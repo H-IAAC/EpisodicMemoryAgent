@@ -39,8 +39,19 @@ public class Move extends Codelet {
     public void accessMemoryObjects() {
         this.impulseMO = (MemoryContainer) getInput("IMPULSES");
         Idea impulse_ = (Idea) this.impulseMO.getI();
-        if (impulse_ != null)
-            this.impulse = impulse_.clone();
+        if (impulse_ != null) {
+            if (this.impulse == null) {
+                this.impulse = impulse_;
+            } else {
+                if (this.impulseMO.getAllMemories().stream().map(Memory::getI).anyMatch(o->o==this.impulse)) {
+                    if ((double) this.impulse.get("State.Desire").getValue() < (double) impulse_.get("State.Desire").getValue()) {
+                        this.impulse = impulse_;
+                    }
+                } else {
+                    this.impulse = impulse_;
+                }
+            }
+        }
         this.legsMO = (MemoryContainer) getOutput("LEGS");
         this.locationsMO = (MemoryObject) getInput("LOCATION");
         this.epltMO = (MemoryObject) getInput("EPLTM");

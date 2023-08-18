@@ -85,6 +85,21 @@ public class GraphIdea {
         }
     }
 
+    public void removeNode(Idea node){
+        Idea foundNode;
+        if (!node.getName().equals("Node")) {
+            Optional<Idea> nodeOpt = this.getNodes().stream()
+                    .filter(e -> IdeaHelper.match(getNodeContent(e), node))
+                    .findFirst();
+            foundNode = nodeOpt.orElseGet(() -> insertEventNode(node));
+        } else {
+            foundNode = node;
+        }
+
+        graph.getL().remove(foundNode);
+        //remove links
+    }
+
     public void insertLink(Idea nodeSource, Idea nodeDest, String type){
         Idea nodeIdeaSource;
         if (!nodeSource.getName().equals("Node")) {
@@ -345,10 +360,10 @@ public class GraphIdea {
             Idea subEnd = subGraph.insertEventNode(getNodeContent(end));
             subGraph.insertLink(subEp, subStart, "Begin");
             subGraph.insertLink(subEp, subEnd, "End");
-            List<Idea> queue = new ArrayList<>();
+            Set<Idea> queue = new LinkedHashSet<>();
             queue.add(start);
-            while (!queue.isEmpty()){
-                Idea root = queue.remove(0);
+            for (int i = 0; i<queue.size(); i++){
+                Idea root = new ArrayList<>(queue).get(i);
                 Map<String, List<Idea>> links = getSuccesors(root);
                 for (String linkType : links.keySet()){
                     for (Idea node : links.get(linkType)){
@@ -388,6 +403,23 @@ public class GraphIdea {
         return null;
     }
 
+    public void addAll(GraphIdea clone){
+        for (Idea n : clone.getNodes()){
+            Node node = new Node(n);
+            this.insertNode(node.getContent().clone(), node.getType());
+        }
+        for (Idea n : clone.getNodes()){
+            Node node = new Node(n);
+            Map<String, List<Idea>> links = node.getLinks();
+            for (Map.Entry link : links.entrySet()){
+                for (Idea d : (List<Idea>) link.getValue()){
+                    Node dest = new Node(d);
+                    this.insertLink(node.getContent(), dest.getContent(), (String) link.getKey());
+                }
+            }
+        }
+    }
+
     public String toString(){
         StringBuilder nodes = new StringBuilder();
         StringBuilder links = new StringBuilder();
@@ -400,5 +432,37 @@ public class GraphIdea {
             }
         }
         return nodes + "\n" + links;
+    }
+
+    public static class Node {
+        Idea node;
+
+        public Node(Idea node){
+            this.node = node;
+        }
+
+        public Idea getContent(){
+            return node.get("Content").getL().get(0);
+        }
+
+        public void setContent(Idea content){
+            node.get("Content").setL(Arrays.asList(content));
+        }
+
+        public String getType(){
+            return (String) node.get("Type").getValue();
+        }
+
+        public void setType(String type){
+            node.get("Type").setValue(type);
+        }
+
+        public double getActivation(){
+            return (double) node.get("Activation").getValue();
+        }
+
+        public Map<String, List<Idea>> getLinks(){
+            return node.get("Links").getL().stream().collect(Collectors.toMap(Idea::getName, Idea::getL));
+        }
     }
 }

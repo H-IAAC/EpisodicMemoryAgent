@@ -119,9 +119,12 @@ public class IdeaVisualizer extends javax.swing.JFrame {
                 .findFirst();
         if (selectedMem.isPresent()){
             Object content = selectedMem.get().getI();
-            if (content instanceof Idea)
-                setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
-            if (content instanceof GraphIdea)
+            if (content instanceof Idea) {
+                System.out.println();
+                setIdea(new Gson().fromJson(new Gson().toJson((Idea) content), Idea.class));
+                //setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
+            }
+                if (content instanceof GraphIdea)
                 setIdea(new Gson().fromJson(IdeaHelper.csvPrint(((GraphIdea) content).graph, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
             if (content instanceof List) {
                 Idea show = new Idea(memoryName, null);

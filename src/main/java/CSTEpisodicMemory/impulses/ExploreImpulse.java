@@ -15,23 +15,20 @@ public class ExploreImpulse extends Codelet {
     private Memory jewelsMO;
     private Memory innerMO;
     private Memory roomMO;
+    private Memory roomsCategoriesMO;
     private MemoryContainer impulsesMO;
     private Memory locationsMO;
     private Memory epltMO;
     private Memory extra;
 
-    private final List<Idea> roomCategories;
     private final String impulseCat = "Explore";
-
-    public ExploreImpulse(List<Idea> roomCategories) {
-        this.roomCategories = roomCategories;
-    }
 
     @Override
     public void accessMemoryObjects() {
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.innerMO = (MemoryObject) getInput("INNER");
         this.roomMO = (MemoryObject) getInput("ROOM");
+        this.roomsCategoriesMO = (MemoryObject) getInput("ROOM_CATEGORIES");
         this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
         this.locationsMO = (MemoryObject) getInput("LOCATION");
         this.epltMO = (MemoryObject) getInput("EPLTM");
@@ -119,9 +116,22 @@ public class ExploreImpulse extends Codelet {
                 choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
             }
 
-            for (Idea room : roomCategories) {
-                if (room.membership(choosenLoc) > 0.8)
-                    isInRoom = true;
+            synchronized (roomMO){
+                List<Idea> roomCategories = (List<Idea>) roomsCategoriesMO.getI();
+
+                Idea currentRoom = ((Idea) roomMO.getI()).get("Location");
+                if (currentRoom != null){
+                    currentRoom = (Idea) currentRoom.getValue();
+                    for (Idea room : roomCategories) {
+                        if (room.membership(choosenLoc) > 0.8 && room.get("Adjacent").getL().contains(currentRoom))
+                            isInRoom = true;
+                    }
+                } else {
+                    for (Idea room : roomCategories) {
+                        if (room.membership(choosenLoc) > 0.8)
+                            isInRoom = true;
+                    }
+                }
             }
         }
 

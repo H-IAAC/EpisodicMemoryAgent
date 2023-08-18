@@ -151,6 +151,10 @@ public class AgentMind extends Mind {
         roomsCategoriesIdea.add(constructRoomCategory("RoomC",
                 new Vector2D(0, 7),
                 new Vector2D(8, 10)));
+        roomsCategoriesIdea.get(0).get("Adjacent").add(roomsCategoriesIdea.get(1));
+        roomsCategoriesIdea.get(1).get("Adjacent").add(roomsCategoriesIdea.get(0));
+        roomsCategoriesIdea.get(1).get("Adjacent").add(roomsCategoriesIdea.get(2));
+        roomsCategoriesIdea.get(2).get("Adjacent").add(roomsCategoriesIdea.get(1));
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
         Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
         roomsMO = createMemoryObject("ROOM", roomIdea);
@@ -217,7 +221,8 @@ public class AgentMind extends Mind {
         insertCodelet(roomDetectorCodelet, "Perception");
 
         //Move Event Codelet
-        Idea moveEventCategory = constructEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"), "Linear");
+        Idea moveEventCategory = constructEventCategory("Move", Arrays.asList("Position.X", "Position.Y"), "Linear");
+        ///Idea moveEventCategory = constructEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"), "Linear");
         eventsCategoriesIdea.add(moveEventCategory);
         EventTracker moveEventTracker = new EventTracker("INNER", "EVENTS", moveEventCategory, debug);
         moveEventTracker.setBufferSize(2);
@@ -227,7 +232,8 @@ public class AgentMind extends Mind {
         insertCodelet(moveEventTracker, "Perception");
 
         //Rotate Event Codelet
-        Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Self.Pitch"), "Linear");
+        Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Pitch"), "Linear");
+        ///Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Self.Pitch"), "Linear");
         EventTracker rotateEventTracker = new EventTracker("INNER", "EVENTS", rotateEventCategory, debug);
         rotateEventTracker.setBufferSize(2);
         rotateEventTracker.setBufferStepSize(2);
@@ -237,7 +243,8 @@ public class AgentMind extends Mind {
 
         //Found Jewel Event
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
-            Idea foundJewelEventCategory = constructEventCategory("Found_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepUp");
+            Idea foundJewelEventCategory = constructEventCategory("Found_" + type.typeName(), Arrays.asList(type.typeName()), "StepUp");
+            ///Idea foundJewelEventCategory = constructEventCategory("Found_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepUp");
             EventTracker jewelFoundEventTracker = new EventTracker("JEWELS_COUNTERS", "EVENTS", foundJewelEventCategory, debug);
             jewelFoundEventTracker.setBufferSize(2);
             jewelFoundEventTracker.setBufferStepSize(2);
@@ -248,7 +255,8 @@ public class AgentMind extends Mind {
 
         //Collect Jewel Event
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
-            Idea collectJewelEventCategory = constructEventCategory("Collected_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepDown");
+            Idea collectJewelEventCategory = constructEventCategory("Collected_" + type.typeName(), Arrays.asList(type.typeName()), "StepDown");
+            ///Idea collectJewelEventCategory = constructEventCategory("Collected_" + type.typeName(), Arrays.asList("JewelsCounters." + type.typeName()), "StepDown");
             EventTracker jewelCollectedEventTracker = new EventTracker("JEWELS_COUNTERS", "EVENTS", collectJewelEventCategory, debug);
             jewelCollectedEventTracker.setBufferSize(2);
             jewelCollectedEventTracker.setBufferStepSize(2);
@@ -290,12 +298,13 @@ public class AgentMind extends Mind {
         Memory extra;
         extra = createMemoryObject("extra");
         //Explore
-        Codelet exploreImpulse = new ExploreImpulse(roomsCategoriesIdea);
+        Codelet exploreImpulse = new ExploreImpulse();
         exploreImpulse.addInput(knownJewelsMO);
         exploreImpulse.addInput(innerSenseMO);
         exploreImpulse.addInput(roomsMO);
         exploreImpulse.addInput(locationsMO);
         exploreImpulse.addInput(EPLTMO);
+        exploreImpulse.addInput(categoriesRoomMO);
         exploreImpulse.addOutput(impulsesMO);
         insertCodelet(exploreImpulse, "Behavioral");
 
@@ -406,15 +415,17 @@ public class AgentMind extends Mind {
     private Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB){
         Idea idea = new Idea(name, null, "AbstractObject", 0);
         idea.setValue(new RoomCategoryIdeaFunctions(name, cornerA, cornerB));
+        idea.add(new Idea("Adjacent", null, "Link", 1));
         return idea;
     }
 
     private Idea constructEventCategory(String name, List<String> properties, String type){
         Idea idea = new Idea(name, null, "Episode", 2);
-        String object = properties.get(0).split("\\.")[0];
-        idea.add(new Idea("ObservedObject", object, "Property", 1));
-        List<String> cleanProperties = properties.stream().map(s->s.substring(s.indexOf(".") + 1)).collect(Collectors.toList());
-        idea.add(new Idea("properties", cleanProperties, "Property", 1));
+        ///String object = properties.get(0).split("\\.")[0];
+        ///idea.add(new Idea("ObservedObject", object, "Property", 1));
+        ///List<String> cleanProperties = properties.stream().map(s->s.substring(s.indexOf(".") + 1)).collect(Collectors.toList());
+        ///idea.add(new Idea("properties", cleanProperties, "Property", 1));
+        idea.add(new Idea("properties", properties, "Property", 1));
 
         switch (type){
             case "Linear":

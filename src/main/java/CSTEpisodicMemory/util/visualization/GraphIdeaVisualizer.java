@@ -24,7 +24,7 @@ public class GraphIdeaVisualizer extends JFrame {
     protected static final double REPEL_FORCE = 250 / div;
     protected static final double LINK_FORCE = 0.10 / div;
     protected static final double DRAG_COEF = 2 / div;
-    protected static final double BAND_FORCE = 0.025; //0.001;
+    protected static final double BAND_FORCE = 0.0; //0.025; //0.001;
     protected static final double MAX_DIST = 100;
     protected static final double MAX_VEL = 5;
 

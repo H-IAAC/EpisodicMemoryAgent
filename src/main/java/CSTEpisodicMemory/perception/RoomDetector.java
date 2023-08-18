@@ -41,7 +41,7 @@ public class RoomDetector extends Codelet {
         detectedRoom.setL(new ArrayList<>());
         for (Idea category : roomCategories){
             if (category.membership(innerSense) > 0 ){
-                detectedRoom.add(new Idea("Location", category.getName(), "Property", 1));
+                detectedRoom.add(new Idea("Location", category, "Property", 1));
             }
         }
         //System.out.println((float) innerSense.get("Position.Y").getValue());
