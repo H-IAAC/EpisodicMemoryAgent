@@ -33,22 +33,7 @@ public class GoalGraphic {
         for (Memory mo : mems) {
             if (mo.getName() != null && mo.getName().equalsIgnoreCase("IMPULSES")) {
                 MemoryContainer impulseMO = (MemoryContainer) mo;
-                Idea impulse_ = (Idea) impulseMO.getI();
-                if (impulse_ != null) {
-                    if (impulse == null) {
-                        impulse = impulse_;
-                    } else {
-                        Idea finalImpulse = impulse;
-                        if (impulseMO.getAllMemories().stream().map(Memory::getI).anyMatch(o->o== finalImpulse)) {
-                            if ((double) impulse.get("State.Desire").getValue() < (double) impulse_.get("State.Desire").getValue()) {
-                                System.out.println("Update");
-                                impulse = impulse_;
-                            }
-                        } else {
-                            impulse = impulse_;
-                        }
-                    }
-                }
+                impulse = (Idea) impulseMO.getLastI();
             }
         }
 

@@ -18,6 +18,7 @@ public class EventTracker extends Codelet {
     private String outputMemoryName = "EVENTS_MEMORY";
     private Memory perceptionInputMO;
     private Memory eventsOutputMO;
+    private Memory contextSegmentationMO;
 
     private int bufferSize = 1;
     private int bufferStepSize = 1;
@@ -66,6 +67,7 @@ public class EventTracker extends Codelet {
         this.perceptionInputMO=(MemoryObject)this.getInput(this.getInputMemoryName());
         this.currentInputIdea = (Idea) perceptionInputMO.getI();
         this.eventsOutputMO=(MemoryObject)this.getOutput(this.getOutputMemoryName());
+        this.contextSegmentationMO=(MemoryObject)this.getBroadcast("CONTEXT_DRIFT");
     }
 
     @Override
@@ -87,7 +89,7 @@ public class EventTracker extends Codelet {
                 if (checkElapsedTime()) {
                     //Check if current state is coherent with previous states and event category
                     Idea testEvent = constructTestEvent();
-                    if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
+                    if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation()) {
                         Idea drop = inputIdeaBuffer.remove(0);
                         //Copies start of the event
                         if (initialEventIdea == null) this.initialEventIdea = drop.clone();
@@ -117,6 +119,12 @@ public class EventTracker extends Codelet {
                     }
                 }
             }
+        }
+    }
+
+    private boolean isForcedSegmentation(){
+        synchronized (contextSegmentationMO){
+            return  ((int) contextSegmentationMO.getI() == 1);
         }
     }
 

@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Move extends Codelet {
 
@@ -38,17 +39,14 @@ public class Move extends Codelet {
     @Override
     public void accessMemoryObjects() {
         this.impulseMO = (MemoryContainer) getInput("IMPULSES");
-        Idea impulse_ = (Idea) this.impulseMO.getI();
+        Idea impulse_ = (Idea) impulseMO.getI();
         if (impulse_ != null) {
             if (this.impulse == null) {
                 this.impulse = impulse_;
             } else {
-                if (this.impulseMO.getAllMemories().stream().map(Memory::getI).anyMatch(o->o==this.impulse)) {
-                    if ((double) this.impulse.get("State.Desire").getValue() < (double) impulse_.get("State.Desire").getValue()) {
+                if (this.impulseMO.getAllMemories().stream().map(m->(Idea) m.getI()).noneMatch(o -> IdeaHelper.match(o,impulse)) ||
+                (double) this.impulse.get("State.Desire").getValue() < (double) impulse_.get("State.Desire").getValue()) {
                         this.impulse = impulse_;
-                    }
-                } else {
-                    this.impulse = impulse_;
                 }
             }
         }
@@ -110,8 +108,8 @@ public class Move extends Codelet {
             }
 
             epltmGraph.setNodeActivation(bestTargetLoc, 1);
-            epltmGraph.propagateActivations(Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext","Next"),
-                    Arrays.asList("Before","Overlap","Meet","Start","During","Finish","Equal","SpatialContext","Next"));
+            epltmGraph.propagateActivations(Arrays.asList("Before", "Overlap", "Meet", "Start", "During", "Finish", "Equal", "SpatialContext", "Next"),
+                    Arrays.asList("Before", "Overlap", "Meet", "Start", "During", "Finish", "Equal", "SpatialContext", "Next"));
             List<Idea> locationNodes = epltmGraph.getLocationNodes();
             locationNodes.sort(Comparator.comparing(idea -> ((Double) idea.get("Activation").getValue())));
 
@@ -137,12 +135,12 @@ public class Move extends Codelet {
                 PrintWriter out = new PrintWriter("./graph");
                 StringBuilder a = new StringBuilder();
                 StringBuilder b = new StringBuilder();
-                for (Idea n : epltmGraph.graph.getL()){
+                for (Idea n : epltmGraph.graph.getL()) {
                     String name = n.get("Content").getL().get(0).getName();
                     a.append("\n").append(name);
                     Map<String, List<Idea>> ll = epltmGraph.getSuccesors(n);
-                    for (List<Idea> lll : ll.values()){
-                        for (Idea llll : lll){
+                    for (List<Idea> lll : ll.values()) {
+                        for (Idea llll : lll) {
                             b.append("\n").append(name).append(" ").append(llll.get("Content").getL().get(0).getName());
                         }
                     }
@@ -163,7 +161,7 @@ public class Move extends Codelet {
         }
     }
 
-    private Idea nextPlanAction(){
+    private Idea nextPlanAction() {
         if (plan != null && !plan.isEmpty()) {
 
             Idea nextMoveLoc = GraphIdea.getNodeContent(plan.get(0));

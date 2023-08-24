@@ -410,11 +410,10 @@ public class GraphIdea {
         }
         for (Idea n : clone.getNodes()){
             Node node = new Node(n);
-            Map<String, List<Idea>> links = node.getLinks();
-            for (Map.Entry link : links.entrySet()){
-                for (Idea d : (List<Idea>) link.getValue()){
-                    Node dest = new Node(d);
-                    this.insertLink(node.getContent(), dest.getContent(), (String) link.getKey());
+            Map<String, List<Node>> links = node.getLinks();
+            for (Map.Entry<String, List<Node>> link : links.entrySet()){
+                for (Node dest : link.getValue()){
+                    this.insertLink(node.getContent(), dest.getContent(), link.getKey());
                 }
             }
         }
@@ -461,8 +460,12 @@ public class GraphIdea {
             return (double) node.get("Activation").getValue();
         }
 
-        public Map<String, List<Idea>> getLinks(){
-            return node.get("Links").getL().stream().collect(Collectors.toMap(Idea::getName, Idea::getL));
+        public Map<String, List<Node>> getLinks(){
+            return node.get("Links").getL().stream()
+                    .collect(Collectors.toMap(
+                            Idea::getName,
+                            v-> v.getL().stream().map(i->new Node(i)).toList()
+                    ));
         }
     }
 }

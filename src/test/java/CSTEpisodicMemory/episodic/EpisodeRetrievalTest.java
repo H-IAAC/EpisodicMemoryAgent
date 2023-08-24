@@ -9,9 +9,9 @@ import br.unicamp.cst.representation.idea.Idea;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 
@@ -28,10 +28,10 @@ public class EpisodeRetrievalTest {
     List<Idea> locCat = new ArrayList<>();
     List<Idea> propCat = new ArrayList<>();
 
-    List<Idea> eventCategories = Arrays.asList(new Idea("EventCategory1"),
-            new Idea("EventCategory2"),
-            new Idea("EventCategory3"),
-            new Idea("EventCategory4"));
+    List<Idea> eventCategories = Stream.iterate(1, n -> n+1)
+            .limit(50)
+            .map(n->new Idea("EventCategory"+n))
+            .collect(Collectors.toList());
 
     public EpisodeRetrievalTest(){
         for (Idea eventCat : eventCategories){
@@ -57,8 +57,127 @@ public class EpisodeRetrievalTest {
         m.start();
     }
 
+    private Map<Integer, List<Idea>> setRandomMemories(){
+        Random rnd = new Random();
+
+        Idea epltmIdea = new Idea("EPLTM", null, "Episode", 1);
+        GraphIdea epltm = new GraphIdea(epltmIdea);
+
+        LocationCategoryGenerator locGen = new LocationCategoryGenerator();
+        locCat = new ArrayList<>();
+        for (int i = 0; i<35; i++){
+            Idea newCat = locGen.exec(null);
+            locCat.add(newCat);
+            epltm.insertLocationNode(newCat);
+        }
+
+        Idea assimilateSubHabit = new Idea("assimilate", null);
+        assimilateSubHabit.setValue(new AssimilatePropertyCategory(assimilateSubHabit));
+        assimilateSubHabit.add(new Idea("properties", null, "Property", 1));
+        assimilateSubHabit.add(new Idea("samples", null, "Property", 1));
+
+        assimilateSubHabit.get("properties").setValue(Arrays.asList("p1","p2"));
+        Idea toLearn = new Idea("object", "test", "AbstractObject", 1);
+        toLearn.add(new Idea("p1", 0, "QualityDimension", 1));
+        toLearn.add(new Idea("p2", 1, "QualityDimension", 1));
+
+        propCat = new ArrayList<>();
+        for (int i = 0; i<50;i++) {
+            toLearn.get("p1").setValue(i);
+            toLearn.get("p2").setValue(i);
+            Idea newCat = assimilateSubHabit.exec(toLearn);
+            propCat.add(newCat);
+            epltm.insertPropertyNode(newCat);
+        }
+
+        List<Idea> rndEvents = new ArrayList<>();
+
+        Map<Integer, List<Idea>> toTest = new HashMap<>();
+        for (int i = 1; i<300; i++){
+            Idea ep = epltm.insertEpisodeNode(new Idea("Episode" + i, null, "Episode", 1));
+            List<Idea> thisEpisodeEvents = new ArrayList<>();
+            int nNodes = rnd.nextInt(5);
+            for (int j = 0; j <= nNodes; j++){
+                Idea rndEvent = eventCategories.get(rnd.nextInt(50));
+                if (nNodes == 4 && j == 0) toTest.put(i, Arrays.asList(rndEvent, null));
+                if (nNodes == 4 && j == 4) toTest.get(i).set(1, rndEvent);
+                Idea event = new Idea("Event" + (i+j), rndEvent, "Episode", 1);
+                event.add(new Idea("Start", rnd.nextLong(1000)+5000*i+ 1000L *j, "TimeStep", 1));
+                event.add(new Idea("End", rnd.nextLong(1000)+5000*i+ 1000L *(j+1)+1000, "TimeStep", 1));
+                rndEvents.add(event);
+                epltm.insertEventNode(event);
+                createTemporalRelations(event, thisEpisodeEvents, epltm);
+                thisEpisodeEvents.add(event);
+            }
+            epltm.insertLink(ep, thisEpisodeEvents.get(0), "Begin");
+            epltm.insertLink(ep, thisEpisodeEvents.get(thisEpisodeEvents.size()-1), "End");
+        }
+
+        for (Idea event : rndEvents){
+            epltm.insertLink(event, propCat.get(rnd.nextInt(50)), "Initial");
+            epltm.insertLink(event, propCat.get(rnd.nextInt(50)), "Final");
+            epltm.insertLink(event, locCat.get(rnd.nextInt(35)), "Location");
+        }
+
+        locationsMO.setI(locCat);
+
+        propertiesMO.setI(propCat);
+
+        eplMO.setI(epltm);
+
+        return toTest;
+    }
+
+    private void createTemporalRelations(Idea event, List<Idea> otherNodes, GraphIdea story){
+        Long start1, end1, start2, end2;
+        start1 = (Long) event.get("Start").getValue();
+        end1 = (Long) event.get("End").getValue();
+
+        long closestBeforeSink = Long.MAX_VALUE;
+        Idea closestBeforeSinkIdea = null;
+        long closestBeforeSource = Long.MAX_VALUE;
+        Idea closestBeforeSourceIdea = null;
+        for (Idea nodeContent : otherNodes){
+
+            start2 = (Long) nodeContent.get("Start").getValue();
+            end2 = (Long) nodeContent.get("End").getValue();
+
+            String relation = EpisodeBinding.temporalRelation(start1, end1, start2, end2);
+            if (!relation.isEmpty()){
+                if (relation.equals("Before")){
+                    if (start2 - end1 < closestBeforeSink) {
+                        closestBeforeSink = start2 - end1;
+                        closestBeforeSinkIdea = nodeContent.clone();
+                    }
+                } else {
+                    story.insertLink(event, nodeContent, relation);
+                }
+            }
+            relation = EpisodeBinding.temporalRelation(start2, end2, start1, end1);
+            if (!relation.isEmpty()){
+                if (relation.equals("Before")){
+                    if (start1 - end2 < closestBeforeSource) {
+                        closestBeforeSource = start1 - end2;
+                        closestBeforeSourceIdea = nodeContent.clone();
+                    }
+                } else {
+                    story.insertLink(nodeContent, event, relation);
+                }
+            }
+        }
+
+        if (closestBeforeSinkIdea != null) {
+            story.insertLink(event, closestBeforeSinkIdea, "Before");
+        }
+        if (closestBeforeSourceIdea != null) {
+            story.insertLink(closestBeforeSourceIdea, event, "Before");
+        }
+
+
+    }
+
     private void setMemories(){
-        Idea epltmIdea = new Idea("EPLTM", null, "Epsisode", 1);
+        Idea epltmIdea = new Idea("EPLTM", null, "Episode", 1);
         GraphIdea epltm = new GraphIdea(epltmIdea);
 
         LocationCategoryGenerator locGen = new LocationCategoryGenerator();
@@ -217,7 +336,7 @@ public class EpisodeRetrievalTest {
 
         GraphIdea storyRecall = (GraphIdea) recallMO.getI();
 
-        //Check number of itens
+        //Check number of items
         Assertions.assertEquals(9, storyRecall.getNodes().size());
 
         //Check if is correct episode
@@ -418,5 +537,58 @@ public class EpisodeRetrievalTest {
             assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
         }
 
+        GraphIdea storyRecall = (GraphIdea) recallMO.getI();
+
+        //Check if is correct episode
+        List<Idea> ep = storyRecall.getEpisodeNodes();
+        Assertions.assertEquals(3, ep.size());
+        List<String> epNames = ep.stream().map(GraphIdea::getNodeContent).map(Idea::getName).collect(Collectors.toList());
+        Assertions.assertTrue(epNames.contains("Episode1"));
+        Assertions.assertTrue(epNames.contains("Episode2"));
+        Assertions.assertTrue(epNames.contains("Episode3"));
+
+    }
+
+    @Test
+    public void largeEPLTMTest(){
+        createMind();
+        Map<Integer, List<Idea>> testCategories = setRandomMemories();
+        double totalTime = 0;
+
+        for (Map.Entry<Integer, List<Idea>> test : testCategories.entrySet()) {
+            Idea cueEp = new Idea("EpisodeTest", null, "Episode", 1);
+            Idea firstEvent = new Idea("EventTest1", test.getValue().get(0), 1);
+            Idea finalEvent = new Idea("EventTest2", test.getValue().get(1), 1);
+
+            GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+            cueGraph.insertEpisodeNode(cueEp);
+            cueGraph.insertEventNode(firstEvent);
+            cueGraph.insertEventNode(finalEvent);
+            cueGraph.insertLink(cueEp, firstEvent, "Begin");
+            cueGraph.insertLink(cueEp, finalEvent, "End");
+
+            double start = System.currentTimeMillis();
+            cueMO.setI(cueGraph);
+            while (recallMO.getI() == null) {
+                assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
+            }
+            totalTime += System.currentTimeMillis() - start;
+
+            GraphIdea storyRecall = (GraphIdea) recallMO.getI();
+
+            List<Idea> recallEpisode = storyRecall.getEpisodeNodes().stream().map(GraphIdea::getNodeContent).collect(Collectors.toList());
+            Assertions.assertEquals(1, recallEpisode.size());
+            //Assertions.assertEquals("Episode" + test.getKey(), recallEpisode.get(0).getName());
+
+            List<Idea> begin = storyRecall.getChildrenWithLink(recallEpisode.get(0), "Begin");
+            Idea beginEvent = getNodeContent(begin.get(0));
+            Assertions.assertEquals(test.getValue().get(0) ,beginEvent.getValue() );
+            List<Idea> end = storyRecall.getChildrenWithLink(recallEpisode.get(0), "End");
+            Idea endEvent = getNodeContent(end.get(0));
+            Assertions.assertEquals(test.getValue().get(1) ,endEvent.getValue() );
+        }
+
+        System.out.println("Total: " + totalTime + " - Size: "+ testCategories.size());
+        System.out.println("Avg proc time: " + totalTime /testCategories.size());
     }
 }

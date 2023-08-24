@@ -111,9 +111,11 @@ public class GoToJewelImpulse extends Codelet {
         return impulse;
     }
 
+    @SuppressWarnings({"INFO"})
     public void addIfNotPresent(Idea idea){
         synchronized (impulsesMO) {
-            impulsesMO.setI(idea,
+            if (impulsesMO.getI(this.impulseCat + idea.get("State.ID").getValue()) == null)
+                impulsesMO.setI(idea,
                     (double) idea.get("State.Desire").getValue(),
                     this.impulseCat + idea.get("State.ID").getValue());
         }

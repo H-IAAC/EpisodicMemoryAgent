@@ -18,8 +18,8 @@ public class LocationCategoryGenerator implements Habit {
             startX = (float) idea.get("X").getValue();
             startY = (float) idea.get("Y").getValue();
         } else {
-            startX = new Random().nextFloat() * 50;
-            startY = new Random().nextFloat() * 50;
+            startX = new Random().nextFloat() * 100;
+            startY = new Random().nextFloat() * 100;
         }
             Idea newLocation = new Idea("Location_"+locCount++, null, "AbstractObject", 2);
             newLocation.add(new Idea("centerX", startX, "Property", 1));

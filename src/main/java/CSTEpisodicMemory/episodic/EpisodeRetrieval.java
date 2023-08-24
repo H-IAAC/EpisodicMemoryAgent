@@ -61,15 +61,15 @@ public class EpisodeRetrieval extends Codelet {
             if (eventContent.getL().isEmpty()) {
                 if (eventCategory != null) {
                     List<Idea> sameCatEvents = epGraph.getEventNodes().stream().filter(e -> getNodeContent(e).getValue().equals(eventCategory)).collect(Collectors.toList());
-                    if (!cue.getEpisodeNodes().isEmpty()){
-                        if (cue.getPredecessors(eventNode).containsKey("Begin")){
+                    if (!cue.getEpisodeNodes().isEmpty()) {
+                        if (cue.getPredecessors(eventNode).containsKey("Begin")) {
                             sameCatEvents = sameCatEvents.stream().filter(e -> epGraph.getPredecessors(e).containsKey("Begin")).collect(Collectors.toList());
                         }
-                        if (cue.getPredecessors(eventNode).containsKey("End")){
+                        if (cue.getPredecessors(eventNode).containsKey("End")) {
                             sameCatEvents = sameCatEvents.stream().filter(e -> epGraph.getPredecessors(e).containsKey("End")).collect(Collectors.toList());
                         }
                     }
-                    sameCatEvents.sort(Comparator.comparingInt(n-> (int) n.get("Coordinate").getValue()));
+                    sameCatEvents.sort(Comparator.comparingInt(n -> (int) n.get("Coordinate").getValue()));
                     Collections.reverse(sameCatEvents);
                     bestMatches.put(eventNode, sameCatEvents);
                 }
@@ -81,11 +81,11 @@ public class EpisodeRetrieval extends Codelet {
                 Idea finalObjectState = eventContent.getL().get(1).get(observedObject);
 
                 if (initialObjectState != null && finalObjectState != null) {
-                    Idea bestInitialProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(initialObjectState))).orElseGet(null);
+                    Idea bestInitialProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(initialObjectState))).orElse(null);
                     if (bestInitialProperty != null && bestInitialProperty.membership(initialObjectState) == 1) {
                         epGraph.setNodeActivation(bestInitialProperty, 1.0);
                     }
-                    Idea bestFinalProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(finalObjectState))).orElseGet(null);
+                    Idea bestFinalProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(finalObjectState))).orElse(null);
                     if (bestFinalProperty != null && bestFinalProperty.membership(finalObjectState) == 1) {
                         epGraph.setNodeActivation(bestFinalProperty, 1.0);
                     }
@@ -133,24 +133,25 @@ public class EpisodeRetrieval extends Codelet {
             LinkedList<Idea> events = new LinkedList<>(bestMatches.keySet());
             ///int[] p = new int[bestMatches.size()];
             ///Arrays.fill(p, 0);
-            Map<Idea, Integer> currCheckPos = bestMatches.keySet().stream().collect(Collectors.toMap(e->e,e->0));
-            boolean valid = true;
-            int totalCombinations = bestMatches.values().stream().map(List::size).reduce((a,b)->a*b).get();
+            Map<Idea, Integer> currCheckPos = bestMatches.keySet().stream().collect(Collectors.toMap(e -> e, e -> 0));
+            Map<List<Idea>, Double> validSequenceTimeInterval = new HashMap<>();
+            boolean valid;
+            int totalCombinations = bestMatches.values().stream().map(List::size).reduce((a, b) -> a * b).get();
             for (int c = 0; c < totalCombinations; c++) {
                 int k = c;
-                for (Idea event : currCheckPos.keySet()){
+                for (Idea event : currCheckPos.keySet()) {
                     int totalInPosI = bestMatches.get(event).size();
                     currCheckPos.put(event, k % totalInPosI);
                     k = k / totalInPosI;
                 }
-               /// for (int i = p.length - 1; i >= 0; i--) {
-               ///     int totalInPosI = bestMatches.get(events.get(i)).size();
-               ///     p[i] = k % totalInPosI;
-               ///     k = k / totalInPosI;
-               /// }
+                /// for (int i = p.length - 1; i >= 0; i--) {
+                ///     int totalInPosI = bestMatches.get(events.get(i)).size();
+                ///     p[i] = k % totalInPosI;
+                ///     k = k / totalInPosI;
+                /// }
 
                 LinkedList<Idea> recalls = new LinkedList<>();
-                for (Idea event : currCheckPos.keySet()){
+                for (Idea event : currCheckPos.keySet()) {
                     recalls.add(bestMatches.get(event).get(currCheckPos.get(event)));
                 }
                 ///for (int i = 0; i < events.size(); i++) {
@@ -158,20 +159,20 @@ public class EpisodeRetrieval extends Codelet {
                 ///}
                 valid = true;
                 //Check episodes
-                for (Idea ep : cue.getEpisodeNodes()){
+                for (Idea ep : cue.getEpisodeNodes()) {
                     List<Idea> beginLink = cue.getChildrenWithLink(ep, "Begin");
                     Idea beginEp = null;
-                    if (!beginLink.isEmpty()){
+                    if (!beginLink.isEmpty()) {
                         Idea beginCue = beginLink.get(0);
                         beginEp = epGraph.getPredecessors(bestMatches.get(beginCue).get(currCheckPos.get(beginCue))).get("Begin").get(0);
                     }
                     List<Idea> endLink = cue.getChildrenWithLink(ep, "End");
                     Idea endEp = null;
-                    if (!endLink.isEmpty()){
+                    if (!endLink.isEmpty()) {
                         Idea endCue = endLink.get(0);
                         endEp = epGraph.getPredecessors(bestMatches.get(endCue).get(currCheckPos.get(endCue))).get("End").get(0);
                     }
-                    if (beginEp != endEp){
+                    if (beginEp != endEp) {
                         valid = false;
                         break;
                     }
@@ -179,7 +180,6 @@ public class EpisodeRetrieval extends Codelet {
 
                 if (valid) {
                     for (int i = 0; i < events.size(); i++) {
-                        Idea eventA = getNodeContent(events.get(i));
                         Map<String, List<Idea>> links = cue.getSuccesors(events.get(i));
                         Idea recallA = getNodeContent(recalls.get(i));
                         long startRecallA = getStartTime(recallA);
@@ -202,45 +202,55 @@ public class EpisodeRetrieval extends Codelet {
                     }
                 }
 
-                if (valid){
-                    epGraph.resetActivations();
-                    for (Idea event : currCheckPos.keySet()){
-                        epGraph.setNodeActivation(bestMatches.get(event).get(currCheckPos.get(event)), 1.0);
+                if (valid) {
+                    double firstTime = Double.POSITIVE_INFINITY;
+                    double lastTime = 0;
+                    for (Idea recall : recalls) {
+                        double start = getStartTime(getNodeContent(recall));
+                        double end = getEndTime(getNodeContent(recall));
+                        if (start < firstTime) firstTime = start;
+                        if (end > lastTime) lastTime = end;
                     }
-                    ///for (int i = 0; i < p.length; i++) {
-                    ///    epGraph.setNodeActivation(bestMatches.get(events.get(i)).get(p[i]), 1.0);
-                    ///}
-                    epGraph.propagateActivations(Arrays.asList("Before", "Meet", "Overlap", "Start", "During", "Finish", "Equal"), Arrays.asList("Begin", "End"));
-                    double maxActivation = epGraph.getEpisodeNodes().stream().mapToDouble(epGraph::getNodeActivation).max().getAsDouble();
-                    if (maxActivation > 0) {
-                        List<Idea> activatedEpisodes = epGraph.getEpisodeNodes().stream().filter(n->epGraph.getNodeActivation(n) == maxActivation).collect(Collectors.toList());
-                        if (activatedEpisodes.size() == 1) {
-                            Idea activatedEpisode = activatedEpisodes.get(0);
-                            if (!cue.getEpisodeNodes().isEmpty()) {
-                                Idea ep = cue.getEpisodeNodes().get(0);
-                                Idea cueStarEventNode = cue.getChildrenWithLink(ep, "Begin").get(0);
-                                Idea cueEndEventNode = cue.getChildrenWithLink(ep, "End").get(0);
-                                Idea recallStartEventNode = epGraph.getChildrenWithLink(activatedEpisode, "Begin").get(0);
-                                Idea recallEndEventNode = epGraph.getChildrenWithLink(activatedEpisode, "End").get(0);
-                                if (isSameEventCategory(cueStarEventNode, recallStartEventNode) && isSameEventCategory(cueEndEventNode, recallEndEventNode)) {
-                                    recalledEpisode = epGraph.getEpisodeSubGraph(activatedEpisode);
-                                    break;
-                                }
+                    validSequenceTimeInterval.put(recalls, lastTime - firstTime);
+                }
+            }
 
-                            } else {
+            if (!validSequenceTimeInterval.isEmpty()) {
+                List<Idea> recalledEvents = validSequenceTimeInterval.entrySet().stream()
+                                        .min(Map.Entry.comparingByValue()).get().getKey();
+                epGraph.resetActivations();
+                for (Idea event : recalledEvents) {
+                    epGraph.setNodeActivation(event, 1.0);
+                }
+                ///for (int i = 0; i < p.length; i++) {
+                ///    epGraph.setNodeActivation(bestMatches.get(events.get(i)).get(p[i]), 1.0);
+                ///}
+                epGraph.propagateActivations(Arrays.asList("Before", "Meet", "Overlap", "Start", "During", "Finish", "Equal"), Arrays.asList("Begin", "End"));
+                double maxActivation = epGraph.getEpisodeNodes().stream().mapToDouble(epGraph::getNodeActivation).max().getAsDouble();
+                if (maxActivation > 0) {
+                    List<Idea> activatedEpisodes = epGraph.getEpisodeNodes().stream().filter(n -> epGraph.getNodeActivation(n) == maxActivation).collect(Collectors.toList());
+                    if (activatedEpisodes.size() == 1) {
+                        Idea activatedEpisode = activatedEpisodes.get(0);
+                        if (!cue.getEpisodeNodes().isEmpty()) {
+                            Idea ep = cue.getEpisodeNodes().get(0);
+                            Idea cueStarEventNode = cue.getChildrenWithLink(ep, "Begin").get(0);
+                            Idea cueEndEventNode = cue.getChildrenWithLink(ep, "End").get(0);
+                            Idea recallStartEventNode = epGraph.getChildrenWithLink(activatedEpisode, "Begin").get(0);
+                            Idea recallEndEventNode = epGraph.getChildrenWithLink(activatedEpisode, "End").get(0);
+                            if (isSameEventCategory(cueStarEventNode, recallStartEventNode) && isSameEventCategory(cueEndEventNode, recallEndEventNode)) {
                                 recalledEpisode = epGraph.getEpisodeSubGraph(activatedEpisode);
-                                break;
                             }
-                        } else if (activatedEpisodes.size() > 1) {
-                            GraphIdea recall = new GraphIdea(new Idea("Recall"));
-                            for (Idea ep : activatedEpisodes){
-                                GraphIdea episodeGraph = epGraph.getEpisodeSubGraph(ep);
-                                recall.addAll(episodeGraph);
-                            }
-                            recalledEpisode = recall;
-                            break;
-                        }
 
+                        } else {
+                            recalledEpisode = epGraph.getEpisodeSubGraph(activatedEpisode);
+                        }
+                    } else if (activatedEpisodes.size() > 1) {
+                        GraphIdea recall = new GraphIdea(new Idea("Recall"));
+                        for (Idea ep : activatedEpisodes) {
+                            GraphIdea episodeGraph = epGraph.getEpisodeSubGraph(ep);
+                            recall.addAll(episodeGraph);
+                        }
+                        recalledEpisode = recall;
                     }
                 }
             }
@@ -293,7 +303,7 @@ public class EpisodeRetrieval extends Codelet {
         return (long) eventA.get("Start").getValue();
     }
 
-    private static boolean isSameEventCategory(Idea nodeA, Idea nodeB){
+    private static boolean isSameEventCategory(Idea nodeA, Idea nodeB) {
         return getNodeContent(nodeA).getValue() == getNodeContent(nodeB).getValue();
     }
 }

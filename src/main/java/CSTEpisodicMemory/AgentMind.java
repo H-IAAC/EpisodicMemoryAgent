@@ -14,7 +14,7 @@ import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
-import CSTEpisodicMemory.episodic.TimelineBufferCodelet;
+import CSTEpisodicMemory.episodic.BufferCodelet;
 import CSTEpisodicMemory.habits.*;
 import CSTEpisodicMemory.impulses.*;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -67,8 +66,8 @@ public class AgentMind extends Mind {
         createCodeletGroup("Perception");
         createCodeletGroup("Context");
         createCodeletGroup("Behavioral");
-        //createMemoryGroup("Sensory");
-        //createMemoryGroup("Motor");
+        createMemoryGroup("Perceptual");
+        createMemoryGroup("Context");
         //createMemoryGroup("Working");
 
         Memory innerSenseMO;
@@ -80,12 +79,14 @@ public class AgentMind extends Mind {
         Memory eventsMO;
         Memory goalsMO;
         Memory storyMO;
-        Memory bufferMO;
+        Memory perceptualBufferMO;
+        Memory contextBufferMO;
         Memory EPLTMO;
         Memory locationsMO;
         Memory categoriesRoomMO;
         Memory roomsMO;
         Memory leafletsMO;
+        Memory contextDriftMO;
         MemoryContainer impulsesMO;
         MemoryContainer handsMO;
         MemoryContainer legsMO;
@@ -96,14 +97,17 @@ public class AgentMind extends Mind {
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
         innerSenseMO = createMemoryObject("INNER", innerSenseIdea);
+        registerMemory(innerSenseMO, "Perceptual");
         //Vision sensor
         visionMO = createMemoryObject("VISION");
         //Detected Foods
         Idea foodsIdea = new Idea("Foods", null, 5);
         foodMO = createMemoryObject("FOOD", foodsIdea);
+        registerMemory(foodMO, "Perceptual");
         //Detected Jewels
         Idea jewelsIdea = new Idea("Jewels", null, 5);
         knownJewelsMO = createMemoryObject("KNOWN_JEWELS", jewelsIdea);
+        registerMemory(knownJewelsMO, "Perceptual");
         //Jewels Counter
         List<Idea> jewelsCounters = new ArrayList<>();
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
@@ -117,6 +121,7 @@ public class AgentMind extends Mind {
         //Detected Walls
         Idea wallsIdea = new Idea("Walls", null, 5);
         wallsMO = createMemoryObject("WALLS", wallsIdea);
+        registerMemory(wallsMO, "Perceptual");
         //Move Event Tracker
         Idea eventsIdea = new Idea("Events", null, 5);
         eventsMO = createMemoryObject("EVENTS", eventsIdea);
@@ -131,9 +136,11 @@ public class AgentMind extends Mind {
         episode.add(storyGraph);
         storiesIdea.add(episode);
         storyMO = createMemoryObject("STORY", storiesIdea);
-        //Buffer
-        Idea bufferIdea = new Idea("Buffer", null, "Configuration", 1);
-        bufferMO = createMemoryObject("BUFFER", bufferIdea);
+        //Buffers
+        Idea perceptualBuffer = new Idea("Perceptual Buffer", null, "Configuration", 1);
+        perceptualBufferMO = createMemoryObject("PERCEPTUAL_BUFFER", perceptualBuffer);
+        Idea contextBuffer = new Idea("Context Buffer", null, "Configuration", 1);
+        contextBufferMO = createMemoryObject("CONTEXT_BUFFER", contextBuffer);
 
         //Episodic Long-term memory
         Idea epLTM = new Idea("epLTM", null, "Configuration", 1);
@@ -158,6 +165,7 @@ public class AgentMind extends Mind {
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
         Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
         roomsMO = createMemoryObject("ROOM", roomIdea);
+        registerMemory(roomsMO, "Context");
 
         //Events
         List<Idea> eventsCategoriesIdea = new ArrayList<>();
@@ -170,9 +178,14 @@ public class AgentMind extends Mind {
         //Leaflets
         Idea leafletsIdea = new Idea("Leaflets", null, 0);
         leafletsMO = createMemoryObject("LEAFLETS", leafletsIdea);
+        registerMemory(leafletsMO, "Perceptual");
         //Impulses
         //Idea impulsesIdea = new Idea("Impulses", null, 0);
         impulsesMO = createMemoryContainer("IMPULSES");
+        registerMemory(impulsesMO, "Context");
+
+        contextDriftMO = createMemoryObject("CONTEXT_DRIFT", 0);
+
 
         //Hands
         handsMO = createMemoryContainer("HANDS");
@@ -229,6 +242,7 @@ public class AgentMind extends Mind {
         moveEventTracker.setBufferStepSize(2);
         moveEventTracker.addInput(innerSenseMO);
         moveEventTracker.addOutput(eventsMO);
+        moveEventTracker.addBroadcast(contextDriftMO);
         insertCodelet(moveEventTracker, "Perception");
 
         //Rotate Event Codelet
@@ -239,6 +253,7 @@ public class AgentMind extends Mind {
         rotateEventTracker.setBufferStepSize(2);
         rotateEventTracker.addInput(innerSenseMO);
         rotateEventTracker.addOutput(eventsMO);
+        rotateEventTracker.addBroadcast(contextDriftMO);
         insertCodelet(rotateEventTracker, "Perception");
 
         //Found Jewel Event
@@ -250,6 +265,7 @@ public class AgentMind extends Mind {
             jewelFoundEventTracker.setBufferStepSize(2);
             jewelFoundEventTracker.addInput(jewelsCounterMO);
             jewelFoundEventTracker.addOutput(eventsMO);
+            jewelFoundEventTracker.addBroadcast(contextDriftMO);
             insertCodelet(jewelFoundEventTracker, "Perception");
         }
 
@@ -262,6 +278,7 @@ public class AgentMind extends Mind {
             jewelCollectedEventTracker.setBufferStepSize(2);
             jewelCollectedEventTracker.addInput(jewelsCounterMO);
             jewelCollectedEventTracker.addOutput(eventsMO);
+            jewelCollectedEventTracker.addBroadcast(contextDriftMO);
             insertCodelet(jewelCollectedEventTracker, "Perception");
         }
 
@@ -348,16 +365,20 @@ public class AgentMind extends Mind {
         episodeBindingCodelet.addInput(eventsMO);
         episodeBindingCodelet.addInput(impulsesMO);
         episodeBindingCodelet.addInput(roomsMO);
-        episodeBindingCodelet.addInput(bufferMO);
+        episodeBindingCodelet.addInput(perceptualBufferMO);
         episodeBindingCodelet.addOutput(storyMO);
+        episodeBindingCodelet.addBroadcast(contextDriftMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
 
-        Codelet bufferCodelet = new TimelineBufferCodelet(Arrays.asList("INNER", "KNOWN_JEWELS", "IMPULSES"));
-        bufferCodelet.addInput(innerSenseMO);
-        bufferCodelet.addInput(knownJewelsMO);
-        bufferCodelet.addInput(impulsesMO);
-        bufferCodelet.addOutput(bufferMO);
-        insertCodelet(bufferCodelet);
+        Codelet perceptualBufferCodelet = new BufferCodelet();
+        perceptualBufferCodelet.addInputs(getMemoryGroupList("Perceptual"));
+        perceptualBufferCodelet.addOutput(perceptualBufferMO);
+        insertCodelet(perceptualBufferCodelet);
+
+        Codelet contextBufferCodelet = new BufferCodelet();
+        contextBufferCodelet.addInputs(getMemoryGroupList("Context"));
+        contextBufferCodelet.addOutput(contextBufferMO);
+        insertCodelet(contextBufferCodelet);
 
         Idea locAdpatHabit = new Idea("LocationAdaptHabit", null);
         locAdpatHabit.setValue(new LocationCategoryModification(locAdpatHabit));
@@ -393,7 +414,7 @@ public class AgentMind extends Mind {
         for (Codelet c : this.getCodeRack().getAllCodelets())
             c.setTimeStep(100);
 
-        bufferCodelet.setTimeStep(500);
+        //bufferCodelet.setTimeStep(500);
 
         start();
     }
