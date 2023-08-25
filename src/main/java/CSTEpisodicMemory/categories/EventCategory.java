@@ -31,11 +31,21 @@ public abstract class EventCategory implements Category {
         for (Idea step : idea.getL())
             propertiesVector.add(extractProperties(step));
 
+        for (ArrayRealVector arr : propertiesVector){
+            if (arr.isNaN())
+                return 0;
+        }
+
+        if (!checkVectorSize(propertiesVector))
+            return 0.5;
+
         boolean check = checkVectorChange(propertiesVector);
         if (check)
             return 1.0;
         return 0;
     }
+
+    protected abstract boolean checkVectorSize(List<ArrayRealVector> propertiesVector);
 
     protected abstract boolean checkVectorChange(List<ArrayRealVector> propertiesVector);
 
@@ -43,19 +53,23 @@ public abstract class EventCategory implements Category {
     private ArrayRealVector extractProperties(Idea idea) {
         ArrayRealVector propertyVector = new ArrayRealVector();
         for (String property : vectorPropertiesList){
-            Idea object = idea.getL().get(0);
-            if (object.get(property).getValue() instanceof Float)
-                propertyVector = (ArrayRealVector) propertyVector.append((float) object.get(property).getValue());
-            if (object.get(property).getValue() instanceof Integer)
-                propertyVector = (ArrayRealVector) propertyVector.append((int) object.get(property).getValue());
-            if (object.get(property).getValue() instanceof Double)
-                propertyVector = (ArrayRealVector) propertyVector.append((double) object.get(property).getValue());
-            ///if (idea.get(property).getValue() instanceof Float)
-            ///    propertyVector = (ArrayRealVector) propertyVector.append((float) idea.get(property).getValue());
-            ///if (idea.get(property).getValue() instanceof Integer)
-            ///    propertyVector = (ArrayRealVector) propertyVector.append((int) idea.get(property).getValue());
-            ///if (idea.get(property).getValue() instanceof Double)
-            ///    propertyVector = (ArrayRealVector) propertyVector.append((double) idea.get(property).getValue());
+            Idea objectProperty = idea.getL().get(0).get(property);
+            if (objectProperty != null) {
+                if (objectProperty.getValue() instanceof Float)
+                    propertyVector = (ArrayRealVector) propertyVector.append((float) objectProperty.getValue());
+                if (objectProperty.getValue() instanceof Integer)
+                    propertyVector = (ArrayRealVector) propertyVector.append((int) objectProperty.getValue());
+                if (objectProperty.getValue() instanceof Double)
+                    propertyVector = (ArrayRealVector) propertyVector.append((double) objectProperty.getValue());
+                ///if (idea.get(property).getValue() instanceof Float)
+                ///    propertyVector = (ArrayRealVector) propertyVector.append((float) idea.get(property).getValue());
+                ///if (idea.get(property).getValue() instanceof Integer)
+                ///    propertyVector = (ArrayRealVector) propertyVector.append((int) idea.get(property).getValue());
+                ///if (idea.get(property).getValue() instanceof Double)
+                ///    propertyVector = (ArrayRealVector) propertyVector.append((double) idea.get(property).getValue());
+            } else {
+                propertyVector = (ArrayRealVector) propertyVector.append(Double.NaN);
+            }
         }
         return propertyVector;
     }

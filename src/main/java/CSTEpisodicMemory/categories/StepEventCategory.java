@@ -52,6 +52,11 @@ public class StepEventCategory extends EventCategory {
         return check;
     }
 
+    @Override
+    protected boolean checkVectorSize(List<ArrayRealVector> propertiesVector) {
+        return propertiesVector.size() == 3;
+    }
+
     public double getStepSizeThreashold() {
         return stepSizeThreashold;
     }

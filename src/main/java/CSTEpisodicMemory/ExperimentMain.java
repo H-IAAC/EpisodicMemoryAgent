@@ -62,7 +62,7 @@ public class ExperimentMain {
          visu.addMemoryWatch("Location", 3);
          visu.addMemoryWatch("PROPERTIES", 3);
          visu.addMemoryWatch("FOOD", 3);
-         visu.addMemoryWatch("Events", 5);
+         visu.addMemoryWatch("EVENTS", 5);
          visu.addMemoryWatch("PERCEPTUAL_BUFFER", 6);
          visu.addMemoryWatch("CONTEXT_BUFFER", 6);
          visu.setVisible(true);
