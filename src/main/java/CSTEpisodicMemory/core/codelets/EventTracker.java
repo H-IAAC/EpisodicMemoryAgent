@@ -1,6 +1,5 @@
 package CSTEpisodicMemory.core.codelets;
 
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
@@ -85,61 +84,66 @@ public class EventTracker extends MemoryCodelet {
 
     @Override
     public void proc() {
-        for (Idea timeStep : buffer.getL()) {
-            for (Idea object : timeStep.getL()) {
-                String objectName = object.getName();
-                if (isTrackedObject(objectName)){
-                    Idea initialEventIdea = getInitialEventOf(objectName);
-                    List<Idea> inputIdeaBuffer = constructCurrentBufferOf(objectName);
+        ArrayList<String> ignoreObjects = new ArrayList<>();
+        synchronized (buffer) {
+            for (Idea timeStep : buffer.getL()) {
+                for (Idea object : timeStep.getL()) {
+                    String objectName = object.getName();
+                    if (isTrackedObject(objectName)) {
+                        long lastTrackedTimeStamp = getLastTimeStampOf(objectName);
+                        if ((long) timeStep.getValue() > lastTrackedTimeStamp) {
+                            List<Idea> inputIdeaBuffer = constructCurrentBufferOf(objectName);
 
-                    long lastTrackedTimeStamp = getLastTimeStampOf(objectName);
-                    if ((long) timeStep.getValue() > lastTrackedTimeStamp) {
-
-                        if (inputIdeaBuffer.isEmpty()) {
-                            pushStepToMemory(object, (long) timeStep.getValue());
-                        } else {
-                            if (inputIdeaBuffer.size() < this.bufferSize) {
-                                if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
-                                    pushStepToMemory(object, (long) timeStep.getValue());
-                                }
+                            if (inputIdeaBuffer.isEmpty()) {
+                                pushStepToMemory(object, (long) timeStep.getValue());
                             } else {
-                                if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
-                                    //Check if current state is coherent with previous states and event category
-                                    Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
-                                    if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation()) {
-                                        //Copies start of the event
-                                        setBufferTopAsInitialEvent(objectName);
-
+                                if (inputIdeaBuffer.size() < this.bufferSize) {
+                                    if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
                                         pushStepToMemory(object, (long) timeStep.getValue());
-                                    } else {
-                                        if (initialEventIdea != null) {
-                                            Idea constraints = new Idea("Constraints");
-                                            constraints.add(new Idea("0", initialEventIdea));
-                                            constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
-                                            Idea event = trackedEventCategory.getInstance(constraints);
-                                            event.setName("Event" + count++);
-                                            event.setValue(trackedEventCategory);
-                                            restartEventStage(object, (long) timeStep.getValue());
-                                            Idea eventsIdea = (Idea) eventsOutputMO.getI();
-                                            synchronized (eventsIdea) {
-                                                eventsIdea.add(event);
-                                                if (debug)
-                                                    System.out.println(csvPrint(eventsIdea));
-                                            }
-                                        } else {
+                                    }
+                                } else {
+                                    if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
+                                        //Check if current state is coherent with previous states and event category
+                                        Idea initialEventIdea = getInitialEventOf(objectName);
+                                        Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
+                                        if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation()) {
+                                            //Copies start of the event
+                                            if (initialEventIdea == null) setBufferTopAsInitialEvent(objectName);
+
                                             pushStepToMemory(object, (long) timeStep.getValue());
+                                        } else {
+                                            if (initialEventIdea != null) {
+                                                Idea constraints = new Idea("Constraints");
+                                                constraints.add(new Idea("0", initialEventIdea));
+                                                constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
+                                                Idea event = trackedEventCategory.getInstance(constraints);
+                                                event.setName("Event" + count++);
+                                                event.setValue(trackedEventCategory);
+                                                restartEventStage(object, (long) timeStep.getValue());
+                                                Idea eventsIdea = (Idea) eventsOutputMO.getI();
+                                                synchronized (eventsIdea) {
+                                                    eventsIdea.add(event);
+                                                    if (debug)
+                                                        System.out.println(csvPrint(eventsIdea));
+                                                }
+                                            } else {
+                                                pushStepToMemory(object, (long) timeStep.getValue());
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                    } else {
+                        if (!ignoreObjects.contains(objectName)) {
+                            Idea testEvent = constructTestEvent(new ArrayList<>(), object);
+                            if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
+                                pushStepToMemory(object, (long) timeStep.getValue());
+                            } else {
+                                ignoreObjects.add(objectName);
+                            }
+                        }
                     }
-                } else {
-                    Idea testEvent = constructTestEvent(new ArrayList<>(), object);
-                    if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
-                        pushStepToMemory(object, (long) timeStep.getValue());
-                    }
-
                 }
             }
         }
@@ -246,7 +250,7 @@ public class EventTracker extends MemoryCodelet {
         return bufferStepSize;
     }
 
-    public void setBufferStepSize(int bufferStepSize) {
+    public void setBufferStepSizeInMillis(int bufferStepSize) {
         if (bufferStepSize > 0)
             this.bufferStepSize = bufferStepSize;
     }

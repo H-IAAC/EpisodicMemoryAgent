@@ -14,6 +14,8 @@ import com.google.gson.Gson;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +146,15 @@ public class IdeaVisualizer extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     public void setIdea(Idea idea){
+        PrintWriter out;
+        try {
+            out = new PrintWriter(idea.getName());
+            String csv = new Gson().toJson(idea);
+            out.println(csv);
+            out.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         ideaPanel = new IdeaPanel(idea,false);
         ideaPanel.updateTree();
         ideaPanel.expandAllNodes();

@@ -239,7 +239,7 @@ public class AgentMind extends Mind {
         eventsCategoriesIdea.add(moveEventCategory);
         EventTracker moveEventTracker = new EventTracker(this, "PERCEPTUAL_BUFFER", "EVENTS", moveEventCategory, debug);
         moveEventTracker.setBufferSize(2);
-        moveEventTracker.setBufferStepSize(2);
+        moveEventTracker.setBufferStepSizeInMillis(150);
         moveEventTracker.addInput(perceptualBufferMO);
         moveEventTracker.addOutput(eventsMO);
         moveEventTracker.addBroadcast(contextDriftMO);
@@ -250,7 +250,7 @@ public class AgentMind extends Mind {
         ///Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Self.Pitch"), "Linear");
         EventTracker rotateEventTracker = new EventTracker(this, "PERCEPTUAL_BUFFER", "EVENTS", rotateEventCategory, debug);
         rotateEventTracker.setBufferSize(2);
-        rotateEventTracker.setBufferStepSize(2);
+        rotateEventTracker.setBufferStepSizeInMillis(150);
         rotateEventTracker.addInput(perceptualBufferMO);
         rotateEventTracker.addOutput(eventsMO);
         rotateEventTracker.addBroadcast(contextDriftMO);
