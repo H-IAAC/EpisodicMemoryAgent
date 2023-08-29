@@ -88,7 +88,7 @@ public class ExploreImpulse extends Codelet {
                     weigths.add(total);
                 }
                 //5% chance of choosing a random, possibly unexplored, location
-                double rndChance = Math.exp(-locations.size()/10.0) + 0.05;
+                double rndChance = Math.exp(-locations.size()/10.0) + 0.25;
                 double rnd = new Random().nextDouble() * total*(1+rndChance);
                 //System.out.println(weigths);
                 //System.out.println(rnd);
@@ -105,6 +105,7 @@ public class ExploreImpulse extends Codelet {
         }
 
         boolean isInRoom = false;
+        if (selected == null) System.out.println("Random");
         while (!isInRoom) {
             if (selected != null) {
                 choosenLoc = selected.getInstance();

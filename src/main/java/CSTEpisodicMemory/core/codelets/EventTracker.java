@@ -18,6 +18,7 @@ public class EventTracker extends MemoryCodelet {
     private Memory bufferInputMO;
     private Memory eventsOutputMO;
     private Memory contextSegmentationMO;
+    private long latestBoundary;
 
     private Map<String, List<Idea>> internal;
     private int bufferSize = 1;
@@ -73,7 +74,8 @@ public class EventTracker extends MemoryCodelet {
         this.bufferInputMO = (MemoryObject) this.getInput(this.getInputMemoryName());
         this.buffer = (Idea) bufferInputMO.getI();
         this.eventsOutputMO = (MemoryObject) this.getOutput(this.getOutputMemoryName());
-        this.contextSegmentationMO = (MemoryObject) this.getBroadcast("CONTEXT_DRIFT");
+        this.contextSegmentationMO = (MemoryObject) this.getInput("BOUNDARIES");
+        this.latestBoundary = getLatestBoundaryTime();
         this.internal = (Map<String, List<Idea>>) getInternalMemoryI();
     }
 
@@ -106,7 +108,7 @@ public class EventTracker extends MemoryCodelet {
                                         //Check if current state is coherent with previous states and event category
                                         Idea initialEventIdea = getInitialEventOf(objectName);
                                         Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
-                                        if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation()) {
+                                        if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation(objectName)) {
                                             //Copies start of the event
                                             if (initialEventIdea == null) setBufferTopAsInitialEvent(objectName);
 
@@ -158,7 +160,10 @@ public class EventTracker extends MemoryCodelet {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
         step.add(object.clone());
         String objName = object.getName();
-        internal.put(objName, new LinkedList<Idea>(){{add(null); add(step);}});
+        internal.put(objName, new LinkedList<Idea>() {{
+            add(null);
+            add(step);
+        }});
     }
 
     private void setBufferTopAsInitialEvent(String objectName) {
@@ -170,14 +175,17 @@ public class EventTracker extends MemoryCodelet {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
         step.add(object.clone());
         String objName = object.getName();
-        if (internal.containsKey(objName)){
+        if (internal.containsKey(objName)) {
             List<Idea> stageEventSteps = internal.get(objName);
             stageEventSteps.add(step);
-            if (stageEventSteps.size() > bufferSize + 1){
+            if (stageEventSteps.size() > bufferSize + 1) {
                 stageEventSteps.remove(1);
             }
         } else {
-            internal.put(objName, new LinkedList<Idea>(){{add(null); add(step);}});
+            internal.put(objName, new LinkedList<Idea>() {{
+                add(null);
+                add(step);
+            }});
         }
     }
 
@@ -212,10 +220,23 @@ public class EventTracker extends MemoryCodelet {
         return null;
     }
 
-    private boolean isForcedSegmentation() {
+    private long getLatestBoundaryTime() {
         synchronized (contextSegmentationMO) {
-            return ((int) contextSegmentationMO.getI() == 1);
+            Idea boundaries = (Idea) contextSegmentationMO.getI();
+            return boundaries.getL()
+                    .stream()
+                    .mapToLong(i -> (long) i.get("TimeStamp").getValue())
+                    .max().orElse(0);
         }
+
+    }
+
+    private boolean isForcedSegmentation(String objectName) {
+        if (internal.get(objectName).get(0) != null) {
+            long initialTimeStamp = (long) internal.get(objectName).get(0).getValue();
+            return initialTimeStamp < latestBoundary;
+        }
+        return false;
     }
 
     private Idea constructTestEvent(List<Idea> inputIdeaBuffer, Idea object) {

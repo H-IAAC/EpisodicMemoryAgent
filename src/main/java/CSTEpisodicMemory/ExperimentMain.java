@@ -65,6 +65,7 @@ public class ExperimentMain {
          visu.addMemoryWatch("EVENTS", 5);
          visu.addMemoryWatch("PERCEPTUAL_BUFFER", 6);
          visu.addMemoryWatch("CONTEXT_BUFFER", 6);
+         visu.addMemoryWatch("BOUNDARIES", 6);
          visu.setVisible(true);
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);

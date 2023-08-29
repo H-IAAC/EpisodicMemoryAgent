@@ -82,8 +82,10 @@ public abstract class EventCategory implements Category {
             Idea time2 = new Idea("", 2, "TimeStep", 1);
             //time1.add(constraints.get(0));
             //time1.add(constraints.get(0).get("TimeStamp"));
-            time1.getL().addAll(extractRelevant((Idea) constraints.get("0").getValue()));
-            time2.getL().addAll(extractRelevant((Idea) constraints.get("1").getValue()));
+            time1.getL().addAll(extractTimeStepElements((Idea) constraints.get("0").getValue()));
+            time2.getL().addAll(extractTimeStepElements((Idea) constraints.get("1").getValue()));
+            //time1.getL().addAll(extractRelevant((Idea) constraints.get("0").getValue()));
+            //time2.getL().addAll(extractRelevant((Idea) constraints.get("1").getValue()));
             eventIdea.add(time1);
             eventIdea.add(time2);
             return eventIdea;
@@ -100,6 +102,13 @@ public abstract class EventCategory implements Category {
             extractMerge(extracted, idea, property);
         }
         return Arrays.asList(extracted, idea.get("TimeStamp"));
+    }
+
+    private List<Idea> extractTimeStepElements(Idea idea){
+        Idea clone = idea.clone();
+        Idea timeStamp = clone.get("TimeStamp");
+        clone.getL().remove(timeStamp);
+        return Arrays.asList(clone, timeStamp);
     }
 
     private Idea extractMerge(Idea copy, Idea original, String path){

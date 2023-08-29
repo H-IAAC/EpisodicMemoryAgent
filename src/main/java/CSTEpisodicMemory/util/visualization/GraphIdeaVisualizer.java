@@ -24,7 +24,7 @@ public class GraphIdeaVisualizer extends JFrame {
     protected static final double REPEL_FORCE = 250 / div;
     protected static final double LINK_FORCE = 0.10 / div;
     protected static final double DRAG_COEF = 2 / div;
-    protected static final double BAND_FORCE = 0.0; //0.025; //0.001;
+    protected static final double BAND_FORCE = 0.02; //0.025; //0.001;
     protected static final double MAX_DIST = 100;
     protected static final double MAX_VEL = 5;
 
@@ -101,11 +101,12 @@ public class GraphIdeaVisualizer extends JFrame {
 
 
             private void updtateGraph(){
+                int updateCount = 0;
                 for (Idea node : graphIdea.getNodes()){
                     String nodeName = GraphIdea.getNodeContent(node).getName();
                         if (!gg.hasNode(nodeName)) {
                             gg.insertNode(nodeName, (String) node.get("Type").getValue());
-                            return;
+                            updateCount++;
                         }
                         Map<String, List<Idea>> links = graphIdea.getSuccesors(node);
                         for (List<Idea> linkedNodes : links.values()) {
@@ -113,14 +114,16 @@ public class GraphIdeaVisualizer extends JFrame {
                                     String nodeBName = GraphIdea.getNodeContent(nodeB).getName();
                                     if (!gg.hasNode(nodeBName)) {
                                         gg.insertNode(nodeBName, (String) nodeB.get("Type").getValue());
-                                        return;
+                                        updateCount++;
                                     }
                                     if (!gg.hasLink(nodeName, nodeBName)) {
                                         gg.insertLink(nodeName, nodeBName);
-                                        return;
+                                        updateCount++;
                                     }
+                                    if (updateCount >=5) return;
                             }
                         }
+                    if (updateCount >=5) return;
                 }
             }
         };

@@ -7,6 +7,7 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,15 +17,17 @@ public class EpisodeBinding extends Codelet {
     private Memory bufferMO;
     private Memory storyMO;
     private Memory contextSegmentMO;
+    private long latestSegmentationTime = 0L;
 
     private static final int intervalThreshold = 200;
 
     @Override
     public void accessMemoryObjects() {
         this.eventsMO = (MemoryObject) getInput("EVENTS");
-        this.bufferMO = (MemoryObject) getInput("BUFFER");
+        this.bufferMO = (MemoryObject) getInput("CONTEXT_BUFFER");
         this.storyMO = (MemoryObject) getOutput("STORY");
-        this.contextSegmentMO = (MemoryObject) getBroadcast("CONTEXT_DRIFT");
+        this.contextSegmentMO = (MemoryObject) getInput("BOUNDARIES");
+        this.latestSegmentationTime = getLatestSegmentationTime();
     }
 
     @Override
@@ -67,12 +70,8 @@ public class EpisodeBinding extends Codelet {
                                     .filter(e -> ((long) e.getValue()) <= eventEnd)
                                     .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
 
-                            if (context.isPresent() && isSegmentationEvent(story, context.get())) {
+                            if (context.isPresent() && isSegmentationEvent(story)) {
                                 segmentedEvents.add(event);
-                                synchronized (contextSegmentMO) {
-                                    if ((int) contextSegmentMO.getI() != 1)
-                                        contextSegmentMO.setI(1);
-                                }
                             } else {
                                 List<Idea> otherNodes = new ArrayList<>(story.getEventNodes());
                                 story.insertEventNode(event);
@@ -106,10 +105,6 @@ public class EpisodeBinding extends Codelet {
                     //Segment Episode
                     if (!segmentedEvents.isEmpty()) {
                         //Set contextual drift flag
-                        synchronized (contextSegmentMO) {
-                            if ((int) contextSegmentMO.getI() != 1)
-                                contextSegmentMO.setI(1);
-                        }
                         //Create new episode
                         Idea newStory = new Idea("Story", null, "Composition", 1);
                         Idea newEpisode = new Idea("Episode", (int) currentEpisode.getValue() + 1, "Episode", 1);
@@ -118,24 +113,16 @@ public class EpisodeBinding extends Codelet {
 
                         //Clear events buffer
                         eventsIdea.setL(segmentedEvents);
-                    } else {
-                        synchronized (contextSegmentMO) {
-                            if ((int) contextSegmentMO.getI() != 0)
-                                contextSegmentMO.setI(0);
-                        }
                     }
                 }
             }
         }
     }
 
-    private boolean isSegmentationEvent(GraphIdea story, Idea context) {
-        Idea impulse = context.get("Impulse");
-        if (impulse != null) {
-            if (!story.hasNodeContent(impulse)) {
-                return !(story.getContextNodes().isEmpty());
-            }
-        }
+    private boolean isSegmentationEvent(GraphIdea story) {
+        Idea firstEvent = story.getEventNodes().stream().min(Comparator.comparingLong(e -> (long) GraphIdea.getNodeContent(e).getL().get(0).get("TimeStamp").getValue())).orElse(null);
+        if (firstEvent != null)
+            return (long) GraphIdea.getNodeContent(firstEvent).getL().get(0).get("TimeStamp").getValue() < latestSegmentationTime;
         return false;
     }
 
@@ -191,6 +178,16 @@ public class EpisodeBinding extends Codelet {
         if (closestBeforeSourceIdea != null)
             story.insertLink(closestBeforeSourceIdea, event, "Before");
 
+    }
+
+    private long getLatestSegmentationTime() {
+        synchronized (contextSegmentMO) {
+            Idea boundaries = (Idea) contextSegmentMO.getI();
+            return boundaries.getL()
+                    .stream()
+                    .mapToLong(b -> b.getValue().equals("Hard") ? (long) b.get("TimeStamp").getValue() : 0L)
+                    .max().orElse(0L);
+        }
     }
 
     public static String temporalRelation(long start1, long end1, long start2, long end2) {

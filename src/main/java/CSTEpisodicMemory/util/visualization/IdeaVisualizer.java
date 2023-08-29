@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- *
  * @author bruno
  */
 public class IdeaVisualizer extends javax.swing.JFrame {
@@ -30,14 +29,14 @@ public class IdeaVisualizer extends javax.swing.JFrame {
     private IdeaPanel ideaPanel;
     private final Mind mind;
     private final Map<String, Integer> memoryLevels = new HashMap<>();
-    
+
     /**
      * Creates new form IdeaVisualizer
      */
     public IdeaVisualizer(Mind mind) {
         initComponents();
         this.mind = mind;
-        
+
         ideaPanel = new IdeaPanel(new Idea("root"), false);
         //wmp.setOpaque(true); //content panes must be opaque
         //this.setContentPane(wmp);
@@ -70,45 +69,45 @@ public class IdeaVisualizer extends javax.swing.JFrame {
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
-                .addContainerGap())
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                .addContainerGap())
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                                .addContainerGap())
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 284, Short.MAX_VALUE)
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 284, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 0, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -117,16 +116,16 @@ public class IdeaVisualizer extends javax.swing.JFrame {
     private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
         String memoryName = jList1.getSelectedValue();
         Optional<Memory> selectedMem = mind.getRawMemory().getAllMemoryObjects()
-                .stream().filter(m->m.getName().equalsIgnoreCase(memoryName))
+                .stream().filter(m -> m.getName().equalsIgnoreCase(memoryName))
                 .findFirst();
-        if (selectedMem.isPresent()){
+        if (selectedMem.isPresent()) {
             Object content = selectedMem.get().getI();
             if (content instanceof Idea) {
                 System.out.println();
-                setIdea(new Gson().fromJson(new Gson().toJson((Idea) content), Idea.class));
+                setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName,5)), Idea.class));
                 //setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
             }
-                if (content instanceof GraphIdea)
+            if (content instanceof GraphIdea)
                 setIdea(new Gson().fromJson(IdeaHelper.csvPrint(((GraphIdea) content).graph, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
             if (content instanceof List) {
                 Idea show = new Idea(memoryName, null);
@@ -145,7 +144,7 @@ public class IdeaVisualizer extends javax.swing.JFrame {
     private javax.swing.DefaultListModel list1Model;
     // End of variables declaration//GEN-END:variables
 
-    public void setIdea(Idea idea){
+    public void setIdea(Idea idea) {
         PrintWriter out;
         try {
             out = new PrintWriter(idea.getName());
@@ -155,7 +154,7 @@ public class IdeaVisualizer extends javax.swing.JFrame {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        ideaPanel = new IdeaPanel(idea,false);
+        ideaPanel = new IdeaPanel(idea, false);
         ideaPanel.updateTree();
         ideaPanel.expandAllNodes();
         jPanel2.removeAll();
@@ -164,8 +163,8 @@ public class IdeaVisualizer extends javax.swing.JFrame {
         revalidate();
     }
 
-    public void addMemoryWatch(String memoryName, int printLevel){
-       list1Model.addElement(memoryName);
-       memoryLevels.put(memoryName, printLevel);
+    public void addMemoryWatch(String memoryName, int printLevel) {
+        list1Model.addElement(memoryName);
+        memoryLevels.put(memoryName, printLevel);
     }
 }

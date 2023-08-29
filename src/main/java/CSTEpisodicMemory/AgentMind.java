@@ -10,6 +10,7 @@ import CSTEpisodicMemory.behavior.Move;
 import CSTEpisodicMemory.categories.LinearEventCategory;
 import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
 import CSTEpisodicMemory.categories.StepEventCategory;
+import CSTEpisodicMemory.core.codelets.EpisodeBoundaryDetection;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
@@ -86,7 +87,7 @@ public class AgentMind extends Mind {
         Memory categoriesRoomMO;
         Memory roomsMO;
         Memory leafletsMO;
-        Memory contextDriftMO;
+        Memory episodeBoundariesMO;
         MemoryContainer impulsesMO;
         MemoryContainer handsMO;
         MemoryContainer legsMO;
@@ -184,7 +185,7 @@ public class AgentMind extends Mind {
         impulsesMO = createMemoryContainer("IMPULSES");
         registerMemory(impulsesMO, "Context");
 
-        contextDriftMO = createMemoryObject("CONTEXT_DRIFT", 0);
+        episodeBoundariesMO = createMemoryObject("BOUNDARIES", new Idea("Boundaries"));
 
 
         //Hands
@@ -242,7 +243,7 @@ public class AgentMind extends Mind {
         moveEventTracker.setBufferStepSizeInMillis(150);
         moveEventTracker.addInput(perceptualBufferMO);
         moveEventTracker.addOutput(eventsMO);
-        moveEventTracker.addBroadcast(contextDriftMO);
+        moveEventTracker.addInput(episodeBoundariesMO);
         insertCodelet(moveEventTracker, "Perception");
 
         //Rotate Event Codelet
@@ -253,7 +254,7 @@ public class AgentMind extends Mind {
         rotateEventTracker.setBufferStepSizeInMillis(150);
         rotateEventTracker.addInput(perceptualBufferMO);
         rotateEventTracker.addOutput(eventsMO);
-        rotateEventTracker.addBroadcast(contextDriftMO);
+        rotateEventTracker.addInput(episodeBoundariesMO);
         insertCodelet(rotateEventTracker, "Perception");
 
         //Found Jewel Event
@@ -363,11 +364,9 @@ public class AgentMind extends Mind {
 
         Codelet episodeBindingCodelet = new EpisodeBinding();
         episodeBindingCodelet.addInput(eventsMO);
-        episodeBindingCodelet.addInput(impulsesMO);
-        episodeBindingCodelet.addInput(roomsMO);
-        episodeBindingCodelet.addInput(perceptualBufferMO);
+        episodeBindingCodelet.addInput(contextBufferMO);
+        episodeBindingCodelet.addInput(episodeBoundariesMO);
         episodeBindingCodelet.addOutput(storyMO);
-        episodeBindingCodelet.addBroadcast(contextDriftMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
 
         Codelet perceptualBufferCodelet = new BufferCodelet();
@@ -377,8 +376,14 @@ public class AgentMind extends Mind {
 
         Codelet contextBufferCodelet = new BufferCodelet();
         contextBufferCodelet.addInputs(getMemoryGroupList("Context"));
+        contextBufferCodelet.addInput(innerSenseMO);
         contextBufferCodelet.addOutput(contextBufferMO);
         insertCodelet(contextBufferCodelet);
+
+        Codelet episodeBoundaryCodelet = new EpisodeBoundaryDetection();
+        episodeBoundaryCodelet.addInput(contextBufferMO);
+        episodeBoundaryCodelet.addOutput(episodeBoundariesMO);
+        insertCodelet(episodeBoundaryCodelet);
 
         Idea locAdpatHabit = new Idea("LocationAdaptHabit", null);
         locAdpatHabit.setValue(new LocationCategoryModification(locAdpatHabit));
