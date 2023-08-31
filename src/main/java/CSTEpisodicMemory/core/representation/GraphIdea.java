@@ -76,6 +76,7 @@ public class GraphIdea {
             nodeIdea.add(coord);
             nodeIdea.add(new Idea("Type", type, "Property", 1));
             nodeIdea.add(new Idea("Links", null, "Configuration", 1));
+            nodeIdea.add(new Idea("BackLinks", null, "Configuration", 1));
             nodeIdea.add(new Idea("Activation", 0d, "Property", 0));
             graph.add(nodeIdea);
             coordinateMap.put(coord, nodeIdea);
@@ -128,6 +129,14 @@ public class GraphIdea {
             links.add(linksOfType);
         }
         linksOfType.add(nodeIdeaDest);
+
+        Idea backLinks = nodeIdeaDest.get("BackLinks");
+        Idea backLinksOfType = backLinks.get(type);
+        if (backLinksOfType == null){
+            backLinksOfType = new Idea(type, null, "Configuration", 1);
+            backLinks.add(backLinksOfType);
+        }
+        backLinksOfType.add(nodeIdeaSource);
     }
 
     public void removeLink(Idea source, Idea dest){
@@ -153,6 +162,10 @@ public class GraphIdea {
 
         for (Idea links : nodeIdeaSource.get("Links").getL()){
             links.getL().remove(nodeIdeaDest);
+        }
+
+        for (Idea backLinks : nodeIdeaDest.get("BackLinks").getL()){
+            backLinks.getL().remove(nodeIdeaSource);
         }
     }
 
@@ -208,19 +221,11 @@ public class GraphIdea {
             nodeIdeaDest = node;
         }
 
-        HashMap<String, List<Idea>> linksIn = new HashMap<>();
         if (nodeIdeaDest != null){
-            for (Idea n : this.getNodes()){
-                for (Idea link : n.get("Links").getL()){
-                    if (link.getL().stream().anyMatch(l->IdeaHelper.match(l, nodeIdeaDest))){
-                        List<Idea> linksInType = linksIn.getOrDefault(link.getName(), new ArrayList<>());
-                        linksInType.add(n);
-                        linksIn.put(link.getName(), linksInType);
-                    }
-                }
-            }
+            Map<String, List<Idea>> linksIn = nodeIdeaDest.get("BackLinks").getL().stream().collect(Collectors.toMap(Idea::getName, Idea::getL));
+            return linksIn;
         }
-        return linksIn;
+        return new HashMap<>();
 
     }
 
@@ -271,7 +276,7 @@ public class GraphIdea {
                 .collect(Collectors.toList());
     }
 
-    public void setNodeActivation(Idea node, double val){
+    public Idea setNodeActivation(Idea node, double val){
         Idea foundNode = node;
         if (!node.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
@@ -282,6 +287,7 @@ public class GraphIdea {
         if (foundNode != null){
             foundNode.get("Activation").setValue(val);
         }
+        return foundNode;
     }
     public double getNodeActivation(Idea node){
         Idea foundNode = node;
@@ -308,7 +314,7 @@ public class GraphIdea {
         }
     }
 
-    private void propagateActivations(Idea node, List<String> successorsLinks, List<String> predecessorsLinks){
+    public void propagateActivations(Idea node, List<String> successorsLinks, List<String> predecessorsLinks){
         double nodeActivation = (double) node.get("Activation").getValue();
         Map<String, List<Idea>> successors = getSuccesors(node);
         Map<String, List<Idea>> predecessors = getPredecessors(node);

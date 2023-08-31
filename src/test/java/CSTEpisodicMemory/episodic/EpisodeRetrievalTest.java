@@ -27,6 +27,7 @@ public class EpisodeRetrievalTest {
 
     List<Idea> locCat = new ArrayList<>();
     List<Idea> propCat = new ArrayList<>();
+    List<Idea> objects = new ArrayList<>();
 
     List<Idea> eventCategories = Stream.iterate(1, n -> n+1)
             .limit(50)
@@ -207,6 +208,13 @@ public class EpisodeRetrievalTest {
             epltm.insertPropertyNode(newCat);
         }
 
+        objects = new ArrayList<>();
+        for (int i=0; i<8; i++){
+            Idea obj = new Idea("Object" + i, "ObjCat" + i/3, "AbstractObject", 1);
+            objects.add(obj);
+            epltm.insertContextNode(obj);
+        }
+
         //Episodic Memory example
         Idea ep1 = epltm.insertEpisodeNode(new Idea("Episode1", null, "Episode", 1));
         Idea ep2 = epltm.insertEpisodeNode(new Idea("Episode2", null, "Episode", 1));
@@ -289,6 +297,16 @@ public class EpisodeRetrievalTest {
         epltm.insertLink(event9, propCat.get(14),"Initial");
         epltm.insertLink(event9, propCat.get(15),"Final");
 
+        epltm.insertLink(event1, objects.get(0), "Object");
+        epltm.insertLink(event2, objects.get(1), "Object");
+        epltm.insertLink(event3, objects.get(2), "Object");
+        epltm.insertLink(event4, objects.get(3), "Object");
+        epltm.insertLink(event5, objects.get(3), "Object");
+        epltm.insertLink(event6, objects.get(4), "Object");
+        epltm.insertLink(event7, objects.get(5), "Object");
+        epltm.insertLink(event8, objects.get(6), "Object");
+        epltm.insertLink(event9, objects.get(7), "Object");
+
         epltm.insertLink(event1, locCat.get(0), "Location");
         epltm.insertLink(event2, locCat.get(0), "Location");
         epltm.insertLink(event3, locCat.get(1), "Location");
@@ -337,7 +355,7 @@ public class EpisodeRetrievalTest {
         GraphIdea storyRecall = (GraphIdea) recallMO.getI();
 
         //Check number of items
-        Assertions.assertEquals(9, storyRecall.getNodes().size());
+        Assertions.assertEquals(11, storyRecall.getNodes().size());
 
         //Check if is correct episode
         List<Idea> ep = storyRecall.getEpisodeNodes();
@@ -590,5 +608,13 @@ public class EpisodeRetrievalTest {
 
         System.out.println("Total: " + totalTime + " - Size: "+ testCategories.size());
         System.out.println("Avg proc time: " + totalTime /testCategories.size());
+    }
+
+    @Test
+    public void testObjectRetrieval(){
+        createMind();
+        setMemories();
+
+
     }
 }
