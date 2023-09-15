@@ -5,6 +5,7 @@
 package CSTEpisodicMemory.sensor;
 
 import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -34,7 +35,7 @@ public class Vision extends Codelet {
     public void proc() {
 
          synchronized (visionMO) {
-            List<Thing> lt = agent.getThingsInVision();
+            List<Identifiable> lt = agent.getThingsInVision();
             //System.out.println("Vision:" + lt.toString());
             visionMO.setI(lt);
             //Class cl = List.class;

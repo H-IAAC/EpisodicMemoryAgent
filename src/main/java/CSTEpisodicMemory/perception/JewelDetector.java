@@ -4,6 +4,7 @@
  */
 package CSTEpisodicMemory.perception;
 
+import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -49,44 +50,47 @@ public class JewelDetector extends Codelet {
 
     @Override
     public void proc() {
-        CopyOnWriteArrayList<Thing> vision;
+        CopyOnWriteArrayList<Identifiable> vision;
         List<Idea> known;
         synchronized (visionMO) {
-            vision = new CopyOnWriteArrayList((List<Thing>) visionMO.getI());
+            vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
             Idea jewelsIdea = (Idea) knownJewelsMO.getI();
             if (debug) {
                 System.out.println(jewelsIdea.toStringFull());
             }
             known = Collections.synchronizedList(jewelsIdea.getL());
             synchronized (vision) {
-                for (Thing t : vision) {
-                    boolean found = false;
-                    synchronized (known) {
-                        CopyOnWriteArrayList<Idea> myknown = new CopyOnWriteArrayList<>(known);
-                        for (Idea e : myknown)
-                            if (t.getId() == ((int) e.get("ID").getValue())) {
-                                found = true;
+                for (Identifiable obj : vision) {
+                    if (obj instanceof Thing) {
+                        Thing t = (Thing) obj;
+                        boolean found = false;
+                        synchronized (known) {
+                            CopyOnWriteArrayList<Idea> myknown = new CopyOnWriteArrayList<>(known);
+                            for (Idea e : myknown)
+                                if (t.getId() == ((int) e.get("ID").getValue())) {
+                                    found = true;
+                                }
+                            if (!found && t.isJewel()) {
+                                known.add(constructJewelIdea(t));
+                                synchronized (jewelsCountersMO) {
+                                    Idea jewelsCountersIdea = (Idea) jewelsCountersMO.getI();
+                                    List<Idea> counters = jewelsCountersIdea.getL();
+                                    jewelsCountersIdea.get("Step").setValue((int) jewelsCountersIdea.get("Step").getValue() + 1);
+                                    jewelsCountersIdea.get("TimeStamp").setValue(System.currentTimeMillis());
+                                    for (Idea counter : counters) {
+                                        if (counter.getName().equals(t.getTypeName())) {
+                                            int count = (int) counter.getValue() + 1;
+                                            counter.setValue(count);
+                                        }
+                                    }
+                                }
                             }
-                        if (!found && t.isJewel()) {
-                            known.add(constructJewelIdea(t));
                             synchronized (jewelsCountersMO) {
                                 Idea jewelsCountersIdea = (Idea) jewelsCountersMO.getI();
                                 List<Idea> counters = jewelsCountersIdea.getL();
                                 jewelsCountersIdea.get("Step").setValue((int) jewelsCountersIdea.get("Step").getValue() + 1);
                                 jewelsCountersIdea.get("TimeStamp").setValue(System.currentTimeMillis());
-                                for (Idea counter : counters) {
-                                    if (counter.getName().equals(t.getTypeName())) {
-                                        int count = (int) counter.getValue() + 1;
-                                        counter.setValue(count);
-                                    }
-                                }
                             }
-                        }
-                        synchronized (jewelsCountersMO) {
-                            Idea jewelsCountersIdea = (Idea) jewelsCountersMO.getI();
-                            List<Idea> counters = jewelsCountersIdea.getL();
-                            jewelsCountersIdea.get("Step").setValue((int) jewelsCountersIdea.get("Step").getValue() + 1);
-                            jewelsCountersIdea.get("TimeStamp").setValue(System.currentTimeMillis());
                         }
                     }
                 }
@@ -96,7 +100,7 @@ public class JewelDetector extends Codelet {
 
     public static Idea constructJewelIdea(Thing t) {
 
-        Idea jewelIdea = new Idea("Jewel", t.getTypeName(), "AbstractObject", 1);
+        Idea jewelIdea = new Idea("Jewel" + t.getId(), t.getTypeName(), "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));

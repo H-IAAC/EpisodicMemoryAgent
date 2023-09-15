@@ -14,7 +14,8 @@ import java.util.Optional;
 public class EpisodeBinding extends Codelet {
 
     private Memory eventsMO;
-    private Memory bufferMO;
+    private Memory contextBufferMO;
+    private Memory objectBufferMO;
     private Memory storyMO;
     private Memory contextSegmentMO;
     private long latestSegmentationTime = 0L;
@@ -24,7 +25,8 @@ public class EpisodeBinding extends Codelet {
     @Override
     public void accessMemoryObjects() {
         this.eventsMO = (MemoryObject) getInput("EVENTS");
-        this.bufferMO = (MemoryObject) getInput("CONTEXT_BUFFER");
+        this.contextBufferMO = (MemoryObject) getInput("CONTEXT_BUFFER");
+        this.objectBufferMO = (MemoryObject) getInput("PERCEPTUAL_BUFFER");
         this.storyMO = (MemoryObject) getOutput("STORY");
         this.contextSegmentMO = (MemoryObject) getInput("BOUNDARIES");
         this.latestSegmentationTime = getLatestSegmentationTime();
@@ -38,7 +40,8 @@ public class EpisodeBinding extends Codelet {
     @Override
     public void proc() {
         Idea eventsIdea = (Idea) eventsMO.getI();
-        Idea timeline = (Idea) bufferMO.getI();
+        Idea timeline = (Idea) contextBufferMO.getI();
+        Idea objectsTimeline = (Idea) objectBufferMO.getI();
         Idea stories = (Idea) storyMO.getI();
 
         synchronized (stories) {
@@ -70,6 +73,10 @@ public class EpisodeBinding extends Codelet {
                                     .filter(e -> ((long) e.getValue()) <= eventEnd)
                                     .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
 
+                            Optional<Idea> objects = objectsTimeline.getL().stream()
+                                    .filter(e -> ((long) e.getValue()) <= eventEnd)
+                                    .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
+
                             if (context.isPresent() && isSegmentationEvent(story)) {
                                 segmentedEvents.add(event);
                             } else {
@@ -79,23 +86,72 @@ public class EpisodeBinding extends Codelet {
 
                                 if (context.isPresent()) {
                                     Idea contextIdea = context.get();
+
+                                    //Agent position
                                     Idea position = contextIdea.get("Self").get("Position").clone();
                                     if (!story.hasNodeContent(position)) {
                                         story.insertLocationNode(position);
                                     }
-                                    story.insertLink(event, position, "SpatialContext");
+                                    story.insertLink(event, position, "Position");
 
-                                    Idea impulse = null;
-                                    try {
-                                        impulse = contextIdea.get("Impulse").clone();
-                                    } catch (Exception e) {
-                                        System.out.println(contextIdea);
+                                    //Grid place
+                                    Idea grid = contextIdea.get("Self").get("Grid_Place");
+                                    if (grid != null) {
+                                        if (!story.hasNodeContent(grid)) {
+                                            story.insertLocationNode(grid);
+                                        }
+                                        story.insertLink(event, grid, "GridPlace");
                                     }
+
+                                    //Agent environment
+                                    Idea room = contextIdea.get("Room");
+                                    if (room != null){
+                                        Idea roomCat = (Idea) room.get("Location").getValue();
+                                        story.insertContextNode(roomCat);
+                                        story.insertLink(event, roomCat, "Environment");
+                                    }
+
+                                    //Agent Impulse
+                                    Idea impulse = contextIdea.get("Impulse");
                                     if (impulse != null) {
+                                        impulse = impulse.clone();
                                         if (!story.hasNodeContent(impulse)) {
                                             story.insertContextNode(impulse);
                                         }
-                                        story.insertLink(event, impulse, "InternalContext");
+                                        story.insertLink(event, impulse, "MotivationalContext");
+                                    }
+
+                                    //Context objects
+                                    if (objects.isPresent()){
+                                        Idea eventObject = event.getL().get(0).getL().stream()
+                                                .filter(o->!o.getName().equals("TimeStamp"))
+                                                .findFirst()
+                                                .orElse(null);
+
+                                        Idea objectsIdea = objects.get();
+                                        for (Idea object : objectsIdea.getL()){
+                                            Idea pos = object.get("Position");
+                                            if (pos != null){
+                                                if (!object.getName().equals(eventObject.getName())) {
+                                                    story.insertContextNode(object);
+                                                    story.insertLocationNode(pos);
+                                                    story.insertLink(event, object, "ObjectContext");
+                                                    story.insertLink(object, pos, "Position");
+                                                }
+                                            } else {
+                                                for (Idea subObject : object.getL()){
+                                                    Idea subPos = subObject.get("Position");
+                                                    if (subPos != null) {
+                                                        if (!subObject.getName().equals(eventObject.getName())) {
+                                                            story.insertContextNode(subObject);
+                                                            story.insertLocationNode(subPos);
+                                                            story.insertLink(event, subObject, "ObjectContext");
+                                                            story.insertLink(subObject, subPos, "Position");
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }

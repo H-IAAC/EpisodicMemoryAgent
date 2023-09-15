@@ -128,7 +128,8 @@ public class GraphIdea {
             linksOfType = new Idea(type, null, "Configuration", 1);
             links.add(linksOfType);
         }
-        linksOfType.add(nodeIdeaDest);
+        if (!linksOfType.getL().contains(nodeIdeaDest))
+            linksOfType.add(nodeIdeaDest);
 
         Idea backLinks = nodeIdeaDest.get("BackLinks");
         Idea backLinksOfType = backLinks.get(type);
@@ -136,7 +137,8 @@ public class GraphIdea {
             backLinksOfType = new Idea(type, null, "Configuration", 1);
             backLinks.add(backLinksOfType);
         }
-        backLinksOfType.add(nodeIdeaSource);
+        if (!backLinksOfType.getL().contains(nodeIdeaSource))
+            backLinksOfType.add(nodeIdeaSource);
     }
 
     public void removeLink(Idea source, Idea dest){

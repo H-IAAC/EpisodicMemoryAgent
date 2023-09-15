@@ -4,6 +4,7 @@ import CSTEpisodicMemory.Environment;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
+import br.unicamp.cst.representation.idea.Idea;
 
 import javax.swing.*;
 import java.awt.*;
@@ -70,6 +71,7 @@ public class GraphicMind extends JFrame {
                         .findFirst();
                 if (selectedMem.isPresent()) {
                     GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
+                    //GraphIdea gg = new GraphIdea(((Idea) selectedMem.get().getI()).getL().get(0).get("Story"));
                     GraphIdeaVisualizer tt = new GraphIdeaVisualizer(800, 700, gg);
                     //GraphstreamVisualizer tt = new GraphstreamVisualizer(800, 700, gg);
                 }

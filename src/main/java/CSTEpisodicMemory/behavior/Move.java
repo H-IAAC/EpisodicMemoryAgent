@@ -67,7 +67,7 @@ public class Move extends Codelet {
     @Override
     public void proc() {
         if (impulse != null) {
-            if (impulse.get("State.Self.Position") != null) {
+            if (impulse.get("State.Self.Position") != null && innerMO.getI() != null) {
                 currPos = ((Idea) innerMO.getI()).clone().get("Position");
                 if (!IdeaHelper.match(impulse, lastImpulse)) {
                     locations = (List<Idea>) locationsMO.getI();
@@ -110,8 +110,8 @@ public class Move extends Codelet {
             }
 
             epltmGraph.setNodeActivation(bestTargetLoc, 1);
-            epltmGraph.propagateActivations(Arrays.asList("Before", "Overlap", "Meet", "Start", "During", "Finish", "Equal", "SpatialContext", "Next"),
-                    Arrays.asList("Before", "Overlap", "Meet", "Start", "During", "Finish", "Equal", "SpatialContext", "Next"));
+            epltmGraph.propagateActivations(Arrays.asList("Before", "Overlap", "Meet", "Start", "During", "Finish", "Equal", "Position", "Next"),
+                    Arrays.asList("Before", "Overlap", "Meet", "Start", "During", "Finish", "Equal", "Position", "Next"));
             List<Idea> locationNodes = epltmGraph.getLocationNodes();
             locationNodes.sort(Comparator.comparing(idea -> ((Double) idea.get("Activation").getValue())));
 

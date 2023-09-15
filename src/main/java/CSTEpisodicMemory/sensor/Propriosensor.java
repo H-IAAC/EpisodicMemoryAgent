@@ -14,26 +14,26 @@ import br.unicamp.cst.representation.idea.Idea;
  *
  * @author bruno
  */
-public class InnerSense extends Codelet{
+public class Propriosensor extends Codelet{
     private Memory innerSenseMO;
     private final Agent agent;
     private Idea cis;
     private boolean debug = false;
 
-    public InnerSense(Agent nc) {
+    public Propriosensor(Agent nc) {
             agent = nc;
-            this.name = "InnerSense";
+            this.name = "Propriosensor";
     }
 
-    public InnerSense(Agent nc, boolean debug) {
+    public Propriosensor(Agent nc, boolean debug) {
         agent = nc;
-        this.name = "InnerSense";
+        this.name = "Propriosensor";
         this.debug = debug;
     }
     
     @Override
     public void accessMemoryObjects() {
-            innerSenseMO=(MemoryObject)this.getOutput("INNER");
+            innerSenseMO=(MemoryObject)this.getOutput("PROPIOSENSOR");
             cis = (Idea) innerSenseMO.getI();
     }
 

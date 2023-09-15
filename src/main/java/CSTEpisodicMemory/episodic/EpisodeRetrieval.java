@@ -52,7 +52,17 @@ public class EpisodeRetrieval extends Codelet {
                     propertiesCat.add(cat.clone());
             }
 
-            List<Idea> eventNodes = epGraph.getEventNodes();
+            List<Idea> eventNodes = new ArrayList<>();
+
+            //Filter by desired context
+            List<Idea> cueContext = cue.getContextNodes();
+            for (Idea context : cueContext){
+                for (Map.Entry links : epGraph.getPredecessors(context).entrySet()){
+                    eventNodes.addAll((List<Idea>) links.getValue());
+                }
+            }
+
+            if (eventNodes.isEmpty()) eventNodes = epGraph.getEventNodes();
 
             //Cue with events nodes
             Map<Idea, List<Idea>> bestMatches = new HashMap<>();
@@ -178,6 +188,34 @@ public class EpisodeRetrieval extends Codelet {
                         if (beginEp != endEp) {
                             valid = false;
                             break;
+                        }
+                    }
+
+                    //Check context
+                    for (Idea context : cueContext){
+                        Map<String, List<Idea>> links = cue.getPredecessors(context);
+                        for (Map.Entry link : links.entrySet()){
+                            for (Idea parent : (List<Idea>) link.getValue()){
+                                List<Idea> memsContext = epGraph.getChildrenWithLink(bestMatches.get(parent).get(currCheckPos.get(parent)), (String) link.getKey());
+                                if (memsContext.isEmpty()){
+                                    valid = false;
+                                    break;
+                                } else {
+                                    Idea memContext = GraphIdea.getNodeContent(memsContext.get(0));
+                                    if (memContext.isCategory()){
+                                        if (!memContext.getName().equals(context.getValue())){
+                                            valid = false;
+                                            break;
+                                        }
+                                    } else {
+                                        if (!memContext.getValue().equals(context.getValue())){
+                                            valid = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                            }
                         }
                     }
 

@@ -38,15 +38,17 @@ public class LocationGraphic {
         g.setColor(new Color(0x99008A00, true));
 
         for (Idea loc : locations){
-            float cx =(float) loc.get("centerX").getValue();
-            float cy =(float) loc.get("centerY").getValue();
-            double r = (double) loc.get("radius").getValue();
+            if (loc.isCategory()) {
+                float cx = (float) loc.get("centerX").getValue();
+                float cy = (float) loc.get("centerY").getValue();
+                double r = (double) loc.get("radius").getValue();
 
-            Ellipse2D.Double draw = new Ellipse2D.Double((cy-r/2) * windowW/envW,
-                    (cx-r/2) * windowH/envH,
-                    r * windowW/envW,
-                    r * windowH/envH);
-            g.fill(draw);
+                Ellipse2D.Double draw = new Ellipse2D.Double((cy - r / 2) * windowW / envW,
+                        (cx - r / 2) * windowH / envH,
+                        r * windowW / envW,
+                        r * windowH / envH);
+                g.fill(draw);
+            }
         }
     }
 
@@ -63,24 +65,26 @@ public class LocationGraphic {
         if (locations != null) {
             for (Idea locNode : locations) {
                 Idea loc = GraphIdea.getNodeContent(locNode);
-                float cx = (float) loc.get("centerX").getValue();
-                float cy = (float) loc.get("centerY").getValue();
-                double r = (double) loc.get("radius").getValue();
+                if (loc.isCategory()) {
+                    float cx = (float) loc.get("centerX").getValue();
+                    float cy = (float) loc.get("centerY").getValue();
+                    double r = (double) loc.get("radius").getValue();
 
-                double px = (cy - r / 2) * windowW / envW;
-                double py = (cx - r / 2) * windowH / envH;
-                Ellipse2D.Double draw = new Ellipse2D.Double(px,
-                        py,
-                        r * windowW / envW,
-                        r * windowH / envH);
+                    double px = (cy - r / 2) * windowW / envW;
+                    double py = (cx - r / 2) * windowH / envH;
+                    Ellipse2D.Double draw = new Ellipse2D.Double(px,
+                            py,
+                            r * windowW / envW,
+                            r * windowH / envH);
 
-                double act = (double) locNode.get("Activation").getValue();
-                Color p = new Color(0, 138, 0, (int) (240 * act) + 15);
-                g.setColor(p);
-                g.fill(draw);
-                g.setColor(Color.BLACK);
-                g.drawString(loc.getName(), (int) (px), (int) (py));
-                g.drawString(String.format("%.4f", act), (int) (px), (int) (py + 30));
+                    double act = (double) locNode.get("Activation").getValue();
+                    Color p = new Color(0, 138, 0, (int) (240 * act) + 15);
+                    g.setColor(p);
+                    g.fill(draw);
+                    g.setColor(Color.BLACK);
+                    g.drawString(loc.getName(), (int) (px), (int) (py));
+                    g.drawString(String.format("%.4f", act), (int) (px), (int) (py + 30));
+                }
             }
         }
 

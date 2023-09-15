@@ -112,7 +112,7 @@ public class ExploreImpulse extends Codelet {
             } else {
                 choosenLoc = new Idea("Position", null, "Property", 0);
                 float x = 10 * new Random().nextFloat();
-                float y = 8 * new Random().nextFloat();
+                float y = 10 * new Random().nextFloat();
                 choosenLoc.add(new Idea("X", x, "QualityDimension", 0));
                 choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
             }

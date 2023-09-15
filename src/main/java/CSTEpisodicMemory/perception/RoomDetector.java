@@ -23,7 +23,7 @@ public class RoomDetector extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        this.innerSenseMO = (MemoryObject) getInput("INNER");
+        this.innerSenseMO = (MemoryObject) getInput("PROPIOSENSOR");
         this.innerSense = (Idea) innerSenseMO.getI();
         this.roomCategoriesMO = (MemoryObject) getInput("ROOM_CATEGORIES");
         this.roomCategories = (List<Idea>) roomCategoriesMO.getI();
@@ -38,10 +38,12 @@ public class RoomDetector extends Codelet {
 
     @Override
     public void proc() {
-        detectedRoom.setL(new ArrayList<>());
-        for (Idea category : roomCategories){
-            if (category.membership(innerSense) > 0 ){
-                detectedRoom.add(new Idea("Location", category, "Property", 1));
+        synchronized (detectedRoom) {
+            detectedRoom.setL(new ArrayList<>());
+            for (Idea category : roomCategories) {
+                if (category.membership(innerSense) > 0) {
+                    detectedRoom.add(new Idea("Location", category, "Property", 1));
+                }
             }
         }
         //System.out.println((float) innerSense.get("Position.Y").getValue());

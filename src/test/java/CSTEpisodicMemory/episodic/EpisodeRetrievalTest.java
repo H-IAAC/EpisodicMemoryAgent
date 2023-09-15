@@ -68,8 +68,7 @@ public class EpisodeRetrievalTest {
         locCat = new ArrayList<>();
         for (int i = 0; i<35; i++){
             Idea newCat = locGen.exec(null);
-            locCat.add(newCat);
-            epltm.insertLocationNode(newCat);
+            locCat.add(epltm.insertLocationNode(newCat));
         }
 
         Idea assimilateSubHabit = new Idea("assimilate", null);
@@ -87,8 +86,7 @@ public class EpisodeRetrievalTest {
             toLearn.get("p1").setValue(i);
             toLearn.get("p2").setValue(i);
             Idea newCat = assimilateSubHabit.exec(toLearn);
-            propCat.add(newCat);
-            epltm.insertPropertyNode(newCat);
+            propCat.add(epltm.insertPropertyNode(newCat));
         }
 
         List<Idea> rndEvents = new ArrayList<>();
@@ -99,16 +97,16 @@ public class EpisodeRetrievalTest {
             List<Idea> thisEpisodeEvents = new ArrayList<>();
             int nNodes = rnd.nextInt(5);
             for (int j = 0; j <= nNodes; j++){
-                Idea rndEvent = eventCategories.get(rnd.nextInt(50));
+                Idea rndEvent = eventCategories.get(rnd.nextInt(35));
                 if (nNodes == 4 && j == 0) toTest.put(i, Arrays.asList(rndEvent, null));
                 if (nNodes == 4 && j == 4) toTest.get(i).set(1, rndEvent);
                 Idea event = new Idea("Event" + (i+j), rndEvent, "Episode", 1);
                 event.add(new Idea("Start", rnd.nextLong(1000)+5000*i+ 1000L *j, "TimeStep", 1));
                 event.add(new Idea("End", rnd.nextLong(1000)+5000*i+ 1000L *(j+1)+1000, "TimeStep", 1));
-                rndEvents.add(event);
-                epltm.insertEventNode(event);
-                createTemporalRelations(event, thisEpisodeEvents, epltm);
-                thisEpisodeEvents.add(event);
+                Idea eventNode = epltm.insertEventNode(event);
+                rndEvents.add(eventNode);
+                createTemporalRelations(eventNode, thisEpisodeEvents, epltm);
+                thisEpisodeEvents.add(eventNode);
             }
             epltm.insertLink(ep, thisEpisodeEvents.get(0), "Begin");
             epltm.insertLink(ep, thisEpisodeEvents.get(thisEpisodeEvents.size()-1), "End");
@@ -120,9 +118,9 @@ public class EpisodeRetrievalTest {
             epltm.insertLink(event, locCat.get(rnd.nextInt(35)), "Location");
         }
 
-        locationsMO.setI(locCat);
+        locationsMO.setI(locCat.stream().map(GraphIdea::getNodeContent).collect(Collectors.toList()));
 
-        propertiesMO.setI(propCat);
+        propertiesMO.setI(propCat.stream().map(GraphIdea::getNodeContent).collect(Collectors.toList()));
 
         eplMO.setI(epltm);
 
@@ -131,8 +129,8 @@ public class EpisodeRetrievalTest {
 
     private void createTemporalRelations(Idea event, List<Idea> otherNodes, GraphIdea story){
         Long start1, end1, start2, end2;
-        start1 = (Long) event.get("Start").getValue();
-        end1 = (Long) event.get("End").getValue();
+        start1 = (Long) GraphIdea.getNodeContent(event).get("Start").getValue();
+        end1 = (Long) GraphIdea.getNodeContent(event).get("End").getValue();
 
         long closestBeforeSink = Long.MAX_VALUE;
         Idea closestBeforeSinkIdea = null;
@@ -140,15 +138,15 @@ public class EpisodeRetrievalTest {
         Idea closestBeforeSourceIdea = null;
         for (Idea nodeContent : otherNodes){
 
-            start2 = (Long) nodeContent.get("Start").getValue();
-            end2 = (Long) nodeContent.get("End").getValue();
+            start2 = (Long) GraphIdea.getNodeContent(nodeContent).get("Start").getValue();
+            end2 = (Long) GraphIdea.getNodeContent(nodeContent).get("End").getValue();
 
             String relation = EpisodeBinding.temporalRelation(start1, end1, start2, end2);
             if (!relation.isEmpty()){
                 if (relation.equals("Before")){
                     if (start2 - end1 < closestBeforeSink) {
                         closestBeforeSink = start2 - end1;
-                        closestBeforeSinkIdea = nodeContent.clone();
+                        closestBeforeSinkIdea = nodeContent;
                     }
                 } else {
                     story.insertLink(event, nodeContent, relation);
@@ -159,7 +157,7 @@ public class EpisodeRetrievalTest {
                 if (relation.equals("Before")){
                     if (start1 - end2 < closestBeforeSource) {
                         closestBeforeSource = start1 - end2;
-                        closestBeforeSourceIdea = nodeContent.clone();
+                        closestBeforeSourceIdea = nodeContent;
                     }
                 } else {
                     story.insertLink(nodeContent, event, relation);

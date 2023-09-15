@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.perception;
 
+import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -26,19 +27,22 @@ public class FoodDetector extends Codelet {
 
     @Override
     public void proc() {
-        List<Thing> vision = (List<Thing>) visionMO.getI();
+        List<Identifiable> vision = (List<Identifiable>) visionMO.getI();
         Idea foods = (Idea) foodMO.getI();
         synchronized (vision){
             synchronized (foods) {
-                for (Thing t : vision) {
-                    boolean found = false;
-                    for (Idea known : foods.getL()) {
-                        if (t.getId() == ((int) known.get("ID").getValue()))
-                            found = true;
-                    }
+                for (Identifiable obj : vision) {
+                    if (obj instanceof Thing) {
+                        Thing t = (Thing) obj;
+                        boolean found = false;
+                        for (Idea known : foods.getL()) {
+                            if (t.getId() == ((int) known.get("ID").getValue()))
+                                found = true;
+                        }
 
-                    if (!found && t.isFood()) {
-                        foods.add(constructFoodIdea(t));
+                        if (!found && t.isFood()) {
+                            foods.add(constructFoodIdea(t));
+                        }
                     }
                 }
             }

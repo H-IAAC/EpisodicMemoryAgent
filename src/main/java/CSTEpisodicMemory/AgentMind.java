@@ -20,27 +20,18 @@ import CSTEpisodicMemory.habits.*;
 import CSTEpisodicMemory.impulses.*;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
 import CSTEpisodicMemory.motor.LegsActuatorCodelet;
-import CSTEpisodicMemory.perception.FoodDetector;
-import CSTEpisodicMemory.perception.JewelDetector;
-import CSTEpisodicMemory.perception.RoomDetector;
-import CSTEpisodicMemory.perception.WallDetector;
-import CSTEpisodicMemory.sensor.InnerSense;
+import CSTEpisodicMemory.perception.*;
+import CSTEpisodicMemory.sensor.Propriosensor;
 import CSTEpisodicMemory.sensor.LeafletSense;
 import CSTEpisodicMemory.sensor.Vision;
-import CSTEpisodicMemory.util.NodeState;
 import CSTEpisodicMemory.util.Vector2D;
 import WS3DCoppelia.util.Constants;
-import br.unicamp.cst.core.entities.Codelet;
-import br.unicamp.cst.core.entities.Memory;
-import br.unicamp.cst.core.entities.MemoryContainer;
-import br.unicamp.cst.core.entities.Mind;
+import br.unicamp.cst.core.entities.*;
 import br.unicamp.cst.representation.idea.Idea;
-import com.google.common.graph.MutableValueGraph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -71,6 +62,7 @@ public class AgentMind extends Mind {
         createMemoryGroup("Context");
         //createMemoryGroup("Working");
 
+        Memory propiosensorMO;
         Memory innerSenseMO;
         Memory visionMO;
         Memory knownJewelsMO;
@@ -95,9 +87,11 @@ public class AgentMind extends Mind {
 
 
 
+
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
-        innerSenseMO = createMemoryObject("INNER", innerSenseIdea);
+        propiosensorMO = createMemoryObject("PROPIOSENSOR", innerSenseIdea);
+        innerSenseMO = createMemoryObject("INNER");
         registerMemory(innerSenseMO, "Perceptual");
         //Vision sensor
         visionMO = createMemoryObject("VISION");
@@ -194,9 +188,15 @@ public class AgentMind extends Mind {
         legsMO = createMemoryContainer("LEGS");
 
         //Inner Sense Codelet
-        Codelet innerSenseCodelet = new InnerSense(env.creature);
-        innerSenseCodelet.addOutput(innerSenseMO);
+        Codelet innerSenseCodelet = new Propriosensor(env.creature);
+        innerSenseCodelet.addOutput(propiosensorMO);
         insertCodelet(innerSenseCodelet, "Sensory");
+
+        Codelet selfGridLocator = new GridLocatorCodelet("PROPIOSENSOR", "INNER");
+        selfGridLocator.addInput(propiosensorMO);
+        selfGridLocator.addOutput(innerSenseMO);
+        selfGridLocator.addInput(roomsMO);
+        insertCodelet(selfGridLocator);
 
         //Vision Sensor Codelet
         Codelet visionCodelet = new Vision(env.creature);
@@ -214,12 +214,25 @@ public class AgentMind extends Mind {
         foodDetectorCodelet.addOutput(foodMO);
         insertCodelet(foodDetectorCodelet, "Perception");
 
+        Codelet foodGridLocator = new GridLocatorCodelet("FOOD", "FOOD");
+        foodGridLocator.addInput(foodMO);
+        foodGridLocator.addOutput(foodMO);
+        foodGridLocator.addInput(roomsMO);
+        insertCodelet(foodGridLocator);
+
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
         jewelDetectorCodelet.addInput(visionMO);
         jewelDetectorCodelet.addOutput(knownJewelsMO);
         jewelDetectorCodelet.addOutput(jewelsCounterMO);
         insertCodelet(jewelDetectorCodelet, "Perception");
+
+
+        Codelet jewelGridLocator = new GridLocatorCodelet("KNOWN_JEWELS", "KNOWN_JEWELS");
+        jewelGridLocator.addInput(knownJewelsMO);
+        jewelGridLocator.addOutput(knownJewelsMO);
+        jewelGridLocator.addInput(roomsMO);
+        insertCodelet(jewelGridLocator);
 
         //Walls Detector Codelet
         Codelet wallsDetectorCodelet = new WallDetector(debug);
@@ -229,7 +242,7 @@ public class AgentMind extends Mind {
 
         //RoomDetector Codelet
         Codelet roomDetectorCodelet = new RoomDetector();
-        roomDetectorCodelet.addInput(innerSenseMO);
+        roomDetectorCodelet.addInput(propiosensorMO);
         roomDetectorCodelet.addInput(categoriesRoomMO);
         roomDetectorCodelet.addOutput(roomsMO);
         insertCodelet(roomDetectorCodelet, "Perception");
@@ -365,6 +378,7 @@ public class AgentMind extends Mind {
         Codelet episodeBindingCodelet = new EpisodeBinding();
         episodeBindingCodelet.addInput(eventsMO);
         episodeBindingCodelet.addInput(contextBufferMO);
+        episodeBindingCodelet.addInput(perceptualBufferMO);
         episodeBindingCodelet.addInput(episodeBoundariesMO);
         episodeBindingCodelet.addOutput(storyMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
@@ -442,6 +456,11 @@ public class AgentMind extends Mind {
         Idea idea = new Idea(name, null, "AbstractObject", 0);
         idea.setValue(new RoomCategoryIdeaFunctions(name, cornerA, cornerB));
         idea.add(new Idea("Adjacent", null, "Link", 1));
+        Idea center = new Idea("center", null, "Property",1 );
+        Vector2D middle = Vector2D.middlePoint(cornerA, cornerB);
+        center.add(new Idea("x", middle.getX(), "QualityDimension", 1));
+        center.add(new Idea("y", middle.getY(), "QualityDimension", 1));
+        idea.add(center);
         return idea;
     }
 
@@ -467,25 +486,6 @@ public class AgentMind extends Mind {
         return idea;
     }
 
-    private Map<Integer, NodeState> updateValues(MutableValueGraph<Integer, String> graph, Integer goal, Map<Integer, NodeState> stateMap){
-        for (Integer n : graph.predecessors(goal)){
-            if (graph.edgeValueOrDefault(n, goal, "None").equals("EndPos")){
-                if (stateMap.get(n).eval < stateMap.get(goal).eval*0.9) {
-                    stateMap.get(n).eval = stateMap.get(goal).eval * 0.9;
-                    stateMap = updateValues(graph, n, stateMap);
-                }
-            }
-        }
-        for (Integer n : graph.successors(goal)){
-            if (graph.edgeValueOrDefault(goal, n , "None").equals("StartPos")){
-                if (stateMap.get(n).eval < stateMap.get(goal).eval*0.9) {
-                    stateMap.get(n).eval = stateMap.get(goal).eval * 0.9;
-                    stateMap = updateValues(graph, n, stateMap);
-                }
-            }
-        }
-        return stateMap;
-    }
 
 //    private Idea initializePerceptionIdea(){
 //        Idea perceptionIdea = new Idea("Perception", null, 7);

@@ -1,6 +1,7 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -158,11 +159,24 @@ public class EpisodicGistExtraction extends Codelet {
                         endEvent = LTEventNode;
                 }
             }
-            for (Idea impulseNode : story.getContextNodes()){
-                Idea LTMImpulse = getNodeContent(impulseNode).clone();
-                LTMImpulse.setName(LTMImpulse.getName() + impulseCount++);
+            for (Idea contextNode : story.getContextNodes()){
+                Idea contextContent = getNodeContent(contextNode);
+                Idea LTMImpulse;
+                if (!contextContent.isCategory()) {
+                    LTMImpulse = contextContent.clone();
+                } else {
+                    LTMImpulse = contextContent;
+                }
+                if (LTMImpulse.getName().contains("Self"))
+                    System.out.println(IdeaHelper.fullPrint(LTMImpulse));
+                //LTMImpulse.setName(LTMImpulse.getName() + impulseCount++);
                 Idea LTContextNode = epLTMGraph.insertContextNode(LTMImpulse);
-                instanceNodeToMemoryNode.put(impulseNode, LTContextNode);
+                instanceNodeToMemoryNode.put(contextNode, LTContextNode);
+                List<Idea> contextPos = story.getChildrenWithLink(contextNode, "Position");
+                if (!contextPos.isEmpty()){
+                    Idea posNode = epLTMGraph.insertLocationNode(getNodeContent(contextPos.get(0)));
+                    epLTMGraph.insertLink(contextNode, posNode, "Position");
+                }
             }
 
             //Clone links to LTM

@@ -32,10 +32,11 @@ dependencies {
     //testImplementation 'junit:junit:4.13.2'
 
     // This dependency is used by the application.
+    implementation 'com.github.apache:commons-math:MATH_3_6_RC2'
     implementation 'com.github.CST-Group:cst:8a5ef50'
     implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
     //implementation 'com.github.CST-Group:cst-desktop:1.0.5'
-    implementation 'com.github.CST-Group:WS3D-Coppelia:docs-SNAPSHOT'
+    implementation 'com.github.CST-Group:WS3D-Coppelia:480cda0acc'
     implementation 'org.json:json:20180813'
     implementation 'org.graphstream:gs-core:2.0'
     implementation 'org.graphstream:gs-ui-swing:2.0'

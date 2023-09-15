@@ -31,6 +31,12 @@ public class Vector2D {
         this.y = y;
     }
 
+    public static Vector2D middlePoint(Vector2D a, Vector2D b){
+        double x = (a.getX() + b.getX() ) / 2;
+        double y = (a.getY() + b.getY() ) / 2;
+        return new Vector2D(x,y);
+    }
+
     public Vector2D add(Vector2D v){
         double x_ = this.x + v.getX();
         double y_ = this.y + v.getY();
