@@ -49,7 +49,7 @@ public class EpisodeRetrieval extends Codelet {
 
             synchronized (propertiesMO) {
                 for (Idea cat : (ArrayList<Idea>) propertiesMO.getI())
-                    propertiesCat.add(cat.clone());
+                    propertiesCat.add(IdeaHelper.cloneIdea(cat));
             }
 
             List<Idea> eventNodes = new ArrayList<>();

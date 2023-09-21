@@ -35,7 +35,7 @@ public class GraphIdeaVisualizer extends JFrame {
     private final Graph gg = new Graph();
     private boolean physics = true;
     private Node selected = null;
-    protected String[] types = new String[]{"Event", "Location", "Episode", "Context", "Property"};
+    protected String[] types = new String[]{"Event", "Location", "Episode", "Context", "Property", "Object"};
     protected List<String> selections = new ArrayList<>(Arrays.asList(types));
 
     public GraphIdeaVisualizer(int width, int heigth, GraphIdea graph) {
@@ -103,7 +103,8 @@ public class GraphIdeaVisualizer extends JFrame {
             private void updtateGraph(){
                 int updateCount = 0;
                 for (Idea node : graphIdea.getNodes()){
-                    String nodeName = GraphIdea.getNodeContent(node).getName();
+                    Idea nodeContent = GraphIdea.getNodeContent(node);
+                    String nodeName = nodeContent.getName() + nodeContent.getId();
                         if (!gg.hasNode(nodeName)) {
                             gg.insertNode(nodeName, (String) node.get("Type").getValue());
                             updateCount++;
@@ -111,7 +112,8 @@ public class GraphIdeaVisualizer extends JFrame {
                         Map<String, List<Idea>> links = graphIdea.getSuccesors(node);
                         for (List<Idea> linkedNodes : links.values()) {
                             for (Idea nodeB : linkedNodes) {
-                                    String nodeBName = GraphIdea.getNodeContent(nodeB).getName();
+                                    Idea nodeBContent = GraphIdea.getNodeContent(nodeB);
+                                    String nodeBName = nodeBContent.getName() + nodeBContent.getId();
                                     if (!gg.hasNode(nodeBName)) {
                                         gg.insertNode(nodeBName, (String) nodeB.get("Type").getValue());
                                         updateCount++;
@@ -176,6 +178,7 @@ public class GraphIdeaVisualizer extends JFrame {
                 put("Episode", new Color(0xFA3F45));
                 put("Context", new Color(0x6A4C93));
                 put("Property", new Color(0x1982C4));
+                put("Object", new Color(0x1982C4));
             }
         };
 

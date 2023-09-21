@@ -24,7 +24,7 @@ public class EatFoodImpulse extends Codelet {
     @Override
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");
-        this.foodMO = (MemoryObject) getInput("FOOD");
+        this.foodMO = (MemoryObject) getInput("KNOWN_FOODS");
         this.impulseMO = (MemoryContainer) getOutput("IMPULSES");
 
     }

@@ -23,7 +23,7 @@ public class RoomDetector extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        this.innerSenseMO = (MemoryObject) getInput("PROPIOSENSOR");
+        this.innerSenseMO = (MemoryObject) getInput("PROPRIOSENSOR");
         this.innerSense = (Idea) innerSenseMO.getI();
         this.roomCategoriesMO = (MemoryObject) getInput("ROOM_CATEGORIES");
         this.roomCategories = (List<Idea>) roomCategoriesMO.getI();

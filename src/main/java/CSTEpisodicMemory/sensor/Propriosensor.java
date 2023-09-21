@@ -33,7 +33,7 @@ public class Propriosensor extends Codelet{
     
     @Override
     public void accessMemoryObjects() {
-            innerSenseMO=(MemoryObject)this.getOutput("PROPIOSENSOR");
+            innerSenseMO=(MemoryObject)this.getOutput("PROPRIOSENSOR");
             cis = (Idea) innerSenseMO.getI();
     }
 

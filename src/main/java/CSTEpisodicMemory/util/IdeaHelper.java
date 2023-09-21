@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class IdeaHelper {
 
@@ -126,6 +127,10 @@ public class IdeaHelper {
     }
 
     public static boolean match(Idea a, Idea b){
+        return match(a,b,new ArrayList<>(), new ArrayList<>());
+    }
+
+    public static boolean match(Idea a, Idea b, List<Idea> loopsA, List<Idea> loopsB){
         if (a == null || b == null)
             return false;
 
@@ -142,14 +147,26 @@ public class IdeaHelper {
                 && testValue
                 && a.getType() == b.getType()){
 
+            if (loopsA.contains(a) || loopsB.contains(b))
+                return true;
+            loopsA.add(a);
+            loopsB.add(b);
             for (Idea s : a.getL()){
-                boolean hasSub = b.getL().stream().anyMatch(e->match(s,e));
+                boolean hasSub = b.getL().stream().anyMatch(e->match(s,e, loopsA, loopsB));
                 if (!hasSub)
                     return false;
             }
             return true;
         }
         return false;
+    }
+
+    public static Idea shallowClone(Idea idea){
+        Idea clone = new Idea(idea.getName(), idea.getValue(), idea.getCategory(), idea.getScope());
+        for (Idea s : idea.getL()){
+            clone.add(new Idea(s.getName(), s.getValue(), s.getCategory(), s.getScope()));
+        }
+        return clone;
     }
 
     public static Idea cloneIdea(Idea idea){

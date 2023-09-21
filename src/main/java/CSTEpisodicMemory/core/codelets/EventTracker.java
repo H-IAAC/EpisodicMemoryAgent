@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.core.codelets;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
@@ -158,7 +159,7 @@ public class EventTracker extends MemoryCodelet {
 
     private void restartEventStage(Idea object, long timeStamp) {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
-        step.add(object.clone());
+        step.add(IdeaHelper.cloneIdea(object));
         String objName = object.getName();
         internal.put(objName, new LinkedList<Idea>() {{
             add(null);
@@ -168,12 +169,12 @@ public class EventTracker extends MemoryCodelet {
 
     private void setBufferTopAsInitialEvent(String objectName) {
         List<Idea> stageEventSteps = internal.get(objectName);
-        stageEventSteps.set(0, stageEventSteps.get(1).clone());
+        stageEventSteps.set(0, IdeaHelper.cloneIdea(stageEventSteps.get(1)));
     }
 
     private void pushStepToMemory(Idea object, long timeStamp) {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
-        step.add(object.clone());
+        step.add(IdeaHelper.cloneIdea(object));
         String objName = object.getName();
         if (internal.containsKey(objName)) {
             List<Idea> stageEventSteps = internal.get(objName);

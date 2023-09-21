@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.behavior;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -60,7 +61,7 @@ public class Collect extends Codelet {
         String jewelType = "";
         for (Idea jewel : jewels.getL()){
             if (((int) jewel.get("ID").getValue()) != id){
-                modifiedL.add(jewel.clone());
+                modifiedL.add(jewel);
             } else {
                 jewelType = (String) jewel.getValue();
             }

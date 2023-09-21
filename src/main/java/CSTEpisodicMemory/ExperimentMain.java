@@ -68,6 +68,7 @@ public class ExperimentMain {
          visu.addMemoryWatch("BOUNDARIES", 6);
          visu.addMemoryWatch("INNER", 6);
          visu.addMemoryWatch("KNOWN_JEWELS", 6);
+         visu.addMemoryWatch("KNOWN_WALLS", 6);
          visu.setVisible(true);
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);

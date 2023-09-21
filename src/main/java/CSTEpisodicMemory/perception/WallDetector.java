@@ -7,6 +7,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -16,21 +17,21 @@ public class WallDetector extends Codelet {
     private Memory currentWallsMO;
     private boolean debug = false;
 
-    public WallDetector(){
+    public WallDetector() {
         this.name = "WallDetector";
     }
 
-    public WallDetector(boolean debug){
+    public WallDetector(boolean debug) {
         this.name = "WallDetector";
         this.debug = debug;
     }
 
     @Override
     public void accessMemoryObjects() {
-        synchronized(this) {
-            this.visionMO=(MemoryObject)this.getInput("VISION");
+        synchronized (this) {
+            this.visionMO = (MemoryObject) this.getInput("VISION");
         }
-        this.currentWallsMO=(MemoryObject)this.getOutput("WALLS");
+        this.currentWallsMO = (MemoryObject) this.getOutput("WALLS");
 
     }
 
@@ -41,30 +42,19 @@ public class WallDetector extends Codelet {
 
     @Override
     public void proc() {
-        CopyOnWriteArrayList<Identifiable> vision;
-        List<Idea> known;
-        synchronized (visionMO) {
-            vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
-            Idea wallsIdea = ((Idea) currentWallsMO.getI());
-            if (debug) {
-                System.out.println(wallsIdea.toStringFull());
-            }
-            known = Collections.synchronizedList(wallsIdea.getL());
-            synchronized(vision) {
+        CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
+        Idea wallsIdea = ((Idea) currentWallsMO.getI());
+        if (debug) {
+            System.out.println(wallsIdea.toStringFull());
+        }
+        synchronized (vision) {
+            synchronized (wallsIdea) {
+                wallsIdea.setL(new ArrayList<>());
                 for (Identifiable obj : vision) {
                     if (obj instanceof Thing) {
                         Thing t = (Thing) obj;
-                        boolean found = false;
-                        synchronized (known) {
-                            CopyOnWriteArrayList<Idea> myknown = new CopyOnWriteArrayList<>(known);
-                            for (Idea e : myknown)
-                                if (t.getId() == ((int) e.get("ID").getValue())) {
-                                    found = true;
-                                    break;
-                                }
-                            if (!found && t.isBrick()) {
-                                known.add(constructWallIdea(t));
-                            }
+                        if (t.isBrick()) {
+                            wallsIdea.add(constructWallIdea(t));
                         }
                     }
                 }
@@ -74,7 +64,7 @@ public class WallDetector extends Codelet {
 
     private Idea constructWallIdea(Thing t) {
 
-        Idea wallIdea = new Idea("Wall" + t.getId(), t.getTypeName(), "AbstractObject", 1);
+        Idea wallIdea = new Idea("Wall", t.getTypeName(), "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));

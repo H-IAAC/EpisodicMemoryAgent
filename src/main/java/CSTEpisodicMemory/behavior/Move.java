@@ -43,11 +43,11 @@ public class Move extends Codelet {
             Idea impulse_ = (Idea) impulseMO.getI();
             if (impulse_ != null) {
                 if (this.impulse == null) {
-                    this.impulse = impulse_.clone();
+                    this.impulse = IdeaHelper.cloneIdea(impulse_);
                 } else {
                     if (this.impulseMO.getAllMemories().stream().map(m -> (Idea) m.getI()).noneMatch(o -> IdeaHelper.match(o, impulse)) ||
                             (double) this.impulse.get("State.Desire").getValue() < (double) impulse_.get("State.Desire").getValue()) {
-                        this.impulse = impulse_.clone();
+                        this.impulse = IdeaHelper.cloneIdea(impulse_);
                     }
                 }
             }
@@ -68,7 +68,7 @@ public class Move extends Codelet {
     public void proc() {
         if (impulse != null) {
             if (impulse.get("State.Self.Position") != null && innerMO.getI() != null) {
-                currPos = ((Idea) innerMO.getI()).clone().get("Position");
+                currPos = IdeaHelper.cloneIdea((Idea) innerMO.getI()).get("Position");
                 if (!IdeaHelper.match(impulse, lastImpulse)) {
                     locations = (List<Idea>) locationsMO.getI();
                     epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());

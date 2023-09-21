@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.categories;
 
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.representation.idea.*;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
@@ -105,10 +106,9 @@ public abstract class EventCategory implements Category {
     }
 
     private List<Idea> extractTimeStepElements(Idea idea){
-        Idea clone = idea.clone();
-        Idea timeStamp = clone.get("TimeStamp");
-        clone.getL().remove(timeStamp);
-        return Arrays.asList(clone, timeStamp);
+        Idea timeStamp = idea.get("TimeStamp");
+        idea.getL().remove(timeStamp);
+        return Arrays.asList(idea, timeStamp);
     }
 
     private Idea extractMerge(Idea copy, Idea original, String path){

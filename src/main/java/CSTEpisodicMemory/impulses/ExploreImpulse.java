@@ -1,6 +1,7 @@
 package CSTEpisodicMemory.impulses;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -171,7 +172,7 @@ public class ExploreImpulse extends Codelet {
         if (!locations.isEmpty()) {
             GraphIdea epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());
 
-            Idea currPos = ((Idea) innerMO.getI()).clone().get("Position");
+            Idea currPos = IdeaHelper.cloneIdea((Idea) innerMO.getI()).get("Position");
 
             Idea bestTargetLoc = null;
             double bestTargetMem = 0;

@@ -62,13 +62,16 @@ public class AgentMind extends Mind {
         createMemoryGroup("Context");
         //createMemoryGroup("Working");
 
-        Memory propiosensorMO;
+        Memory propriosensorMO;
         Memory innerSenseMO;
         Memory visionMO;
+        Memory jewelsPerceptionMO;
         Memory knownJewelsMO;
-        Memory foodMO;
         Memory jewelsCounterMO;
-        Memory wallsMO;
+        Memory foodPerceptionMO;
+        Memory knownFoodsMO;
+        Memory wallsPerceptionMO;
+        Memory knownWallsMO;
         Memory eventsMO;
         Memory goalsMO;
         Memory storyMO;
@@ -90,19 +93,30 @@ public class AgentMind extends Mind {
 
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
-        propiosensorMO = createMemoryObject("PROPIOSENSOR", innerSenseIdea);
+        propriosensorMO = createMemoryObject("PROPRIOSENSOR", innerSenseIdea);
         innerSenseMO = createMemoryObject("INNER");
         registerMemory(innerSenseMO, "Perceptual");
         //Vision sensor
         visionMO = createMemoryObject("VISION");
+
         //Detected Foods
         Idea foodsIdea = new Idea("Foods", null, 5);
-        foodMO = createMemoryObject("FOOD", foodsIdea);
-        registerMemory(foodMO, "Perceptual");
+        foodPerceptionMO = createMemoryObject("FOOD", foodsIdea);
+        registerMemory(foodPerceptionMO, "Perceptual");
+
+        //Known Foods
+        Idea knownFoodsIdea = new Idea("Foods", null, 5);
+        knownFoodsMO = createMemoryObject("KNOWN_FOODS", knownFoodsIdea);
+
+        //Known Jewels
+        Idea knownJewelsIdea = new Idea("Jewels", null, 5);
+        knownJewelsMO = createMemoryObject("KNOWN_JEWELS", knownJewelsIdea);
+
         //Detected Jewels
         Idea jewelsIdea = new Idea("Jewels", null, 5);
-        knownJewelsMO = createMemoryObject("KNOWN_JEWELS", jewelsIdea);
-        registerMemory(knownJewelsMO, "Perceptual");
+        jewelsPerceptionMO = createMemoryObject("JEWELS", jewelsIdea);
+        registerMemory(jewelsPerceptionMO, "Perceptual");
+
         //Jewels Counter
         List<Idea> jewelsCounters = new ArrayList<>();
         for (Constants.JewelTypes type : Constants.JewelTypes.values()){
@@ -113,10 +127,16 @@ public class AgentMind extends Mind {
         jewelCountersIdea.add(new Idea("Step", 0, "TimeStep", 1));
         jewelCountersIdea.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
         jewelsCounterMO = createMemoryObject("JEWELS_COUNTERS", jewelCountersIdea);
+
         //Detected Walls
         Idea wallsIdea = new Idea("Walls", null, 5);
-        wallsMO = createMemoryObject("WALLS", wallsIdea);
-        registerMemory(wallsMO, "Perceptual");
+        wallsPerceptionMO = createMemoryObject("WALLS", wallsIdea);
+        registerMemory(wallsPerceptionMO, "Perceptual");
+
+        //Known Walls
+        Idea knownWallsIdea = new Idea("Walls", null, 5);
+        knownWallsMO = createMemoryObject("KNOWN_WALLS", knownWallsIdea);
+
         //Move Event Tracker
         Idea eventsIdea = new Idea("Events", null, 5);
         eventsMO = createMemoryObject("EVENTS", eventsIdea);
@@ -189,11 +209,11 @@ public class AgentMind extends Mind {
 
         //Inner Sense Codelet
         Codelet innerSenseCodelet = new Propriosensor(env.creature);
-        innerSenseCodelet.addOutput(propiosensorMO);
+        innerSenseCodelet.addOutput(propriosensorMO);
         insertCodelet(innerSenseCodelet, "Sensory");
 
-        Codelet selfGridLocator = new GridLocatorCodelet("PROPIOSENSOR", "INNER");
-        selfGridLocator.addInput(propiosensorMO);
+        Codelet selfGridLocator = new GridLocatorCodelet("PROPRIOSENSOR", "INNER");
+        selfGridLocator.addInput(propriosensorMO);
         selfGridLocator.addOutput(innerSenseMO);
         selfGridLocator.addInput(roomsMO);
         insertCodelet(selfGridLocator);
@@ -211,38 +231,59 @@ public class AgentMind extends Mind {
         //Food Detector Codelet
         Codelet foodDetectorCodelet = new FoodDetector();
         foodDetectorCodelet.addInput(visionMO);
-        foodDetectorCodelet.addOutput(foodMO);
+        foodDetectorCodelet.addOutput(foodPerceptionMO);
         insertCodelet(foodDetectorCodelet, "Perception");
 
+        Codelet foodsLearner = new PerceptualLearnerCodelet("FOOD", "KNOWN_FOODS");
+        foodsLearner.addInput(foodPerceptionMO);
+        foodsLearner.addOutput(knownFoodsMO);
+        insertCodelet(foodsLearner, "Perception");
+
         Codelet foodGridLocator = new GridLocatorCodelet("FOOD", "FOOD");
-        foodGridLocator.addInput(foodMO);
-        foodGridLocator.addOutput(foodMO);
+        foodGridLocator.addInput(foodPerceptionMO);
+        foodGridLocator.addOutput(foodPerceptionMO);
         foodGridLocator.addInput(roomsMO);
         insertCodelet(foodGridLocator);
 
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
         jewelDetectorCodelet.addInput(visionMO);
-        jewelDetectorCodelet.addOutput(knownJewelsMO);
+        jewelDetectorCodelet.addOutput(jewelsPerceptionMO);
         jewelDetectorCodelet.addOutput(jewelsCounterMO);
         insertCodelet(jewelDetectorCodelet, "Perception");
 
+        Codelet jewelLearner = new PerceptualLearnerCodelet("JEWELS", "KNOWN_JEWELS");
+        jewelLearner.addInput(jewelsPerceptionMO);
+        jewelLearner.addOutput(knownJewelsMO);
+        insertCodelet(jewelLearner, "Perception");
 
-        Codelet jewelGridLocator = new GridLocatorCodelet("KNOWN_JEWELS", "KNOWN_JEWELS");
-        jewelGridLocator.addInput(knownJewelsMO);
-        jewelGridLocator.addOutput(knownJewelsMO);
+
+        Codelet jewelGridLocator = new GridLocatorCodelet("JEWELS", "JEWELS");
+        jewelGridLocator.addInput(jewelsPerceptionMO);
+        jewelGridLocator.addOutput(jewelsPerceptionMO);
         jewelGridLocator.addInput(roomsMO);
         insertCodelet(jewelGridLocator);
 
         //Walls Detector Codelet
         Codelet wallsDetectorCodelet = new WallDetector(debug);
         wallsDetectorCodelet.addInput(visionMO);
-        wallsDetectorCodelet.addOutput(wallsMO);
+        wallsDetectorCodelet.addOutput(wallsPerceptionMO);
         insertCodelet(wallsDetectorCodelet, "Perception");
+
+        Codelet wallsLearner = new PerceptualLearnerCodelet("WALLS", knownWallsMO.getName());
+        wallsLearner.addInput(wallsPerceptionMO);
+        wallsLearner.addOutput(knownWallsMO);
+        insertCodelet(wallsLearner, "Perception");
+
+        Codelet wallGridLocator = new GridLocatorCodelet("WALLS", "WALLS");
+        wallGridLocator.addInput(wallsPerceptionMO);
+        wallGridLocator.addOutput(wallsPerceptionMO);
+        wallGridLocator.addInput(roomsMO);
+        insertCodelet(wallGridLocator);
 
         //RoomDetector Codelet
         Codelet roomDetectorCodelet = new RoomDetector();
-        roomDetectorCodelet.addInput(propiosensorMO);
+        roomDetectorCodelet.addInput(propriosensorMO);
         roomDetectorCodelet.addInput(categoriesRoomMO);
         roomDetectorCodelet.addOutput(roomsMO);
         insertCodelet(roomDetectorCodelet, "Perception");
@@ -308,7 +349,7 @@ public class AgentMind extends Mind {
         //Go to Food
         Codelet goToFoodImpulse = new GoToFoodImpulse();
         goToFoodImpulse.addInput(innerSenseMO);
-        goToFoodImpulse.addInput(foodMO);
+        goToFoodImpulse.addInput(knownFoodsMO);
         goToFoodImpulse.addOutput(impulsesMO);
         insertCodelet(goToFoodImpulse, "Behavioral");
 
@@ -322,7 +363,7 @@ public class AgentMind extends Mind {
         //Collect Food
         Codelet collectFoodImpulse = new EatFoodImpulse();
         collectFoodImpulse.addInput(innerSenseMO);
-        collectFoodImpulse.addInput(foodMO);
+        collectFoodImpulse.addInput(knownFoodsMO);
         collectFoodImpulse.addOutput(impulsesMO);
         insertCodelet(collectFoodImpulse, "Behavioral");
 
@@ -361,7 +402,7 @@ public class AgentMind extends Mind {
         //Eat Action
         Codelet eatAction = new Eat();
         eatAction.addInput(impulsesMO);
-        eatAction.addInput(foodMO);
+        eatAction.addInput(knownFoodsMO);
         eatAction.addOutput(handsMO);
         insertCodelet(eatAction, "Behavioral");
 

@@ -61,6 +61,10 @@ public class GraphIdea {
         return insertNode(node, "Property");
     }
 
+    public Idea insertObjectNode(Idea node){
+        return insertNode(node, "Object");
+    }
+
     public Idea insertNode(Idea node, String type) {
         Idea coord = new Idea("Coordinate", coordinateCount++, "Property", 1);
         return insertNode(node, coord, type);
@@ -271,6 +275,13 @@ public class GraphIdea {
                 .collect(Collectors.toList());
     }
 
+    public List<Idea> getObjectNodes(){
+        return graph.getL().stream()
+                .filter(e->e.getName().equals("Node"))
+                .filter(e->e.get("Type").getValue().equals("Object"))
+                .collect(Collectors.toList());
+    }
+
     public List<Idea> getPropertiesNodes(){
         return graph.getL().stream()
                 .filter(e->e.getName().equals("Node"))
@@ -414,7 +425,7 @@ public class GraphIdea {
     public void addAll(GraphIdea clone){
         for (Idea n : clone.getNodes()){
             Node node = new Node(n);
-            this.insertNode(node.getContent().clone(), node.getType());
+            this.insertNode(IdeaHelper.cloneIdea(node.getContent()), node.getType());
         }
         for (Idea n : clone.getNodes()){
             Node node = new Node(n);
@@ -439,6 +450,15 @@ public class GraphIdea {
             }
         }
         return nodes + "\n" + links;
+    }
+
+    public Idea commomParent(Idea nodeA, Idea nodeB) {
+        List<Idea> aBacks = nodeA.get("BackLinks").getL().stream().flatMap(l->l.getL().stream()).collect(Collectors.toList());
+        List<Idea> bBacks = nodeB.get("BackLinks").getL().stream().flatMap(l->l.getL().stream()).collect(Collectors.toList());
+
+        Optional<Idea> parent = aBacks.stream().filter(bBacks::contains).findFirst();
+
+        return parent.orElse(null);
     }
 
     public static class Node {

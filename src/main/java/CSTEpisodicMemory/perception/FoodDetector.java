@@ -7,7 +7,9 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class FoodDetector extends Codelet {
 
@@ -27,20 +29,15 @@ public class FoodDetector extends Codelet {
 
     @Override
     public void proc() {
-        List<Identifiable> vision = (List<Identifiable>) visionMO.getI();
+        CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
         Idea foods = (Idea) foodMO.getI();
         synchronized (vision){
             synchronized (foods) {
+                foods.setL(new ArrayList<>());
                 for (Identifiable obj : vision) {
                     if (obj instanceof Thing) {
                         Thing t = (Thing) obj;
-                        boolean found = false;
-                        for (Idea known : foods.getL()) {
-                            if (t.getId() == ((int) known.get("ID").getValue()))
-                                found = true;
-                        }
-
-                        if (!found && t.isFood()) {
+                        if (t.isFood()) {
                             foods.add(constructFoodIdea(t));
                         }
                     }

@@ -1,6 +1,7 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -106,15 +107,17 @@ public class EpisodeBinding extends Codelet {
                                     //Agent environment
                                     Idea room = contextIdea.get("Room");
                                     if (room != null){
-                                        Idea roomCat = (Idea) room.get("Location").getValue();
-                                        story.insertContextNode(roomCat);
-                                        story.insertLink(event, roomCat, "Environment");
+                                        Idea roomCat = room.get("Location");
+                                        if (roomCat != null) {
+                                            story.insertContextNode((Idea) roomCat.getValue());
+                                            story.insertLink(event, (Idea) roomCat.getValue(), "Environment");
+                                        }
                                     }
 
                                     //Agent Impulse
                                     Idea impulse = contextIdea.get("Impulse");
                                     if (impulse != null) {
-                                        impulse = impulse.clone();
+                                        impulse = IdeaHelper.cloneIdea(impulse);
                                         if (!story.hasNodeContent(impulse)) {
                                             story.insertContextNode(impulse);
                                         }
@@ -130,23 +133,23 @@ public class EpisodeBinding extends Codelet {
 
                                         Idea objectsIdea = objects.get();
                                         for (Idea object : objectsIdea.getL()){
-                                            Idea pos = object.get("Position");
+                                            Idea pos = object.get("Grid_Place");
                                             if (pos != null){
                                                 if (!object.getName().equals(eventObject.getName())) {
-                                                    story.insertContextNode(object);
+                                                    story.insertObjectNode(object);
                                                     story.insertLocationNode(pos);
                                                     story.insertLink(event, object, "ObjectContext");
-                                                    story.insertLink(object, pos, "Position");
+                                                    story.insertLink(object, pos, "GridPlace");
                                                 }
                                             } else {
                                                 for (Idea subObject : object.getL()){
-                                                    Idea subPos = subObject.get("Position");
+                                                    Idea subPos = subObject.get("Grid_Place");
                                                     if (subPos != null) {
                                                         if (!subObject.getName().equals(eventObject.getName())) {
-                                                            story.insertContextNode(subObject);
+                                                            story.insertObjectNode(subObject);
                                                             story.insertLocationNode(subPos);
                                                             story.insertLink(event, subObject, "ObjectContext");
-                                                            story.insertLink(subObject, subPos, "Position");
+                                                            story.insertLink(subObject, subPos, "GridPlace");
                                                         }
                                                     }
                                                 }
@@ -210,7 +213,7 @@ public class EpisodeBinding extends Codelet {
                 if (relation.equals("Before")) {
                     if (start2 - end1 < closestBeforeSink) {
                         closestBeforeSink = start2 - end1;
-                        closestBeforeSinkIdea = nodeContent.clone();
+                        closestBeforeSinkIdea = IdeaHelper.cloneIdea(nodeContent);
                     }
                 } else {
                     story.insertLink(event, nodeContent, relation);
@@ -221,7 +224,7 @@ public class EpisodeBinding extends Codelet {
                 if (relation.equals("Before")) {
                     if (start1 - end2 < closestBeforeSource) {
                         closestBeforeSource = start1 - end2;
-                        closestBeforeSourceIdea = nodeContent.clone();
+                        closestBeforeSourceIdea = IdeaHelper.cloneIdea(nodeContent);
                     }
                 } else {
                     story.insertLink(nodeContent, event, relation);
