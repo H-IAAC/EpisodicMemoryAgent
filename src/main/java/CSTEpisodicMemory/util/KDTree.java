@@ -225,6 +225,7 @@ public class KDTree {
 
         public double getX(){ return coords_[0];}
         public double getY(){ return coords_[1];}
+        public double[] getCoords(){ return coords_;}
     }
 }
 

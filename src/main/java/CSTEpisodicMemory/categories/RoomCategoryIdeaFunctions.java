@@ -5,6 +5,8 @@ import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.Random;
+
 import static java.lang.Math.abs;
 
 public class RoomCategoryIdeaFunctions implements Category {
@@ -12,8 +14,10 @@ public class RoomCategoryIdeaFunctions implements Category {
     private final String name;
     private Vector2D cornerA;
     private Vector2D cornerB;
+    private Idea owner;
 
-    public RoomCategoryIdeaFunctions(String name, Vector2D cornerA, Vector2D cornerB) {
+    public RoomCategoryIdeaFunctions(Idea owner, String name, Vector2D cornerA, Vector2D cornerB) {
+        this.owner = owner;
         this.name = name;
         this.cornerA = cornerA;
         this.cornerB = cornerB;
@@ -32,6 +36,17 @@ public class RoomCategoryIdeaFunctions implements Category {
 
     @Override
     public Idea getInstance(Idea constraints) {
-        return null;
+        Vector2D diag = cornerA.sub(cornerB);
+
+        Random rnd = new Random();
+        Vector2D rand = new Vector2D(rnd.nextFloat()*diag.getX(),
+                rnd.nextFloat()*diag.getY());
+        rand = rand.add(cornerB);
+
+        Idea loc = new Idea("Position", owner, "Property", 0);
+        loc.add(new Idea("X", (float) rand.getX(), "QualityDimension", 0));
+        loc.add(new Idea("Y", (float) rand.getY(), "QualityDimension", 0));
+
+        return loc;
     }
 }

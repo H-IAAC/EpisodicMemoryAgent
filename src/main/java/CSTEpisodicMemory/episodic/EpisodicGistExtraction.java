@@ -1,7 +1,6 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -23,7 +22,7 @@ public class EpisodicGistExtraction extends Codelet {
     private Idea prevEp = null;
     private Idea prevLastEvent = null;
     private final Idea trackedPropertiesAssimilateAccommodateHabit;
-    private int impulseCount = 0;
+    private int spatialLinkCount = 0;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
         this.locCatAcomodate = locCatAcomodate;
@@ -125,7 +124,7 @@ public class EpisodicGistExtraction extends Codelet {
                 Optional<Idea> initialObject = eventContent.getL().get(0).getL().stream()
                         .filter(o->!o.getName().equals("TimeStamp"))
                         .findFirst();
-                Optional<Idea> finalObject = eventContent.getL().get(0).getL().stream()
+                Optional<Idea> finalObject = eventContent.getL().get(1).getL().stream()
                         .filter(o->!o.getName().equals("TimeStamp"))
                         .findFirst();
                 Idea initialNode = makeSpatialLink(initialObject, epLTMGraph);
@@ -184,7 +183,7 @@ public class EpisodicGistExtraction extends Codelet {
                     Idea LTPosNode = epLTMGraph.insertLocationNode(posContent);
                     Idea spatialLinkNode = epLTMGraph.commomParent(LTContextNode, LTPosNode);
                     if (spatialLinkNode == null){
-                        Idea spatialLink = new Idea("SpatialLink" + impulseCount++, null, "Link", 1);
+                        Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
                         spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
                         epLTMGraph.insertLink(spatialLinkNode, LTContextNode, "Object");
                         epLTMGraph.insertLink(spatialLinkNode, LTPosNode, "GridPlace");
@@ -208,7 +207,7 @@ public class EpisodicGistExtraction extends Codelet {
                     Idea LTPosNode = epLTMGraph.insertLocationNode(posContent);
                     Idea spatialLinkNode = epLTMGraph.commomParent(LTObjectNode, LTPosNode);
                     if (spatialLinkNode == null){
-                        Idea spatialLink = new Idea("SpatialLink" + impulseCount++, null, "Link", 1);
+                        Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
                         spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
                         epLTMGraph.insertLink(spatialLinkNode, LTObjectNode, "Object");
                         epLTMGraph.insertLink(spatialLinkNode, LTPosNode, "GridPlace");
@@ -266,7 +265,7 @@ public class EpisodicGistExtraction extends Codelet {
                 Idea posNode = epLTMGraph.insertLocationNode(objPos);
                 Idea spatialLinkNode = epLTMGraph.commomParent(objNode, posNode);
                 if (spatialLinkNode == null){
-                    Idea spatialLink = new Idea("SpatialLink" + impulseCount++, null, "Link", 1);
+                    Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
                     spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
                     epLTMGraph.insertLink(spatialLinkNode, objNode, "Object");
                     epLTMGraph.insertLink(spatialLinkNode, posNode, "GridPlace");

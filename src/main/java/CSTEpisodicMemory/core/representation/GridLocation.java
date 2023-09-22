@@ -69,7 +69,7 @@ public class GridLocation {
     }
 
     public double[] toXY(double u, double v) {
-        double x = SQRT_3 * (v / 2 + u) * SCALE;
+        double x = SQRT_3 * ((Math.abs(v) % 2)/2 + u) * SCALE;
         double y = 3 * v / 2 * SCALE;
         return new double[]{x, y};
     }
@@ -85,6 +85,14 @@ public class GridLocation {
         String sb = Integer.toHexString((int) b);
         sb = sb.length() == 2 ? sb : "0" + sb;
         return "#" + sr + sg + sb;
+    }
+
+    public static List<double[]> getCenters(){
+        List<double[]> centers = new ArrayList<>();
+        for (KDTree.Node node : grid.getNodes()){
+            centers.add(node.getCoords());
+        }
+        return centers;
     }
 
     public static GridLocation getInstance() {

@@ -387,6 +387,7 @@ public class AgentMind extends Mind {
         moveActionCodelet.addOutput(legsMO);
         moveActionCodelet.addInput(innerSenseMO);
         moveActionCodelet.addInput(locationsMO);
+        moveActionCodelet.addInput(roomsMO);
         moveActionCodelet.addInput(EPLTMO);
         moveActionCodelet.addOutput(extra);
         insertCodelet(moveActionCodelet, "Behavioral");
@@ -495,7 +496,7 @@ public class AgentMind extends Mind {
 
     private Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB){
         Idea idea = new Idea(name, null, "AbstractObject", 0);
-        idea.setValue(new RoomCategoryIdeaFunctions(name, cornerA, cornerB));
+        idea.setValue(new RoomCategoryIdeaFunctions(idea, name, cornerA, cornerB));
         idea.add(new Idea("Adjacent", null, "Link", 1));
         Idea center = new Idea("center", null, "Property",1 );
         Vector2D middle = Vector2D.middlePoint(cornerA, cornerB);

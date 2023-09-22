@@ -32,8 +32,10 @@ public class CategoriesPerEventView {
 
                 Idea initialNode = event.get("Links.Initial").getL().get(0);
                 Idea finalNode = event.get("Links.Final").getL().get(0);
-                double initialPos = Double.parseDouble(GraphIdea.getNodeContent(initialNode).getName().replaceAll("[^0-9]", ""));
-                double finalPos = Double.parseDouble(GraphIdea.getNodeContent(finalNode).getName().replaceAll("[^0-9]", ""));
+                String nameA = GraphIdea.getNodeContent(initialNode).getName();
+                String nameB = GraphIdea.getNodeContent(finalNode).getName();
+                double initialPos = Double.parseDouble(nameA.replaceAll("[^0-9]", ""));
+                double finalPos = Double.parseDouble(nameB.replaceAll("[^0-9]", ""));
                 x.add(eventPos);
                 y.add(initialPos);
                 x.add(eventPos);

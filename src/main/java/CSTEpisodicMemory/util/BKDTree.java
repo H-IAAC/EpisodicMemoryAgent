@@ -91,4 +91,12 @@ public class BKDTree {
         return best;
     }
 
+    public List<KDTree.Node> getNodes(){
+        List<KDTree.Node> nodes = workingTree.getNodes();
+        for (KDTree tree : forest){
+            nodes.addAll(tree.getNodes());
+        }
+        return nodes;
+    }
+
 }

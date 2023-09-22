@@ -73,74 +73,83 @@ public class ExploreImpulse extends Codelet {
     }
 
     private Idea chooseLocation() {
-        Idea choosenLoc = null;
-        //List known locations
-        List<Idea> locations = (List<Idea>) locationsMO.getI();
+        List<Idea> roomsCats = (List<Idea>) roomsCategoriesMO.getI();
 
-        //Sample a location based on reward value
-        List<Double> weigths = new LinkedList<>();
-        Idea selected = null;
-        if(!locations.isEmpty()) {
-            synchronized (locations) {
-                double total = 0d;
-                for (Idea catLoc : locations){
-                    double r = (double) catLoc.get("Reward").getValue();
-                    total += r;
-                    weigths.add(total);
-                }
-                //5% chance of choosing a random, possibly unexplored, location
-                double rndChance = Math.exp(-locations.size()/10.0) + 0.25;
-                double rnd = new Random().nextDouble() * total*(1+rndChance);
-                //System.out.println(weigths);
-                //System.out.println(rnd);
-                total = 0;
-                for (Idea catLoc : locations){
-                    double r = (double) catLoc.get("Reward").getValue();
-                    total += r;
-                    if (rnd < total) {
-                        selected = catLoc;
-                        break;
-                    }
-                }
-            }
-        }
+        Idea selectedRoom = roomsCats.get(new Random().nextInt(roomsCats.size()));
 
-        boolean isInRoom = false;
-        if (selected == null) System.out.println("Random");
-        while (!isInRoom) {
-            if (selected != null) {
-                choosenLoc = selected.getInstance();
-            } else {
-                choosenLoc = new Idea("Position", null, "Property", 0);
-                float x = 10 * new Random().nextFloat();
-                float y = 10 * new Random().nextFloat();
-                choosenLoc.add(new Idea("X", x, "QualityDimension", 0));
-                choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
-            }
+        Idea loc = selectedRoom.getInstance();
 
-            synchronized (roomMO){
-                List<Idea> roomCategories = (List<Idea>) roomsCategoriesMO.getI();
-
-                Idea currentRoom = ((Idea) roomMO.getI()).get("Location");
-                if (currentRoom != null){
-                    currentRoom = (Idea) currentRoom.getValue();
-                    for (Idea room : roomCategories) {
-                        if (room.membership(choosenLoc) > 0.8 && room.get("Adjacent").getL().contains(currentRoom))
-                            isInRoom = true;
-                    }
-                } else {
-                    for (Idea room : roomCategories) {
-                        if (room.membership(choosenLoc) > 0.8)
-                            isInRoom = true;
-                    }
-                }
-            }
-        }
-
-        //planTrajectory(choosenLoc);
-
-        return choosenLoc;
+        return loc;
     }
+    //private Idea chooseLocation() {
+    //    Idea choosenLoc = null;
+    //    //List known locations
+    //    List<Idea> locations = Collections.synchronizedList((List<Idea>) locationsMO.getI());
+
+    //    //Sample a location based on reward value
+    //    List<Double> weigths = new LinkedList<>();
+    //    Idea selected = null;
+    //    if(!locations.isEmpty()) {
+    //        synchronized (locations) {
+    //            double total = 0d;
+    //            for (Idea catLoc : locations){
+    //                double r = (double) catLoc.get("Reward").getValue();
+    //                total += r;
+    //                weigths.add(total);
+    //            }
+    //            //5% chance of choosing a random, possibly unexplored, location
+    //            double rndChance = Math.exp(-locations.size()/10.0) + 0.25;
+    //            double rnd = new Random().nextDouble() * total*(1+rndChance);
+    //            //System.out.println(weigths);
+    //            //System.out.println(rnd);
+    //            total = 0;
+    //            for (Idea catLoc : locations){
+    //                double r = (double) catLoc.get("Reward").getValue();
+    //                total += r;
+    //                if (rnd < total) {
+    //                    selected = catLoc;
+    //                    break;
+    //                }
+    //            }
+    //        }
+    //    }
+
+    //    boolean isInRoom = false;
+    //    if (selected == null) System.out.println("Random");
+    //    while (!isInRoom) {
+    //        if (selected != null) {
+    //            choosenLoc = selected.getInstance();
+    //        } else {
+    //            choosenLoc = new Idea("Position", null, "Property", 0);
+    //            float x = 10 * new Random().nextFloat();
+    //            float y = 10 * new Random().nextFloat();
+    //            choosenLoc.add(new Idea("X", x, "QualityDimension", 0));
+    //            choosenLoc.add(new Idea("Y", y, "QualityDimension", 0));
+    //        }
+
+    //        synchronized (roomMO){
+    //            List<Idea> roomCategories = (List<Idea>) roomsCategoriesMO.getI();
+
+    //            Idea currentRoom = ((Idea) roomMO.getI()).get("Location");
+    //            if (currentRoom != null){
+    //                currentRoom = (Idea) currentRoom.getValue();
+    //                for (Idea room : roomCategories) {
+    //                    if (room.membership(choosenLoc) > 0.8 && room.get("Adjacent").getL().contains(currentRoom))
+    //                        isInRoom = true;
+    //                }
+    //            } else {
+    //                for (Idea room : roomCategories) {
+    //                    if (room.membership(choosenLoc) > 0.8)
+    //                        isInRoom = true;
+    //                }
+    //            }
+    //        }
+    //    }
+
+    //    //planTrajectory(choosenLoc);
+
+    //    return choosenLoc;
+    //}
 
     private void removeSatisfiedImpulses() {
         List<Memory> impulsesMemories = impulsesMO.getAllMemories();
