@@ -34,11 +34,11 @@ public class Propriosensor extends Codelet{
     @Override
     public void accessMemoryObjects() {
             innerSenseMO=(MemoryObject)this.getOutput("PROPRIOSENSOR");
-            cis = (Idea) innerSenseMO.getI();
     }
 
     public void proc() {
-        synchronized (cis) {
+        synchronized (innerSenseMO) {
+            cis = (Idea) innerSenseMO.getI();
             cis.get("Position").get("X").setValue(agent.getPosition().get(0));
             cis.get("Position").get("Y").setValue(agent.getPosition().get(1));
             cis.get("Pitch").setValue(agent.getPitch());
@@ -49,8 +49,6 @@ public class Propriosensor extends Codelet{
             if (debug) {
                 System.out.println(cis.toStringFull());
             }
-        }
-        synchronized (innerSenseMO) {
             innerSenseMO.setI(cis);
         }
     }

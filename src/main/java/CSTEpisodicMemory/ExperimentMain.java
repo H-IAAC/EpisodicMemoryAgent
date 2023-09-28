@@ -67,8 +67,10 @@ public class ExperimentMain {
          visu.addMemoryWatch("CONTEXT_BUFFER", 6);
          visu.addMemoryWatch("BOUNDARIES", 6);
          visu.addMemoryWatch("INNER", 6);
-         visu.addMemoryWatch("KNOWN_JEWELS", 6);
+         visu.addMemoryWatch("JEWELS", 6);
          visu.addMemoryWatch("KNOWN_WALLS", 6);
+         visu.addMemoryWatch("KNOWN_AGENTS", 6);
+         visu.addMemoryWatch("AGENTS", 6);
          visu.setVisible(true);
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
@@ -90,6 +92,7 @@ public class ExperimentMain {
         env.world.createThing(Constants.JewelTypes.WHITE_JEWEL, 0.8f, 9.5f);
         env.world.createThing(Constants.JewelTypes.MAGENTA_JEWEL, 1.0f, 9.5f);
         env.world.createThing(Constants.JewelTypes.YELLOW_JEWEL, 1.2f, 9.5f);
+        env.world.createAgent(2f, 2f);
         try {
             Thread.sleep(3000);
         } catch (InterruptedException ex) {
@@ -111,7 +114,7 @@ public class ExperimentMain {
         Idea impulse = new Idea("Impulse", "Explore", "Episode", 0);
         Idea state = new Idea("State", null, "Timestep", 0);
         Idea dest = new Idea("Self", null, "AbstractObject", 1);
-        Idea posIdea = new Idea("Position", null, "Property", 1);
+        Idea posIdea = new Idea("Position", a.roomA, "Property", 1);
         posIdea.add(new Idea("X",0.5f, 3));
         posIdea.add(new Idea("Y",2f, 3));
         dest.add(posIdea);
@@ -140,7 +143,7 @@ public class ExperimentMain {
         Idea impulse_ = new Idea("Impulse", "Explore", "Episode", 0);
         Idea state_ = new Idea("State", null, "Timestep", 0);
         Idea dest_ = new Idea("Self", null, "AbstractObject", 1);
-        Idea posIdea_ = new Idea("Position", null, "Property", 1);
+        Idea posIdea_ = new Idea("Position", a.roomC, "Property", 1);
         posIdea_.add(new Idea("X",0.5f, 3));
         posIdea_.add(new Idea("Y",9f, 3));
         dest_.add(posIdea_);

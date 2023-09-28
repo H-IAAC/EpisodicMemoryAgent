@@ -36,7 +36,7 @@ dependencies {
     implementation 'com.github.CST-Group:cst:8a5ef50'
     implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
     //implementation 'com.github.CST-Group:cst-desktop:1.0.5'
-    implementation 'com.github.CST-Group:WS3D-Coppelia:480cda0acc'
+    implementation 'com.github.CST-Group:WS3D-Coppelia:2baf285558'
     implementation 'org.json:json:20180813'
     implementation 'org.graphstream:gs-core:2.0'
     implementation 'org.graphstream:gs-ui-swing:2.0'

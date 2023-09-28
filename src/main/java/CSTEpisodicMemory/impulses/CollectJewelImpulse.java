@@ -23,6 +23,10 @@ public class CollectJewelImpulse extends Codelet {
     private final double maxDesire = 1.0;
     private final String impulseCat = "Collect";
 
+    public CollectJewelImpulse(){
+        this.name = "CollectJewelImpulse";
+    }
+
     @Override
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");

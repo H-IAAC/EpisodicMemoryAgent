@@ -1,6 +1,7 @@
 package CSTEpisodicMemory.behavior;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -9,6 +10,7 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Move extends Codelet {
 
@@ -27,6 +29,7 @@ public class Move extends Codelet {
     private List<Idea> locations;
     private GraphIdea epltmGraph;
     private Idea currPos;
+    private Idea room;
 
     public Move() {
         this.name = "MoveBehaviour";
@@ -39,11 +42,11 @@ public class Move extends Codelet {
             Idea impulse_ = (Idea) impulseMO.getI();
             if (impulse_ != null) {
                 if (this.impulse == null) {
-                    this.impulse = IdeaHelper.cloneIdea(impulse_);
+                    this.impulse = impulse_;
                 } else {
                     if (this.impulseMO.getAllMemories().stream().map(m -> (Idea) m.getI()).noneMatch(o -> IdeaHelper.match(o, impulse)) ||
                             (double) this.impulse.get("State.Desire").getValue() < (double) impulse_.get("State.Desire").getValue()) {
-                        this.impulse = IdeaHelper.cloneIdea(impulse_);
+                        this.impulse = impulse_;
                     }
                 }
             }
@@ -65,7 +68,10 @@ public class Move extends Codelet {
     public void proc() {
         if (impulse != null) {
             if (impulse.get("State.Self.Position") != null && innerMO.getI() != null) {
-                currPos = IdeaHelper.cloneIdea((Idea) innerMO.getI()).get("Position");
+                currPos = ((Idea) innerMO.getI()).get("Grid_Place");
+                synchronized (roomMO) {
+                    room = (Idea) ((Idea) roomMO.getI()).get("Location").getValue();
+                }
                 if (!IdeaHelper.match(impulse, lastImpulse)) {
                     locations = (List<Idea>) locationsMO.getI();
                     epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());
@@ -87,27 +93,31 @@ public class Move extends Codelet {
     }
 
     private void planTrajectory(Idea dest) {
-        Idea room;
-        synchronized (roomMO) {
-            room = (Idea) roomMO.getI();
-        }
-
         if (room != null) {
-            room = (Idea) room.get("Location").getValue();
             Idea destRoom = (Idea) dest.getValue();
 
             if (room != destRoom) {
                 highPlan = path(room, destRoom);
+                plan = null;
+                return;
             }
         }
+        highPlan = null;
     }
 
     private List<Idea> path(Idea room, Idea destRoom) {
         Map<Idea, Double> distMap = new HashMap<>();
         distMap.put(room, 1.0d);
         distMap = makeDistMap(room, distMap);
-        System.out.println(distMap);
-        return null;
+        LinkedList<Idea> highPlan = new LinkedList<>();
+        Idea checkRoom = destRoom;
+        while (checkRoom != room) {
+            highPlan.add(checkRoom);
+            Map<Idea, Double> finalDistMap = distMap;
+            checkRoom = checkRoom.get("Adjacent").getL().stream().max(Comparator.comparingDouble(r -> finalDistMap.getOrDefault(r, 0d))).get();
+        }
+        Collections.reverse(highPlan);
+        return highPlan;
     }
 
     private Map<Idea, Double> makeDistMap(Idea room, Map<Idea, Double> distMap) {
@@ -203,22 +213,41 @@ public class Move extends Codelet {
     //}
 
     private Idea nextPlanAction() {
-        if (plan != null && !plan.isEmpty()) {
+        if (highPlan != null && !highPlan.isEmpty()) {
+            if (plan != null && !plan.isEmpty() && room != highPlan.get(0)) {
 
-            Idea nextMoveLoc = GraphIdea.getNodeContent(plan.get(0));
-            double mm = nextMoveLoc.membership(currPos);
-            if (mm == 1) {
-                plan.remove(0);
-                //System.out.println("----");
-                //System.out.println(mm);
-                //System.out.println(IdeaHelper.fullPrint(nextMoveLoc));
-                //System.out.println(plan);
+                Idea nextGridPlace = plan.get(0);
+                if (plan.get(0) == currPos){
+                    plan.remove(0);
+                }
+
+                double[] destPos = GridLocation.getInstance().toXY((double) nextGridPlace.get("u").getValue(), (double) nextGridPlace.get("v").getValue());
+                destPos[0] += (double) room.get("center.x").getValue();
+                destPos[1] += (double) room.get("center.y").getValue();
+
+                Idea action = new Idea("Action", "Move", "Action", 1);
+                action.add(new Idea("X", (float) destPos[0]));
+                action.add(new Idea("Y", (float) destPos[1]));
+                return action;
+            } else {
+                if (room == highPlan.get(0) && highPlan.size()>1){
+                    highPlan.remove(0);
+                }
+                Idea nextRoom = highPlan.get(0);
+                Optional<Idea> exit = room.get("Exits").getL().stream().filter(e->((Idea) e.get("Room").getValue()) == nextRoom).findFirst();
+                if (exit.isPresent()){
+                    Idea gridDest = (Idea) exit.get().get("Grid_Place").getValue();
+                    double[] start = new double[]{
+                            (double) currPos.get("u").getValue(),
+                            (double) currPos.get("v").getValue()
+                    };
+                    double[] end = new double[]{
+                            (double) gridDest.get("u").getValue(),
+                            (double) gridDest.get("v").getValue()
+                    };
+                    plan = GridLocation.getInstance().trajectoryInHCC(start,end);
+                }
             }
-
-            Idea action = new Idea("Action", "Move", "Action", 1);
-            action.add(new Idea("X", nextMoveLoc.get("centerX").getValue()));
-            action.add(new Idea("Y", nextMoveLoc.get("centerY").getValue()));
-            return action;
         }
 
         float px = (float) impulse.get("State.Self.Position.X").getValue();

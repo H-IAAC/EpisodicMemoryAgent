@@ -24,6 +24,10 @@ public class GoToJewelImpulse extends Codelet {
     private final double maxDesire = 0.8;
     private final String impulseCat = "GoTo";
 
+    public GoToJewelImpulse(){
+        this.name = "GoToJewelImpulse";
+    }
+
     @Override
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");
@@ -46,15 +50,17 @@ public class GoToJewelImpulse extends Codelet {
 
         int numJewels = jewels.getL().size();
         if (numJewels > 0){
-            for (Idea jewel : jewels.getL()){
-                double desirability = calculateDesirability(jewel);
-                if (desirability > -1.0){
-                    desirability = desirability * (maxDesire - minDesire) + minDesire;
-                    Idea impulse = createImpulse(jewel, desirability);
-                    addIfNotPresent(impulse);
-                } else {
-                    Idea impulse = createImpulse(jewel, -1);
-                    removeIfPresent(impulse);
+            synchronized (jewelsMO) {
+                for (Idea jewel : jewels.getL()) {
+                    double desirability = calculateDesirability(jewel);
+                    if (desirability > -1.0) {
+                        desirability = desirability * (maxDesire - minDesire) + minDesire;
+                        Idea impulse = createImpulse(jewel, desirability);
+                        addIfNotPresent(impulse);
+                    } else {
+                        Idea impulse = createImpulse(jewel, -1);
+                        removeIfPresent(impulse);
+                    }
                 }
             }
         }
@@ -103,7 +109,7 @@ public class GoToJewelImpulse extends Codelet {
         Idea impulse = new Idea("Impulse", this.impulseCat, "Goal", 0);
         Idea state = new Idea("State", null, "Timestep", 0);
         Idea self = new Idea("Self", null, "AbstractObject", 1);
-        self.add(jewel.get("Position").clone());
+        self.add(jewel.get("Position"));
         state.add(self);
         state.add(jewel.get("ID").clone());
         state.add(new Idea("Desire", desirability, "Property", 1));

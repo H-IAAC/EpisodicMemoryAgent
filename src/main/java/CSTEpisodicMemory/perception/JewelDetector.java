@@ -37,9 +37,7 @@ public class JewelDetector extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        synchronized (this) {
-            this.visionMO = (MemoryObject) this.getInput("VISION");
-        }
+        this.visionMO = (MemoryObject) this.getInput("VISION");
         this.knownJewelsMO = (MemoryObject) this.getOutput("JEWELS");
         this.jewelsCountersMO = (MemoryObject) getOutput("JEWELS_COUNTERS");
     }
@@ -51,13 +49,14 @@ public class JewelDetector extends Codelet {
 
     @Override
     public void proc() {
-        CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
-        Idea jewelsIdea = (Idea) knownJewelsMO.getI();
-        if (debug) {
-            System.out.println(jewelsIdea.toStringFull());
-        }
-        synchronized (vision) {
-            synchronized (jewelsIdea) {
+        synchronized (visionMO) {
+            synchronized (knownJewelsMO) {
+
+                CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
+                Idea jewelsIdea = (Idea) knownJewelsMO.getI();
+                if (debug) {
+                    System.out.println(jewelsIdea.toStringFull());
+                }
                 jewelsIdea.setL(new ArrayList<>());
                 for (Identifiable obj : vision) {
                     if (obj instanceof Thing) {
@@ -96,7 +95,11 @@ public class JewelDetector extends Codelet {
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
         jewelIdea.add(posIdea);
-        jewelIdea.add(new Idea("Color", t.getColor(), "Property", 1));
+        Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
+        color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
+        color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
+        color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
+        jewelIdea.add(color);
         jewelIdea.add(new Idea("ID", t.getId(), "Property", 1));
         return jewelIdea;
     }

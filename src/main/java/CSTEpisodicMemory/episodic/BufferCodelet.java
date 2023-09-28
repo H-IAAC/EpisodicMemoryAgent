@@ -19,10 +19,12 @@ public class BufferCodelet extends Codelet {
 
     private int bufferSize = 10;
 
-    public BufferCodelet(){
+    public BufferCodelet() {
+        this.name = "BufferCodelet";
     }
 
-    public BufferCodelet(int size){
+    public BufferCodelet(int size) {
+        this.name = "BufferCodelet";
         bufferSize = size;
     }
 
@@ -40,27 +42,31 @@ public class BufferCodelet extends Codelet {
     @Override
     public void proc() {
         long currTime = System.currentTimeMillis();
-        Idea buffer = (Idea) bufferMO.getI();
-        if (buffer.getL().size() > bufferSize)
-            buffer.getL().remove(0);
-        Idea currTimestep = new Idea("", currTime, "Timestep", 1);
-        //System.out.println("-----------------------");
-        //System.out.println(IdeaHelper.csvPrint(buffer).replace('\n',' '));
-        //PrintWriter out;
-        //try {
-        //    out = new PrintWriter(bufferMO.getName());
-        //    String csv = IdeaHelper.csvPrint(buffer, 6);
-        //    out.println(csv);
-        //    out.close();
-        //} catch (FileNotFoundException e) {
-        //    throw new RuntimeException(e);
-        //}
-        for (Memory input : inputsMO){
-            Idea content = (Idea) input.getI();
-            if (content != null) {
-                currTimestep.add(IdeaHelper.cloneIdea(content));
+        synchronized (bufferMO) {
+            Idea buffer = (Idea) bufferMO.getI();
+            if (buffer.getL().size() > bufferSize)
+                buffer.getL().remove(0);
+            Idea currTimestep = new Idea("", currTime, "Timestep", 1);
+            //System.out.println("-----------------------");
+            //System.out.println(IdeaHelper.csvPrint(buffer).replace('\n',' '));
+            //PrintWriter out;
+            //try {
+            //    out = new PrintWriter(bufferMO.getName());
+            //    String csv = IdeaHelper.csvPrint(buffer, 6);
+            //    out.println(csv);
+            //    out.close();
+            //} catch (FileNotFoundException e) {
+            //    throw new RuntimeException(e);
+            //}
+            synchronized (inputsMO) {
+            for (Memory input : inputsMO) {
+                    Idea content = (Idea) input.getI();
+                    if (content != null) {
+                        currTimestep.add(IdeaHelper.cloneIdea(content));
+                    }
+                }
+                buffer.add(currTimestep);
             }
         }
-        buffer.add(currTimestep);
     }
 }

@@ -86,6 +86,8 @@ public class IdeaHelper {
     }
 
     public static String csvPrint(Idea idea, String prefix, List<Object> listtoavoidloops, int currLevel){
+        if (idea == null)
+            return "{\"id\": 0, \"name\": \"NULL\", \"value\": \"NULL\", \"l\": [], \"type\": 1,\"category\": \"Property\", \"scope\": 0}";
         String csv = prefix + "{\n";
         csv += prefix + "  \"id\": " + idea.getId() + ",\n";
         csv += prefix + "  \"name\": \"" + idea.getName() + "\",\n";

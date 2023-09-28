@@ -16,6 +16,10 @@ public class FoodDetector extends Codelet {
     private Memory foodMO;
     private Memory visionMO;
 
+    public FoodDetector(){
+        this.name = "FoodDetector";
+    }
+
     @Override
     public void accessMemoryObjects() {
         foodMO = (MemoryObject) getOutput("FOOD");
@@ -29,23 +33,25 @@ public class FoodDetector extends Codelet {
 
     @Override
     public void proc() {
-        CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
-        Idea foods = (Idea) foodMO.getI();
-        synchronized (vision){
-            synchronized (foods) {
-                foods.setL(new ArrayList<>());
-                for (Identifiable obj : vision) {
-                    if (obj instanceof Thing) {
-                        Thing t = (Thing) obj;
-                        if (t.isFood()) {
-                            foods.add(constructFoodIdea(t));
+        synchronized (visionMO) {
+            synchronized (foodMO) {
+                CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
+                Idea foods = (Idea) foodMO.getI();
+                synchronized (vision) {
+                    synchronized (foods) {
+                        foods.setL(new ArrayList<>());
+                        for (Identifiable obj : vision) {
+                            if (obj instanceof Thing) {
+                                Thing t = (Thing) obj;
+                                if (t.isFood()) {
+                                    foods.add(constructFoodIdea(t));
+                                }
+                            }
                         }
                     }
                 }
+                foodMO.setI(foods);
             }
-        }
-        synchronized (foodMO){
-            foodMO.setI(foods);
         }
     }
 
@@ -56,7 +62,11 @@ public class FoodDetector extends Codelet {
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
         foodIdea.add(posIdea);
-        foodIdea.add(new Idea("Color", t.getColor(), "Property", 1));
+        Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
+        color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
+        color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
+        color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
+        foodIdea.add(color);
         foodIdea.add(new Idea("ID", t.getId(), "Property", 1));
         return foodIdea;
     }

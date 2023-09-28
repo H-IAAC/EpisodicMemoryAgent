@@ -21,6 +21,10 @@ public class EatFoodImpulse extends Codelet {
     private final double maxDesire = 1.0;
     private final String impulseCat = "Eat";
 
+    public EatFoodImpulse(){
+        this.name = "EatFoodImpulse";
+    }
+
     @Override
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");

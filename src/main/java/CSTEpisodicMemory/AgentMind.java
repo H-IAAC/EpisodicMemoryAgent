@@ -13,6 +13,7 @@ import CSTEpisodicMemory.categories.StepEventCategory;
 import CSTEpisodicMemory.core.codelets.EpisodeBoundaryDetection;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.BufferCodelet;
@@ -24,8 +25,11 @@ import CSTEpisodicMemory.perception.*;
 import CSTEpisodicMemory.sensor.Propriosensor;
 import CSTEpisodicMemory.sensor.LeafletSense;
 import CSTEpisodicMemory.sensor.Vision;
+import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
+import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.util.Constants;
+import bibliothek.gui.dock.station.screen.window.InternalScreenDockWindowFactory;
 import br.unicamp.cst.core.entities.*;
 import br.unicamp.cst.representation.idea.Idea;
 
@@ -34,24 +38,28 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
  * @author bruno
  */
 public class AgentMind extends Mind {
 
+    public Idea roomA;
+    public Idea roomB;
+    public Idea roomC;
+
     private boolean debug = false;
     public List<Codelet> bList = new ArrayList<>();
 
-    public AgentMind(Environment env, boolean debug){
+    public AgentMind(Environment env, boolean debug) {
         this.debug = debug;
         initializeMindAndStar(env);
     }
-    public AgentMind(Environment env){
+
+    public AgentMind(Environment env) {
         super();
         initializeMindAndStar(env);
     }
 
-    private void initializeMindAndStar(Environment env){
+    private void initializeMindAndStar(Environment env) {
         // Create CodeletGroups and MemoryGroups for organizing Codelets and Memories
         createCodeletGroup("Sensory");
         createCodeletGroup("Motor");
@@ -67,6 +75,8 @@ public class AgentMind extends Mind {
         Memory visionMO;
         Memory jewelsPerceptionMO;
         Memory knownJewelsMO;
+        Memory agentPerceptionMO;
+        Memory knownAgentsMO;
         Memory jewelsCounterMO;
         Memory foodPerceptionMO;
         Memory knownFoodsMO;
@@ -88,16 +98,13 @@ public class AgentMind extends Mind {
         MemoryContainer legsMO;
 
 
-
-
-
         //Inner Sense
         Idea innerSenseIdea = initializeInnerSenseIdea();
         propriosensorMO = createMemoryObject("PROPRIOSENSOR", innerSenseIdea);
         innerSenseMO = createMemoryObject("INNER");
         registerMemory(innerSenseMO, "Perceptual");
         //Vision sensor
-        visionMO = createMemoryObject("VISION");
+        visionMO = createMemoryObject("VISION", new ArrayList<Identifiable>());
 
         //Detected Foods
         Idea foodsIdea = new Idea("Foods", null, 5);
@@ -117,9 +124,18 @@ public class AgentMind extends Mind {
         jewelsPerceptionMO = createMemoryObject("JEWELS", jewelsIdea);
         registerMemory(jewelsPerceptionMO, "Perceptual");
 
+        //Detected Agents
+        Idea agentsIdea = new Idea("Agents", null, 5);
+        agentPerceptionMO = createMemoryObject("AGENTS", agentsIdea);
+        registerMemory(agentPerceptionMO, "Perceptual");
+
+        //Known Agents
+        Idea knownAgentsIdea = new Idea("Agents", null, 5);
+        knownAgentsMO = createMemoryObject("KNOWN_AGENTS", knownAgentsIdea);
+
         //Jewels Counter
         List<Idea> jewelsCounters = new ArrayList<>();
-        for (Constants.JewelTypes type : Constants.JewelTypes.values()){
+        for (Constants.JewelTypes type : Constants.JewelTypes.values()) {
             jewelsCounters.add(new Idea(type.typeName(), 0, "Property", 1));
         }
         Idea jewelCountersIdea = new Idea("JewelsCounters", null, 5);
@@ -164,19 +180,42 @@ public class AgentMind extends Mind {
         //----Categories----
         //Rooms
         List<Idea> roomsCategoriesIdea = new ArrayList<>();
-        roomsCategoriesIdea.add(constructRoomCategory("RoomA",
+        roomA = constructRoomCategory("RoomA",
                 new Vector2D(0, 0),
-                new Vector2D(8, 3)));
-        roomsCategoriesIdea.add(constructRoomCategory("RoomB",
+                new Vector2D(8, 3));
+        roomB = constructRoomCategory("RoomB",
                 new Vector2D(0, 3),
-                new Vector2D(1, 7)));
-        roomsCategoriesIdea.add(constructRoomCategory("RoomC",
+                new Vector2D(1, 7));
+        roomC = constructRoomCategory("RoomC",
                 new Vector2D(0, 7),
-                new Vector2D(8, 10)));
-        roomsCategoriesIdea.get(0).get("Adjacent").add(roomsCategoriesIdea.get(1));
-        roomsCategoriesIdea.get(1).get("Adjacent").add(roomsCategoriesIdea.get(0));
-        roomsCategoriesIdea.get(1).get("Adjacent").add(roomsCategoriesIdea.get(2));
-        roomsCategoriesIdea.get(2).get("Adjacent").add(roomsCategoriesIdea.get(1));
+                new Vector2D(8, 10));
+        roomA.get("Adjacent").add(roomB);
+        roomB.get("Adjacent").add(roomA);
+        roomB.get("Adjacent").add(roomC);
+        roomC.get("Adjacent").add(roomB);
+
+        Idea exit = new Idea("Exit1", null, "Link", 1);
+        exit.add(new Idea("Room", roomB));
+        exit.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(-7,4)));
+        roomA.get("Exits").add(exit);
+
+        Idea exit2 = new Idea("Exit2", null, "Link", 1);
+        exit2.add(new Idea("Room", roomA));
+        exit2.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(0,-5)));
+        Idea exit3 = new Idea("Exit3", null, "Link", 1);
+        exit3.add(new Idea("Room", roomC));
+        exit3.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(0,5)));
+        roomB.get("Exits").add(exit2);
+        roomB.get("Exits").add(exit3);
+
+        Idea exit4 = new Idea("Exit4", null, "Link", 1);
+        exit4.add(new Idea("Room", roomB));
+        exit4.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(-7,-4)));
+        roomC.get("Exits").add(exit4);
+
+        roomsCategoriesIdea.add(roomA);
+        roomsCategoriesIdea.add(roomB);
+        roomsCategoriesIdea.add(roomC);
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
         Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
         roomsMO = createMemoryObject("ROOM", roomIdea);
@@ -216,6 +255,7 @@ public class AgentMind extends Mind {
         selfGridLocator.addInput(propriosensorMO);
         selfGridLocator.addOutput(innerSenseMO);
         selfGridLocator.addInput(roomsMO);
+        selfGridLocator.addInput(categoriesRoomMO);
         insertCodelet(selfGridLocator);
 
         //Vision Sensor Codelet
@@ -242,8 +282,27 @@ public class AgentMind extends Mind {
         Codelet foodGridLocator = new GridLocatorCodelet("FOOD", "FOOD");
         foodGridLocator.addInput(foodPerceptionMO);
         foodGridLocator.addOutput(foodPerceptionMO);
+        foodGridLocator.addInput(categoriesRoomMO);
         foodGridLocator.addInput(roomsMO);
         insertCodelet(foodGridLocator);
+
+        //Agent Detector
+        Codelet agentDetectorCodelet = new AgentDetector();
+        agentDetectorCodelet.addInput(visionMO);
+        agentDetectorCodelet.addOutput(agentPerceptionMO);
+        insertCodelet(agentDetectorCodelet, "Perception");
+
+        Codelet agentLearner = new PerceptualLearnerCodelet("AGENTS", "KNOWN_AGENTS");
+        agentLearner.addInput(agentPerceptionMO);
+        agentLearner.addOutput(knownAgentsMO);
+        insertCodelet(agentLearner, "Perception");
+
+        Codelet agentGridLocator = new GridLocatorCodelet("AGENTS", "AGENTS");
+        agentGridLocator.addInput(agentPerceptionMO);
+        agentGridLocator.addOutput(agentPerceptionMO);
+        agentGridLocator.addInput(roomsMO);
+        agentGridLocator.addInput(categoriesRoomMO);
+        insertCodelet(agentGridLocator, "Perception");
 
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
@@ -262,6 +321,7 @@ public class AgentMind extends Mind {
         jewelGridLocator.addInput(jewelsPerceptionMO);
         jewelGridLocator.addOutput(jewelsPerceptionMO);
         jewelGridLocator.addInput(roomsMO);
+        jewelGridLocator.addInput(categoriesRoomMO);
         insertCodelet(jewelGridLocator);
 
         //Walls Detector Codelet
@@ -279,6 +339,7 @@ public class AgentMind extends Mind {
         wallGridLocator.addInput(wallsPerceptionMO);
         wallGridLocator.addOutput(wallsPerceptionMO);
         wallGridLocator.addInput(roomsMO);
+        wallGridLocator.addInput(categoriesRoomMO);
         insertCodelet(wallGridLocator);
 
         //RoomDetector Codelet
@@ -472,19 +533,21 @@ public class AgentMind extends Mind {
         insertCodelet(episodicGistCodelet, "Behavioural");
 
         bList.add(wallsDetectorCodelet);
-        for (Codelet c : this.getCodeRack().getAllCodelets())
+        for (Codelet c : this.getCodeRack().getAllCodelets()) {
             c.setTimeStep(100);
+            c.setProfiling(true);
+        }
 
         //bufferCodelet.setTimeStep(500);
 
         start();
     }
 
-    private Idea initializeInnerSenseIdea(){
+    private Idea initializeInnerSenseIdea() {
         Idea innerSense = new Idea("Self", "AGENT", "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
-        posIdea.add(new Idea("X",0, 3));
-        posIdea.add(new Idea("Y",0, 3));
+        posIdea.add(new Idea("X", 0, 3));
+        posIdea.add(new Idea("Y", 0, 3));
         innerSense.add(posIdea);
         innerSense.add(new Idea("Pitch", null, "Property", 1));
         innerSense.add(new Idea("Fuel", null, "Property", 1));
@@ -494,19 +557,20 @@ public class AgentMind extends Mind {
         return innerSense;
     }
 
-    private Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB){
+    private Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB) {
         Idea idea = new Idea(name, null, "AbstractObject", 0);
         idea.setValue(new RoomCategoryIdeaFunctions(idea, name, cornerA, cornerB));
         idea.add(new Idea("Adjacent", null, "Link", 1));
-        Idea center = new Idea("center", null, "Property",1 );
+        Idea center = new Idea("center", null, "Property", 1);
         Vector2D middle = Vector2D.middlePoint(cornerA, cornerB);
         center.add(new Idea("x", middle.getX(), "QualityDimension", 1));
         center.add(new Idea("y", middle.getY(), "QualityDimension", 1));
         idea.add(center);
+        idea.add(new Idea("Exits", null, "Link", 1));
         return idea;
     }
 
-    private Idea constructEventCategory(String name, List<String> properties, String type){
+    private Idea constructEventCategory(String name, List<String> properties, String type) {
         Idea idea = new Idea(name, null, "Episode", 2);
         ///String object = properties.get(0).split("\\.")[0];
         ///idea.add(new Idea("ObservedObject", object, "Property", 1));
@@ -514,7 +578,7 @@ public class AgentMind extends Mind {
         ///idea.add(new Idea("properties", cleanProperties, "Property", 1));
         idea.add(new Idea("properties", properties, "Property", 1));
 
-        switch (type){
+        switch (type) {
             case "Linear":
                 idea.setValue(new LinearEventCategory(name, properties));
                 break;

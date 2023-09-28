@@ -28,7 +28,6 @@ public class BKDTree {
 
     public BKDTree(int dimensions_, int blockSize_, List<KDTree.Node> nodes) {
         blockSize = blockSize_;
-        System.out.println("Call");
         dimensions = dimensions_;
         int size = nodes.size();
         int start = size % blockSize;

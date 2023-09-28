@@ -23,6 +23,10 @@ public class EpisodeBinding extends Codelet {
 
     private static final int intervalThreshold = 200;
 
+    public EpisodeBinding(){
+        this.name = "EpisodeBinding";
+    }
+
     @Override
     public void accessMemoryObjects() {
         this.eventsMO = (MemoryObject) getInput("EVENTS");

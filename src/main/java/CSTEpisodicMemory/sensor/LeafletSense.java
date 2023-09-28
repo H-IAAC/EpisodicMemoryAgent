@@ -23,7 +23,6 @@ public class LeafletSense extends Codelet {
     @Override
     public void accessMemoryObjects() {
         leafletSenseMO = (MemoryObject) this.getOutput("LEAFLETS");
-        leaflets = (Idea) leafletSenseMO.getI();
     }
 
     @Override
@@ -33,10 +32,11 @@ public class LeafletSense extends Codelet {
 
     @Override
     public void proc() {
+        synchronized (leafletSenseMO) {
+        leaflets = (Idea) leafletSenseMO.getI();
         Bag bag = agent.getBag();
         int id = 1;
         Leaflet[] leafletList = agent.getLeaflets();
-        synchronized (leaflets) {
             for (Leaflet leaflet : leafletList) {
                 //Get leaflet or created if does not exist
                 Idea leafletIdea = leaflets.get(String.format("LEAFLET_%d", id));
@@ -64,8 +64,6 @@ public class LeafletSense extends Codelet {
 
                 id += 1;
             }
-        }
-        synchronized (leafletSenseMO){
             leafletSenseMO.setI(leaflets);
         }
     }

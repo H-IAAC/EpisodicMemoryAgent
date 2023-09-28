@@ -6,7 +6,9 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
+import com.google.gson.Gson;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,7 @@ public class EventTracker extends MemoryCodelet {
         this.outputMemoryName = outputMemoryName;
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
+        this.name = "Tracker"+trackedEventCategory.getName();
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, Idea trackedEventCategory, boolean debug) {
@@ -47,6 +50,7 @@ public class EventTracker extends MemoryCodelet {
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
         this.debug = debug;
+        this.name = "Tracker"+trackedEventCategory.getName();
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory) {
@@ -57,6 +61,7 @@ public class EventTracker extends MemoryCodelet {
         this.detectionTreashold = detectionTreashold;
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
+        this.name = "Tracker"+trackedEventCategory.getName();
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory, boolean debug) {
@@ -68,6 +73,7 @@ public class EventTracker extends MemoryCodelet {
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
         this.debug = debug;
+        this.name = "Tracker"+trackedEventCategory.getName();
     }
 
     @Override
@@ -91,66 +97,94 @@ public class EventTracker extends MemoryCodelet {
         synchronized (buffer) {
             for (Idea timeStep : buffer.getL()) {
                 for (Idea object : timeStep.getL()) {
-                    String objectName = object.getName();
-                    if (isTrackedObject(objectName)) {
-                        long lastTrackedTimeStamp = getLastTimeStampOf(objectName);
-                        if ((long) timeStep.getValue() > lastTrackedTimeStamp) {
-                            List<Idea> inputIdeaBuffer = constructCurrentBufferOf(objectName);
-
-                            if (inputIdeaBuffer.isEmpty()) {
-                                pushStepToMemory(object, (long) timeStep.getValue());
-                            } else {
-                                if (inputIdeaBuffer.size() < this.bufferSize) {
-                                    if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
-                                        pushStepToMemory(object, (long) timeStep.getValue());
-                                    }
-                                } else {
-                                    if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
-                                        //Check if current state is coherent with previous states and event category
-                                        Idea initialEventIdea = getInitialEventOf(objectName);
-                                        Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
-                                        if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation(objectName)) {
-                                            //Copies start of the event
-                                            if (initialEventIdea == null) setBufferTopAsInitialEvent(objectName);
-
-                                            pushStepToMemory(object, (long) timeStep.getValue());
-                                        } else {
-                                            if (initialEventIdea != null) {
-                                                Idea constraints = new Idea("Constraints");
-                                                constraints.add(new Idea("0", initialEventIdea));
-                                                constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
-                                                Idea event = trackedEventCategory.getInstance(constraints);
-                                                event.setName("Event" + count++);
-                                                event.setValue(trackedEventCategory);
-                                                restartEventStage(object, (long) timeStep.getValue());
-                                                Idea eventsIdea = (Idea) eventsOutputMO.getI();
-                                                synchronized (eventsIdea) {
-                                                    eventsIdea.add(event);
-                                                    if (debug)
-                                                        System.out.println(csvPrint(eventsIdea));
-                                                }
-                                            } else {
-                                                pushStepToMemory(object, (long) timeStep.getValue());
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    if (object.getType() == 5){
+                        for (Idea subObj : object.getL()){
+                            processObjectTimeStep(timeStep, subObj, ignoreObjects);
                         }
                     } else {
-                        if (!ignoreObjects.contains(objectName)) {
-                            Idea testEvent = constructTestEvent(new ArrayList<>(), object);
-                            if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
-                                pushStepToMemory(object, (long) timeStep.getValue());
-                            } else {
-                                ignoreObjects.add(objectName);
-                            }
-                        }
+                        processObjectTimeStep(timeStep, object, ignoreObjects);
                     }
                 }
             }
         }
         commitInternalMemoryChanges();
+    }
+
+    private void processObjectTimeStep(Idea timeStep, Idea object, ArrayList<String> ignoreObjects) {
+        String objectName = object.getName();
+        if (isTrackedObject(objectName)) {
+            long lastTrackedTimeStamp = getLastTimeStampOf(objectName);
+            if ((long) timeStep.getValue() > lastTrackedTimeStamp) {
+                List<Idea> inputIdeaBuffer = constructCurrentBufferOf(objectName);
+
+                if (inputIdeaBuffer.isEmpty()) {
+                    pushStepToMemory(object, (long) timeStep.getValue());
+                } else {
+                    if (inputIdeaBuffer.size() < this.bufferSize) {
+                        if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
+                            pushStepToMemory(object, (long) timeStep.getValue());
+                        }
+                    } else {
+                        if (checkElapsedTime(timeStep, lastTrackedTimeStamp)) {
+                            //Check if current state is coherent with previous states and event category
+                            Idea initialEventIdea = getInitialEventOf(objectName);
+                            Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
+                            if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation(objectName)) {
+                                //Copies start of the event
+                                if (initialEventIdea == null) setBufferTopAsInitialEvent(objectName);
+                                if (objectName.contains("Agent"))
+                                    System.out.println("looking for event");
+
+                                pushStepToMemory(object, (long) timeStep.getValue());
+                            } else {
+                                if (initialEventIdea != null) {
+                                    if (objectName.contains("Agent"))
+                                        System.out.println("Found evennt");
+                                    Idea constraints = new Idea("Constraints");
+                                    constraints.add(new Idea("0", initialEventIdea));
+                                    constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
+                                    Idea event = trackedEventCategory.getInstance(constraints);
+                                    event.setName("Event" + count++);
+                                    event.setValue(trackedEventCategory);
+                                    restartEventStage(object, (long) timeStep.getValue());
+                                    PrintWriter out;
+                                    try {
+                                        FileWriter fw = new FileWriter("events", true);
+                                        BufferedWriter bw = new BufferedWriter(fw);
+                                        bw.write(IdeaHelper.csvPrint(event, 6));
+                                        bw.newLine();
+                                        bw.close();
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    Idea eventsIdea = (Idea) eventsOutputMO.getI();
+                                    synchronized (eventsIdea) {
+                                        eventsIdea.add(event);
+                                        if (debug)
+                                            System.out.println(csvPrint(eventsIdea));
+                                    }
+                                } else {
+                                    pushStepToMemory(object, (long) timeStep.getValue());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            if (!ignoreObjects.contains(objectName)) {
+                Idea testEvent = constructTestEvent(new ArrayList<>(), object);
+                if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
+                    if (objectName.contains("Agent")) {
+                        System.out.println("start track");
+                        System.out.println(timeStep.getValue());
+                    }
+                    pushStepToMemory(object, (long) timeStep.getValue());
+                } else {
+                    ignoreObjects.add(objectName);
+                }
+            }
+        }
     }
 
     private void commitInternalMemoryChanges() {
@@ -174,7 +208,11 @@ public class EventTracker extends MemoryCodelet {
 
     private void pushStepToMemory(Idea object, long timeStamp) {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
-        step.add(IdeaHelper.cloneIdea(object));
+        Idea stepObj = IdeaHelper.cloneIdea(object);
+        if (stepObj.get("TimeStamp") == null){
+            stepObj.add(new Idea("TimeStamp", timeStamp, "Property", 1));
+        }
+        step.add(stepObj);
         String objName = object.getName();
         if (internal.containsKey(objName)) {
             List<Idea> stageEventSteps = internal.get(objName);

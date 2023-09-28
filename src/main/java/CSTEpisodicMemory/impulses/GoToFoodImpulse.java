@@ -20,6 +20,10 @@ public class GoToFoodImpulse extends Codelet {
     private final double maxDesire = 1;
     private final String impulseCat = "GoTo";
 
+    public GoToFoodImpulse(){
+        this.name = "GoToFoodImpulse";
+    }
+
     @Override
     public void accessMemoryObjects() {
         this.foodMO = (MemoryObject) getInput("KNOWN_FOODS");
@@ -39,15 +43,17 @@ public class GoToFoodImpulse extends Codelet {
         Idea foods = (Idea) foodMO.getI();
         int numFoods = foods.getL().size();
         if (numFoods > 0){
-            for (Idea food : foods.getL()){
-                double desirability = calculateDesirability(food);
-                if (desirability > -1.0){
-                    desirability = desirability * (maxDesire - minDesire) + minDesire;
-                    Idea impulse = createImpulse(food, desirability);
-                    addIfNotPresent(impulse);
-                } else {
-                    Idea impulse = createImpulse(food, -1);
-                    removeIfPresent(impulse);
+            synchronized (foodMO) {
+                for (Idea food : foods.getL()) {
+                    double desirability = calculateDesirability(food);
+                    if (desirability > -1.0) {
+                        desirability = desirability * (maxDesire - minDesire) + minDesire;
+                        Idea impulse = createImpulse(food, desirability);
+                        addIfNotPresent(impulse);
+                    } else {
+                        Idea impulse = createImpulse(food, -1);
+                        removeIfPresent(impulse);
+                    }
                 }
             }
         }
@@ -95,7 +101,7 @@ public class GoToFoodImpulse extends Codelet {
         Idea impulse = new Idea("Impulse", this.impulseCat, "Goal", 0);
         Idea state = new Idea("State", null, "Timestep", 0);
         Idea self = new Idea("Self", null, "AbstractObject", 1);
-        self.add(food.get("Position").clone());
+        self.add(food.get("Position"));
         state.add(self);
         state.add(food.get("ID").clone());
         state.add(new Idea("Desire", desirability, "Property", 1));

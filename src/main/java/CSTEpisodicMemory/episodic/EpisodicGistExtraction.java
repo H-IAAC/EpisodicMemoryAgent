@@ -25,6 +25,7 @@ public class EpisodicGistExtraction extends Codelet {
     private int spatialLinkCount = 0;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
+        this.name = "GistExtraction";
         this.locCatAcomodate = locCatAcomodate;
         this.newLocCategoryGenerator = newLocCategoryGenerator;
         this.trackedPropertiesAssimilateAccommodateHabit = trackedPropertiesAssimilateAccommodateHabit;

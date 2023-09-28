@@ -24,6 +24,10 @@ public class ExploreImpulse extends Codelet {
 
     private final String impulseCat = "Explore";
 
+    public ExploreImpulse(){
+        this.name = "ExploreImpulse";
+    }
+
     @Override
     public void accessMemoryObjects() {
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");

@@ -140,7 +140,6 @@ public class GraphIdeaVisualizer extends JFrame {
         display.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                System.out.println("Release");
                 if (selected != null) {
                     selected.selected = false;
                     selected = null;

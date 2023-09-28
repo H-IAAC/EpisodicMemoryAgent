@@ -32,6 +32,7 @@ public class LegsActuatorCodelet extends Codelet {
 
     @Override
     public void proc() {
+        synchronized (legsMO){
         Idea action = (Idea) legsMO.getI();
         if (action != null) {
             String command = (String) action.getValue();
@@ -48,6 +49,7 @@ public class LegsActuatorCodelet extends Codelet {
                     }
                 }
             }
+        }
         }
     }
 }
