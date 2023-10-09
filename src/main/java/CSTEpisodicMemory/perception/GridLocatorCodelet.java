@@ -5,6 +5,7 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,18 +50,7 @@ public class GridLocatorCodelet extends Codelet {
                 Idea pos = in.get("Position");
                 if (pos != null) {
                     if (detectedRoom != null && detectedRoom.get("Location") != null) {
-                        Idea room = (Idea) detectedRoom.get("Location").getValue();
-                        double px = Double.parseDouble(pos.get("X").getValue().toString()) - (double) room.get("center.x").getValue();
-                        double py = Double.parseDouble(pos.get("Y").getValue().toString()) - (double) room.get("center.y").getValue();
-                        Idea gridPlace = locator.locateHCCIdea(px, py);
-                        Idea out = in.clone();
-                        out.add(gridPlace);
-                        List<Idea> roomCats = Collections.synchronizedList((List<Idea>) roomCategories.getI());
-                        for (Idea cat : roomCats) {
-                            if (cat.membership(pos) > 0) {
-                                out.get("Position").setValue(cat);
-                            }
-                        }
+                        Idea out = setGridPlaceFromPos(pos, in);
                         synchronized (output) {
                             output.setI(out);
                         }
@@ -71,20 +61,9 @@ public class GridLocatorCodelet extends Codelet {
                         List<Idea> outL = new ArrayList<>();
                         for (Idea sub : subIdea) {
                             pos = sub.get("Position");
-                            if (pos != null && sub.get("Grid_Place") == null) {
+                            if (pos != null && sub.get("Occupation") == null) {
                                 if (detectedRoom != null && detectedRoom.get("Location") != null) {
-                                    Idea room = (Idea) detectedRoom.get("Location").getValue();
-                                    double px = Double.parseDouble(pos.get("X").getValue().toString()) - (double) room.get("center.x").getValue();
-                                    double py = Double.parseDouble(pos.get("Y").getValue().toString()) - (double) room.get("center.y").getValue();
-                                    Idea gridPlace = locator.locateHCCIdea(px, py);
-                                    Idea out = sub.clone();
-                                    out.add(gridPlace);
-                                    List<Idea> roomCats = Collections.synchronizedList(((List<Idea>) roomCategories.getI()));
-                                    for (Idea cat : roomCats) {
-                                        if (cat.membership(pos) > 0) {
-                                            out.get("Position").setValue(cat);
-                                        }
-                                    }
+                                    Idea out = setGridPlaceFromPos(pos, sub);
                                     outL.add(out);
                                 } else {
                                     outL.add(sub.clone());
@@ -102,5 +81,41 @@ public class GridLocatorCodelet extends Codelet {
                 }
             }
         }
+    }
+
+    @NotNull
+    private Idea setGridPlaceFromPos(Idea pos, Idea in) {
+        double x = Double.parseDouble(pos.get("X").getValue().toString());
+        double y = Double.parseDouble(pos.get("Y").getValue().toString());
+        Idea room = (Idea) detectedRoom.get("Location").getValue();
+        double px = x - (double) room.get("center.x").getValue();
+        double py = y - (double) room.get("center.y").getValue();
+
+        Idea out = in.clone();
+        Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+        Idea size = out.get("Size");
+        if (size == null) {
+            Idea gridPlace = locator.locateHCCIdea(px, py);
+            occupation.add(gridPlace);
+        } else {
+            float width = (float) size.get("Width").getValue();
+            float depth = (float) size.get("Depth").getValue();
+            int[] minCorner = locator.locateHCC(px - width / 2, py - depth / 2);
+            int[] maxCorner = locator.locateHCC(px + width / 2, py + depth / 2);
+            for (int i = minCorner[0]; i <= maxCorner[0]; i++) {
+                for (int j = minCorner[1]; j <= maxCorner[1]; j++) {
+                    Idea gridPlace = locator.getReferenceGridIdea(i, j);
+                    occupation.add(gridPlace);
+                }
+            }
+        }
+        out.add(occupation);
+        List<Idea> roomCats = Collections.synchronizedList((List<Idea>) roomCategories.getI());
+        for (Idea cat : roomCats) {
+            if (cat.membership(pos) > 0) {
+                out.get("Position").setValue(cat);
+            }
+        }
+        return out;
     }
 }

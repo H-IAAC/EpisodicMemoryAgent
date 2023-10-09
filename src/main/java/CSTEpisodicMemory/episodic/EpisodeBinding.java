@@ -100,7 +100,7 @@ public class EpisodeBinding extends Codelet {
                                     story.insertLink(event, position, "Position");
 
                                     //Grid place
-                                    Idea grid = contextIdea.get("Self").get("Grid_Place");
+                                    Idea grid = contextIdea.get("Self").get("Occupation").getL().get(0);
                                     if (grid != null) {
                                         if (!story.hasNodeContent(grid)) {
                                             story.insertLocationNode(grid);
@@ -137,23 +137,27 @@ public class EpisodeBinding extends Codelet {
 
                                         Idea objectsIdea = objects.get();
                                         for (Idea object : objectsIdea.getL()){
-                                            Idea pos = object.get("Grid_Place");
-                                            if (pos != null){
+                                            Idea occupation = object.get("Occupation");
+                                            if (occupation != null){
                                                 if (!object.getName().equals(eventObject.getName())) {
                                                     story.insertObjectNode(object);
-                                                    story.insertLocationNode(pos);
                                                     story.insertLink(event, object, "ObjectContext");
-                                                    story.insertLink(object, pos, "GridPlace");
+                                                    for (Idea objGrid : occupation.getL()){
+                                                        story.insertLocationNode(objGrid);
+                                                        story.insertLink(object, objGrid, "GridPlace");
+                                                    }
                                                 }
                                             } else {
                                                 for (Idea subObject : object.getL()){
-                                                    Idea subPos = subObject.get("Grid_Place");
-                                                    if (subPos != null) {
+                                                    Idea subOccupation = subObject.get("Occupation");
+                                                    if (subOccupation != null) {
                                                         if (!subObject.getName().equals(eventObject.getName())) {
                                                             story.insertObjectNode(subObject);
-                                                            story.insertLocationNode(subPos);
                                                             story.insertLink(event, subObject, "ObjectContext");
-                                                            story.insertLink(subObject, subPos, "GridPlace");
+                                                            for (Idea subObjGrid : subOccupation.getL()){
+                                                                story.insertLocationNode(subObjGrid);
+                                                                story.insertLink(subObject, subObjGrid, "GridPlace");
+                                                            }
                                                         }
                                                     }
                                                 }

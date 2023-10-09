@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.categories;
 
+import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.representation.idea.Category;
@@ -26,11 +27,42 @@ public class RoomCategoryIdeaFunctions implements Category {
     @Override
     public double membership(Idea idea) {
         Idea position = IdeaHelper.searchIdea(idea, "Position");
-        Vector2D pos = new Vector2D((float) position.get("X").getValue(), (float) position.get("Y").getValue());
-        pos = pos.sub(cornerB);
-        Vector2D diag = cornerA.sub(cornerB);
-        if (abs(pos.getX()) <= abs(diag.getX()) && (abs(pos.getY()) <= abs(diag.getY())) && pos.isSameQuadrant(diag))
-            return 1.0;
+        if (position != null) {
+            Vector2D pos = new Vector2D((float) position.get("X").getValue(), (float) position.get("Y").getValue());
+            pos = pos.sub(cornerB);
+            Vector2D diag = cornerA.sub(cornerB);
+            if (abs(pos.getX()) <= abs(diag.getX()) && (abs(pos.getY()) <= abs(diag.getY())) && pos.isSameQuadrant(diag))
+                return 1.0;
+            return 0;
+        }
+        Idea grid = IdeaHelper.searchIdea(idea, "Grid_Place");
+        if (grid != null){
+            int[] gridCornerA = GridLocation.getInstance().locateHCC(cornerA.sub(cornerB).getX()/ 2, cornerA.sub(cornerB).getY()/2);
+            int[] gridCornerB = GridLocation.getInstance().locateHCC(cornerB.sub(cornerA).getX()/2, cornerB.sub(cornerA).getY()/2);
+            double u = (double) grid.get("u").getValue();
+            double v = (double) grid.get("v").getValue();
+            if (gridCornerA[0] > gridCornerB[0]) {
+                if (gridCornerA[1] > gridCornerB[1]) {
+                    if (gridCornerB[0] <= u && u <= gridCornerA[0] &&
+                    gridCornerB[1] <= v && v <= gridCornerA[1])
+                        return 1;
+                } else {
+                    if (gridCornerB[0] <= u && u <= gridCornerA[0] &&
+                        gridCornerA[1] <= v && v <= gridCornerB[1])
+                        return 1;
+                }
+            } else {
+                if (gridCornerA[1] > gridCornerB[1]) {
+                    if (gridCornerA[0] <= u && u <= gridCornerB[0] &&
+                            gridCornerB[1] <= v && v <= gridCornerA[1])
+                        return 1;
+                } else {
+                    if (gridCornerA[0] <= u && u <= gridCornerB[0] &&
+                            gridCornerA[1] <= v && v <= gridCornerB[1])
+                        return 1;
+                }
+            }
+        }
         return 0;
     }
 

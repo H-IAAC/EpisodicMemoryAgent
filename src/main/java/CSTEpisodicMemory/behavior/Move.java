@@ -30,6 +30,7 @@ public class Move extends Codelet {
     private GraphIdea epltmGraph;
     private Idea currPos;
     private Idea room;
+    private Idea lastRoom;
 
     public Move() {
         this.name = "MoveBehaviour";
@@ -68,7 +69,7 @@ public class Move extends Codelet {
     public void proc() {
         if (impulse != null) {
             if (impulse.get("State.Self.Position") != null && innerMO.getI() != null) {
-                currPos = ((Idea) innerMO.getI()).get("Grid_Place");
+                currPos = ((Idea) innerMO.getI()).get("Occupation").getL().get(0);
                 synchronized (roomMO) {
                     room = (Idea) ((Idea) roomMO.getI()).get("Location").getValue();
                 }
@@ -217,9 +218,10 @@ public class Move extends Codelet {
             if (plan != null && !plan.isEmpty() && room != highPlan.get(0)) {
 
                 Idea nextGridPlace = plan.get(0);
-                if (plan.get(0) == currPos){
+                if (plan.get(0) == currPos || room != lastRoom){
                     plan.remove(0);
                 }
+                lastRoom = room;
 
                 double[] destPos = GridLocation.getInstance().toXY((double) nextGridPlace.get("u").getValue(), (double) nextGridPlace.get("v").getValue());
                 destPos[0] += (double) room.get("center.x").getValue();
@@ -233,6 +235,7 @@ public class Move extends Codelet {
                 if (room == highPlan.get(0) && highPlan.size()>1){
                     highPlan.remove(0);
                 }
+                lastRoom = room;
                 Idea nextRoom = highPlan.get(0);
                 Optional<Idea> exit = room.get("Exits").getL().stream().filter(e->((Idea) e.get("Room").getValue()) == nextRoom).findFirst();
                 if (exit.isPresent()){
@@ -245,7 +248,13 @@ public class Move extends Codelet {
                             (double) gridDest.get("u").getValue(),
                             (double) gridDest.get("v").getValue()
                     };
-                    plan = GridLocation.getInstance().trajectoryInHCC(start,end);
+                    List<Idea> path = GridLocation.getInstance().trajectoryInHCC(start,end);
+                    Iterator<Idea> it = path.listIterator();
+                    int count = 0;
+                    while (it.hasNext() && room.membership(it.next()) > 0.5){
+                        count++;
+                    }
+                    plan = path.subList(count > 0 ? count - 1 : 0, path.size());
                 }
             }
         }

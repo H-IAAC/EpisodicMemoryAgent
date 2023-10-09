@@ -461,6 +461,20 @@ public class GraphIdea {
         return parent.orElse(null);
     }
 
+    public Idea commomParent(Idea nodeA, List<Idea> nodesB){
+        List<Idea> parents = new ArrayList<>();
+        List<Idea> aBacks = nodeA.get("BackLinks").getL().stream().flatMap(l->l.getL().stream()).collect(Collectors.toList());
+        for (Idea nodeB : nodesB){
+            List<Idea> bBacks = nodeB.get("BackLinks").getL().stream().flatMap(l->l.getL().stream()).collect(Collectors.toList());
+            Optional<Idea> parent = aBacks.stream().filter(bBacks::contains).findFirst();
+            parents.add(parent.orElse(null));
+        }
+
+        if (parents.contains(null) || parents.stream().distinct().count() > 1)
+            return null;
+        return parents.get(0);
+    }
+
     public static class Node {
         Idea node;
 

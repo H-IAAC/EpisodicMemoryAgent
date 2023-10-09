@@ -55,22 +55,22 @@ public class GridLocation {
         //}
     }
 
-    public double[] locateHCC(double x, double y) {
+    public int[] locateHCC(double x, double y) {
         KDTree.Node near = grid.findNearest(new KDTree.Node(x, y));
         //double u = ((SQRT_3 / 3 * near.getX() - near.getY() / 3)) / SCALE;
         double u = (SQRT_3 * near.getX() / (3 * SCALE)) - ((Math.abs((2 * near.getY()) / (3 * SCALE)) % 2) / 2);
         double v = (2 * near.getY() / 3) / SCALE;
 
-        return new double[]{u, v};
+        return new int[]{(int) Math.round(u), (int) Math.round(v)};
     }
 
-    public double[] locateHCC(double[] coord) {
+    public int[] locateHCC(double[] coord) {
         return locateHCC(coord[0], coord[1]);
     }
 
     public Idea locateHCCIdea(double x, double y) {
-        double[] hcc = locateHCC(x, y);
-        return referenceMap[(int) (Math.round(hcc[0]) + GRID_SIZE / 2)][(int) (Math.round(hcc[1]) + GRID_SIZE / 2)];
+        int[] hcc = locateHCC(x, y);
+        return referenceMap[hcc[0] + GRID_SIZE / 2][hcc[1] + GRID_SIZE / 2];
     }
 
     public double[] toXY(double u, double v) {
@@ -79,10 +79,10 @@ public class GridLocation {
         return new double[]{x, y};
     }
 
-    public static String toColor(double[] hcc) {
-        double r = hcc[0] * 255 / GRID_SIZE + 255d / 2;
-        double g = hcc[1] * 255 / GRID_SIZE + 255d / 2;
-        double b = hcc[1] * 255 / GRID_SIZE + 255d / 2;
+    public static String toColor(int[] hcc) {
+        double r = hcc[0] * 255d / GRID_SIZE + 255d / 2;
+        double g = hcc[1] * 255d / GRID_SIZE + 255d / 2;
+        double b = hcc[1] * 255d / GRID_SIZE + 255d / 2;
         String sr = Integer.toHexString((int) r);
         sr = sr.length() == 2 ? sr : "0" + sr;
         String sg = Integer.toHexString((int) g);
@@ -117,7 +117,7 @@ public class GridLocation {
     }
 
     public double dist(double[] a, double[] b) {
-        return Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]);
+        return Math.hypot(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
     }
 
     public List<double[]> adjacentCellsHCC(double[] pos) {

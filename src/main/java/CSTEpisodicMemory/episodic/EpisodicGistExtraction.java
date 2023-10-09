@@ -174,50 +174,14 @@ public class EpisodicGistExtraction extends Codelet {
             }
             for (Idea contextNode : story.getContextNodes()){
                 Idea contextContent = getNodeContent(contextNode);
-                //LTMImpulse.setName(LTMImpulse.getName() + impulseCount++);
-                //LTMImpulse.setName(LTMImpulse.getName() + LTMImpulse.getId());
-                List<Idea> contextPos = story.getChildrenWithLink(contextNode, "GridPlace");
-                if (!contextPos.isEmpty()){
-                    Idea posContent = getNodeContent(contextPos.get(0));
-                    contextContent.getL().remove(posContent);
-                    Idea LTContextNode = epLTMGraph.insertContextNode(contextContent);
-                    Idea LTPosNode = epLTMGraph.insertLocationNode(posContent);
-                    Idea spatialLinkNode = epLTMGraph.commomParent(LTContextNode, LTPosNode);
-                    if (spatialLinkNode == null){
-                        Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
-                        spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
-                        epLTMGraph.insertLink(spatialLinkNode, LTContextNode, "Object");
-                        epLTMGraph.insertLink(spatialLinkNode, LTPosNode, "GridPlace");
-                    }
-                    instanceNodeToMemoryNode.put(contextNode, spatialLinkNode);
-                } else {
-                    Idea LTContextNode = epLTMGraph.insertContextNode(contextContent);
-                    instanceNodeToMemoryNode.put(contextNode, LTContextNode);
-                }
+                Idea LTContextNode = epLTMGraph.insertContextNode(contextContent);
+                insertContextWithSpatialLink(contextNode, story, contextContent, epLTMGraph, LTContextNode, instanceNodeToMemoryNode);
             }
 
             for (Idea objectNode : story.getObjectNodes()){
                 Idea objectContent = getNodeContent(objectNode);
-                //LTMImpulse.setName(LTMImpulse.getName() + impulseCount++);
-                //LTMImpulse.setName(LTMImpulse.getName() + LTMImpulse.getId());
-                List<Idea> contextPos = story.getChildrenWithLink(objectNode, "GridPlace");
-                if (!contextPos.isEmpty()){
-                    Idea posContent = getNodeContent(contextPos.get(0));
-                    objectContent.getL().remove(posContent);
-                    Idea LTObjectNode = epLTMGraph.insertObjectNode(objectContent);
-                    Idea LTPosNode = epLTMGraph.insertLocationNode(posContent);
-                    Idea spatialLinkNode = epLTMGraph.commomParent(LTObjectNode, LTPosNode);
-                    if (spatialLinkNode == null){
-                        Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
-                        spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
-                        epLTMGraph.insertLink(spatialLinkNode, LTObjectNode, "Object");
-                        epLTMGraph.insertLink(spatialLinkNode, LTPosNode, "GridPlace");
-                    }
-                    instanceNodeToMemoryNode.put(objectNode, spatialLinkNode);
-                } else {
-                    Idea LTContextNode = epLTMGraph.insertObjectNode(objectContent);
-                    instanceNodeToMemoryNode.put(objectNode, LTContextNode);
-                }
+                Idea LTObjectNode = epLTMGraph.insertObjectNode(objectContent);
+                insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, LTObjectNode, instanceNodeToMemoryNode);
             }
 
             //Clone links to LTM
@@ -255,21 +219,47 @@ public class EpisodicGistExtraction extends Codelet {
         }
     }
 
+    private void insertContextWithSpatialLink(Idea contextNode, GraphIdea story, Idea contextContent, GraphIdea epLTMGraph, Idea LTContextNode, Map<Idea, Idea> instanceNodeToMemoryNode) {
+        List<Idea> contextPos = story.getChildrenWithLink(contextNode, "GridPlace");
+        if (!contextPos.isEmpty()){
+            List<Idea> LTPosNodes = new ArrayList<>();
+            for (Idea pos : contextPos){
+                LTPosNodes.add(epLTMGraph.insertLocationNode(pos));
+            }
+            contextContent.getL().remove(contextContent.get("Occupation"));
+            Idea spatialLinkNode = epLTMGraph.commomParent(LTContextNode, LTPosNodes);
+            if (spatialLinkNode == null){
+                Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
+                spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
+                epLTMGraph.insertLink(spatialLinkNode, LTContextNode, "Object");
+                for (Idea LTPosNode : LTPosNodes)
+                    epLTMGraph.insertLink(spatialLinkNode, LTPosNode, "GridPlace");
+            }
+            instanceNodeToMemoryNode.put(contextNode, spatialLinkNode);
+        } else {
+            instanceNodeToMemoryNode.put(contextNode, LTContextNode);
+        }
+    }
+
     private Idea makeSpatialLink(Optional<Idea> initialObject, GraphIdea epLTMGraph) {
         Idea initialNode;
         if(initialObject.isPresent()){
             Idea obj = initialObject.get();
-            Idea objPos = obj.get("Grid_Place");
-            if (objPos != null){
-                obj.getL().remove(objPos);
+            Idea objOccupation = obj.get("Occupation");
+            if (objOccupation != null){
+                obj.getL().remove(objOccupation);
                 Idea objNode = epLTMGraph.insertObjectNode(obj);
-                Idea posNode = epLTMGraph.insertLocationNode(objPos);
-                Idea spatialLinkNode = epLTMGraph.commomParent(objNode, posNode);
+                List<Idea> posNodes = new ArrayList<>();
+                for (Idea objGrid : objOccupation.getL()){
+                    posNodes.add(epLTMGraph.insertLocationNode(objGrid));
+                }
+                Idea spatialLinkNode = epLTMGraph.commomParent(objNode, posNodes);
                 if (spatialLinkNode == null){
                     Idea spatialLink = new Idea("SpatialLink" + spatialLinkCount++, null, "Link", 1);
                     spatialLinkNode = epLTMGraph.insertContextNode(spatialLink);
                     epLTMGraph.insertLink(spatialLinkNode, objNode, "Object");
-                    epLTMGraph.insertLink(spatialLinkNode, posNode, "GridPlace");
+                    for (Idea posNode : posNodes)
+                        epLTMGraph.insertLink(spatialLinkNode, posNode, "GridPlace");
                 }
                 initialNode = spatialLinkNode;
             } else {
