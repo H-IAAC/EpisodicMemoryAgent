@@ -153,6 +153,7 @@ public class IdeaVisualizer extends javax.swing.JFrame {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+        System.out.println("Print");
         ideaPanel = new IdeaPanel(idea, false);
         ideaPanel.updateTree();
         ideaPanel.expandAllNodes();
@@ -162,8 +163,16 @@ public class IdeaVisualizer extends javax.swing.JFrame {
         revalidate();
     }
 
+    public void addMemoryWatch(String memoryName){
+        addMemoryWatch(memoryName, 10);
+    }
+
     public void addMemoryWatch(String memoryName, int printLevel) {
         list1Model.addElement(memoryName);
+        memoryLevels.put(memoryName, printLevel);
+    }
+
+    public void setMemoryWatchPrintLevel(String memoryName, int printLevel){
         memoryLevels.put(memoryName, printLevel);
     }
 }

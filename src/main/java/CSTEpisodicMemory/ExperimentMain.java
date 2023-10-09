@@ -13,6 +13,7 @@ import br.unicamp.cst.representation.idea.Idea;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ExperimentMain {
 
@@ -56,21 +57,10 @@ public class ExperimentMain {
          //mv.setVisible(true);
 
          IdeaVisualizer visu = new IdeaVisualizer(a);
-         visu.addMemoryWatch("Story", 6);
-         visu.addMemoryWatch("Impulses", 5);
-         visu.addMemoryWatch("EPLTM", 4);
-         visu.addMemoryWatch("Location", 3);
-         visu.addMemoryWatch("PROPERTIES", 3);
-         visu.addMemoryWatch("FOOD", 3);
-         visu.addMemoryWatch("EVENTS", 5);
-         visu.addMemoryWatch("PERCEPTUAL_BUFFER", 6);
-         visu.addMemoryWatch("CONTEXT_BUFFER", 6);
-         visu.addMemoryWatch("BOUNDARIES", 6);
-         visu.addMemoryWatch("INNER", 6);
-         visu.addMemoryWatch("JEWELS", 6);
-         visu.addMemoryWatch("KNOWN_WALLS", 6);
-         visu.addMemoryWatch("KNOWN_AGENTS", 6);
-         visu.addMemoryWatch("AGENTS", 6);
+         for (String mem : a.getRawMemory().getAllMemoryObjects().stream().map(Memory::getName).collect(Collectors.toList()))
+             visu.addMemoryWatch(mem);
+         visu.setMemoryWatchPrintLevel("EPLTM", 4);
+         visu.setMemoryWatchPrintLevel("EVENTS", 5);
          visu.setVisible(true);
 
          GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
@@ -92,7 +82,6 @@ public class ExperimentMain {
         env.world.createThing(Constants.JewelTypes.WHITE_JEWEL, 0.8f, 9.5f);
         env.world.createThing(Constants.JewelTypes.MAGENTA_JEWEL, 1.0f, 9.5f);
         env.world.createThing(Constants.JewelTypes.YELLOW_JEWEL, 1.2f, 9.5f);
-        env.world.createAgent(2f, 2f);
         try {
             Thread.sleep(3000);
         } catch (InterruptedException ex) {

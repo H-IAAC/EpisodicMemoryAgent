@@ -24,6 +24,7 @@ public class Environment {
     public Environment() {
         world = new WS3DCoppelia(8, 10);
         creature = world.createAgent(1f, 1f);
+        world.createAgent(2f, 2f);
         initializaRooms();
         try {
             world.startSimulation();
