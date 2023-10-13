@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.perception;
 
+import CSTEpisodicMemory.core.representation.GridLocation;
 import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
@@ -15,7 +16,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class WallDetector extends Codelet {
     private Memory visionMO;
     private Memory currentWallsMO;
+    private Memory knownWallsMO;
     private boolean debug = false;
+    private Idea detectedRoom = null;
 
     public WallDetector() {
         this.name = "WallDetector";
@@ -29,7 +32,11 @@ public class WallDetector extends Codelet {
     @Override
     public void accessMemoryObjects() {
         this.visionMO = (MemoryObject) this.getInput("VISION");
+        MemoryObject roomMO = (MemoryObject) this.getInput("ROOM");
+        if (roomMO != null)
+            detectedRoom = (Idea) roomMO.getI();
         this.currentWallsMO = (MemoryObject) this.getOutput("WALLS");
+        this.knownWallsMO = (MemoryObject) this.getInput("KNOWN_WALLS");
 
     }
 
@@ -56,6 +63,7 @@ public class WallDetector extends Codelet {
                         }
                     }
                 }
+                currentWallsMO.setI(wallsIdea);
             }
         }
     }
@@ -77,6 +85,31 @@ public class WallDetector extends Codelet {
         color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
         wallIdea.add(color);
         wallIdea.add(new Idea("ID", t.getId(), "Property", 1));
+        if (detectedRoom != null) {
+            Idea room = (Idea) detectedRoom.get("Location").getValue();
+            double px = t.getPos().get(0) - (double) room.get("center.x").getValue();
+            double py = t.getPos().get(1) - (double) room.get("center.y").getValue();
+            Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+            int[] minCorner = GridLocation.getInstance().locateHCC(px - t.getWidth() / 2, py - t.getDepth() / 2);
+            int[] maxCorner = GridLocation.getInstance().locateHCC(px + t.getWidth() / 2, py + t.getDepth() / 2);
+            for (int i = minCorner[0]; i <= maxCorner[0]; i++) {
+                for (int j = minCorner[1]; j <= maxCorner[1]; j++) {
+                    Idea gridPlace = GridLocation.getInstance().getReferenceGridIdea(i, j);
+                    occupation.add(gridPlace);
+                }
+            }
+            wallIdea.add(occupation);
+        }
+        synchronized (knownWallsMO){
+            Idea outputIdea = (Idea) knownWallsMO.getI();
+            List<Idea> known = Collections.synchronizedList(outputIdea.getL());
+            for (Idea know : known) {
+                if (know.get("ID").getValue().equals(t.getId())) {
+                    wallIdea.add(know.get("Novelty"));
+                    break;
+                }
+            }
+        }
         return wallIdea;
     }
 }

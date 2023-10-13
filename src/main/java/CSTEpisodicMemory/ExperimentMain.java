@@ -56,6 +56,7 @@ public class ExperimentMain {
          //MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
          //mv.setVisible(true);
 
+         System.out.println("Init");
          IdeaVisualizer visu = new IdeaVisualizer(a);
          for (String mem : a.getRawMemory().getAllMemoryObjects().stream().map(Memory::getName).collect(Collectors.toList()))
              visu.addMemoryWatch(mem);

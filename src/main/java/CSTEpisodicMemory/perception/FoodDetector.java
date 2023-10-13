@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.perception;
 
+import CSTEpisodicMemory.core.representation.GridLocation;
 import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
@@ -8,6 +9,7 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,6 +17,9 @@ public class FoodDetector extends Codelet {
 
     private Memory foodMO;
     private Memory visionMO;
+    private Memory knownFoodMO;
+
+    private Idea detectedRoom = null;
 
     public FoodDetector(){
         this.name = "FoodDetector";
@@ -24,6 +29,10 @@ public class FoodDetector extends Codelet {
     public void accessMemoryObjects() {
         foodMO = (MemoryObject) getOutput("FOOD");
         visionMO = (MemoryObject) this.getInput("VISION");
+        knownFoodMO = (MemoryObject) this.getInput("KNOWN_FOODS");
+        MemoryObject roomMO = (MemoryObject) this.getInput("ROOM");
+        if (roomMO != null)
+            detectedRoom = (Idea) roomMO.getI();
     }
 
     @Override
@@ -55,7 +64,7 @@ public class FoodDetector extends Codelet {
         }
     }
 
-    public static Idea constructFoodIdea(Thing t) {
+    public Idea constructFoodIdea(Thing t) {
 
         Idea foodIdea = new Idea("Food", t.getTypeName(), "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
@@ -68,6 +77,27 @@ public class FoodDetector extends Codelet {
         color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
         foodIdea.add(color);
         foodIdea.add(new Idea("ID", t.getId(), "Property", 1));
+        if (detectedRoom != null) {
+            if (detectedRoom.get("Location") != null) {
+                Idea room = (Idea) detectedRoom.get("Location").getValue();
+                double px = t.getPos().get(0) - (double) room.get("center.x").getValue();
+                double py = t.getPos().get(1) - (double) room.get("center.y").getValue();
+                Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+                Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
+                occupation.add(gridPlace);
+                foodIdea.add(occupation);
+            }
+        }
+        synchronized (knownFoodMO){
+            Idea outputIdea = (Idea) knownFoodMO.getI();
+            List<Idea> known = Collections.synchronizedList(outputIdea.getL());
+            for (Idea know : known) {
+                if (know.get("ID").getValue().equals(t.getId())) {
+                    foodIdea.add(know.get("Novelty"));
+                    break;
+                }
+            }
+        }
         return foodIdea;
     }
 }

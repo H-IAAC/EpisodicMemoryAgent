@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.perception;
 
+import CSTEpisodicMemory.core.representation.GridLocation;
 import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.model.Identifiable;
 import br.unicamp.cst.core.entities.Codelet;
@@ -8,6 +9,7 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,6 +17,9 @@ public class AgentDetector extends Codelet {
 
     private Memory visionMO;
     private Memory currentAgentsMO;
+    private Memory knownAgentsMO;
+
+    private Idea detectedRoom = null;
 
     public AgentDetector(){
         this.name = "AgentDetector";
@@ -24,6 +29,10 @@ public class AgentDetector extends Codelet {
     public void accessMemoryObjects() {
         visionMO = (MemoryObject) getInput("VISION");
         currentAgentsMO = (MemoryObject) getOutput("AGENTS");
+        knownAgentsMO = (MemoryObject) this.getInput("KNOWN_AGENTS");
+        MemoryObject roomMO = (MemoryObject) this.getInput("ROOM");
+        if (roomMO != null)
+            detectedRoom = (Idea) roomMO.getI();
     }
 
     @Override
@@ -60,6 +69,27 @@ public class AgentDetector extends Codelet {
         color.add(new Idea("G", agent.getColor().get(1), "QualityDimension", 1));
         color.add(new Idea("B", agent.getColor().get(2), "QualityDimension", 1));
         agentIdea.add(color);
+        if (detectedRoom != null) {
+            if (detectedRoom.get("Location") != null) {
+                Idea room = (Idea) detectedRoom.get("Location").getValue();
+                double px = agent.getPosition().get(0) - (double) room.get("center.x").getValue();
+                double py = agent.getPosition().get(1) - (double) room.get("center.y").getValue();
+                Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+                Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
+                occupation.add(gridPlace);
+                agentIdea.add(occupation);
+            }
+        }
+        synchronized (knownAgentsMO){
+            Idea outputIdea = (Idea) knownAgentsMO.getI();
+            List<Idea> known = Collections.synchronizedList(outputIdea.getL());
+            for (Idea know : known) {
+                if (know.get("ID").getValue().equals(agent.getId())) {
+                    agentIdea.add(know.get("Novelty"));
+                    break;
+                }
+            }
+        }
         return agentIdea;
     }
 }

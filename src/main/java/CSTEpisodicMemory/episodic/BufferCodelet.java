@@ -18,6 +18,7 @@ public class BufferCodelet extends Codelet {
     private Memory bufferMO;
 
     private int bufferSize = 10;
+    private boolean checkPerception = false;
 
     public BufferCodelet() {
         this.name = "BufferCodelet";
@@ -59,14 +60,28 @@ public class BufferCodelet extends Codelet {
             //    throw new RuntimeException(e);
             //}
             synchronized (inputsMO) {
-            for (Memory input : inputsMO) {
+                for (Memory input : inputsMO) {
                     Idea content = (Idea) input.getI();
                     if (content != null) {
-                        currTimestep.add(IdeaHelper.cloneIdea(content));
+                        if (checkPerception) {
+                            if (content.get("Novelty") != null && content.get("Occupation") != null)
+                                currTimestep.add(IdeaHelper.cloneIdea(content));
+                            else
+                                for (Idea sub : content.getL()) {
+                                    if (sub.get("Novelty") != null && sub.get("Occupation") != null)
+                                        currTimestep.add(IdeaHelper.cloneIdea(sub));
+                                }
+                        } else {
+                            currTimestep.add(IdeaHelper.cloneIdea(content));
+                        }
                     }
                 }
                 buffer.add(currTimestep);
             }
         }
+    }
+
+    public void setCheckPerception(boolean checkPerception) {
+        this.checkPerception = checkPerception;
     }
 }

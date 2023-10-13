@@ -54,7 +54,7 @@ public class ExploreImpulse extends Codelet {
         if (numJewels == 0){
             synchronized (impulsesMO) {
                 Idea impulse = (Idea) impulsesMO.getI(this.impulseCat);
-                if (impulse != null) {
+                if (impulse != null && inner != null) {
                     Vector2D dest = new Vector2D(
                             (float) impulse.get("State.Self.Position.X").getValue(),
                             (float) impulse.get("State.Self.Position.Y").getValue());

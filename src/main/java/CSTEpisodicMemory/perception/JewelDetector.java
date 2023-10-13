@@ -4,6 +4,7 @@
  */
 package CSTEpisodicMemory.perception;
 
+import CSTEpisodicMemory.core.representation.GridLocation;
 import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
 import br.unicamp.cst.core.entities.Codelet;
@@ -22,9 +23,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class JewelDetector extends Codelet {
 
     private Memory visionMO;
+    private Memory jewelsMO;
     private Memory knownJewelsMO;
     private Memory jewelsCountersMO;
     private boolean debug = false;
+    private Idea detectedRoom;
 
     public JewelDetector() {
         this.name = "JewelDetector";
@@ -38,7 +41,10 @@ public class JewelDetector extends Codelet {
     @Override
     public void accessMemoryObjects() {
         this.visionMO = (MemoryObject) this.getInput("VISION");
-        this.knownJewelsMO = (MemoryObject) this.getOutput("JEWELS");
+        MemoryObject roomMO = (MemoryObject) this.getInput("ROOM");
+        detectedRoom = (Idea) roomMO.getI();
+        this.jewelsMO = (MemoryObject) this.getOutput("JEWELS");
+        this.knownJewelsMO = (MemoryObject) this.getInput("KNOWN_JEWELS");
         this.jewelsCountersMO = (MemoryObject) getOutput("JEWELS_COUNTERS");
     }
 
@@ -50,10 +56,10 @@ public class JewelDetector extends Codelet {
     @Override
     public void proc() {
         synchronized (visionMO) {
-            synchronized (knownJewelsMO) {
+            synchronized (jewelsMO) {
 
                 CopyOnWriteArrayList<Identifiable> vision = new CopyOnWriteArrayList((List<Identifiable>) visionMO.getI());
-                Idea jewelsIdea = (Idea) knownJewelsMO.getI();
+                Idea jewelsIdea = (Idea) jewelsMO.getI();
                 if (debug) {
                     System.out.println(jewelsIdea.toStringFull());
                 }
@@ -84,11 +90,12 @@ public class JewelDetector extends Codelet {
                         //}
                     }
                 }
+                jewelsMO.setI(jewelsIdea);
             }
         }
     }
 
-    public static Idea constructJewelIdea(Thing t) {
+    public Idea constructJewelIdea(Thing t) {
 
         Idea jewelIdea = new Idea("Jewel", t.getTypeName(), "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
@@ -101,6 +108,28 @@ public class JewelDetector extends Codelet {
         color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
         jewelIdea.add(color);
         jewelIdea.add(new Idea("ID", t.getId(), "Property", 1));
+
+        if (detectedRoom != null) {
+            if (detectedRoom.get("Location") != null) {
+                Idea room = (Idea) detectedRoom.get("Location").getValue();
+                double px = t.getPos().get(0) - (double) room.get("center.x").getValue();
+                double py = t.getPos().get(1) - (double) room.get("center.y").getValue();
+                Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+                Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
+                occupation.add(gridPlace);
+                jewelIdea.add(occupation);
+            }
+        }
+        synchronized (knownJewelsMO){
+            Idea outputIdea = (Idea) knownJewelsMO.getI();
+            List<Idea> known = Collections.synchronizedList(outputIdea.getL());
+            for (Idea know : known) {
+                if (know.get("ID").getValue().equals(t.getId())) {
+                    jewelIdea.add(know.get("Novelty"));
+                    break;
+                }
+            }
+        }
         return jewelIdea;
     }
 }

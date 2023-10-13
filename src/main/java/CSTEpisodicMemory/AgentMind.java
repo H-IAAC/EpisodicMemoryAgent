@@ -232,7 +232,7 @@ public class AgentMind extends Mind {
         //Leaflets
         Idea leafletsIdea = new Idea("Leaflets", null, 0);
         leafletsMO = createMemoryObject("LEAFLETS", leafletsIdea);
-        registerMemory(leafletsMO, "Perceptual");
+        //registerMemory(leafletsMO, "Perceptual");
         //Impulses
         //Idea impulsesIdea = new Idea("Impulses", null, 0);
         impulsesMO = createMemoryContainer("IMPULSES");
@@ -271,76 +271,88 @@ public class AgentMind extends Mind {
         //Food Detector Codelet
         Codelet foodDetectorCodelet = new FoodDetector();
         foodDetectorCodelet.addInput(visionMO);
+        foodDetectorCodelet.addInput(knownFoodsMO);
+        foodDetectorCodelet.addInput(roomsMO);
         foodDetectorCodelet.addOutput(foodPerceptionMO);
         insertCodelet(foodDetectorCodelet, "Perception");
 
         Codelet foodsLearner = new PerceptualLearnerCodelet("FOOD", "KNOWN_FOODS");
+        foodsLearner.setIsMemoryObserver(true);
         foodsLearner.addInput(foodPerceptionMO);
         foodsLearner.addOutput(knownFoodsMO);
         insertCodelet(foodsLearner, "Perception");
 
-        Codelet foodGridLocator = new GridLocatorCodelet("FOOD", "FOOD");
-        foodGridLocator.addInput(foodPerceptionMO);
-        foodGridLocator.addOutput(foodPerceptionMO);
-        foodGridLocator.addInput(categoriesRoomMO);
-        foodGridLocator.addInput(roomsMO);
-        insertCodelet(foodGridLocator);
+        //Codelet foodGridLocator = new GridLocatorCodelet("FOOD", "FOOD");
+        //foodGridLocator.addInput(foodPerceptionMO);
+        //foodGridLocator.addOutput(foodPerceptionMO);
+        //foodGridLocator.addInput(categoriesRoomMO);
+        //foodGridLocator.addInput(roomsMO);
+        //insertCodelet(foodGridLocator);
 
         //Agent Detector
         Codelet agentDetectorCodelet = new AgentDetector();
         agentDetectorCodelet.addInput(visionMO);
+        agentDetectorCodelet.addInput(roomsMO);
+        agentDetectorCodelet.addInput(knownAgentsMO);
         agentDetectorCodelet.addOutput(agentPerceptionMO);
         insertCodelet(agentDetectorCodelet, "Perception");
 
         Codelet agentLearner = new PerceptualLearnerCodelet("AGENTS", "KNOWN_AGENTS");
+        agentLearner.setIsMemoryObserver(true);
         agentLearner.addInput(agentPerceptionMO);
         agentLearner.addOutput(knownAgentsMO);
         insertCodelet(agentLearner, "Perception");
 
-        Codelet agentGridLocator = new GridLocatorCodelet("AGENTS", "AGENTS");
-        agentGridLocator.addInput(agentPerceptionMO);
-        agentGridLocator.addOutput(agentPerceptionMO);
-        agentGridLocator.addInput(roomsMO);
-        agentGridLocator.addInput(categoriesRoomMO);
-        insertCodelet(agentGridLocator, "Perception");
+        //Codelet agentGridLocator = new GridLocatorCodelet("AGENTS", "AGENTS");
+        //agentGridLocator.addInput(agentPerceptionMO);
+        //agentGridLocator.addOutput(agentPerceptionMO);
+        //agentGridLocator.addInput(roomsMO);
+        //agentGridLocator.addInput(categoriesRoomMO);
+        //insertCodelet(agentGridLocator, "Perception");
 
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
         jewelDetectorCodelet.addInput(visionMO);
+        jewelDetectorCodelet.addInput(knownJewelsMO);
+        jewelDetectorCodelet.addInput(roomsMO);
         jewelDetectorCodelet.addOutput(jewelsPerceptionMO);
         jewelDetectorCodelet.addOutput(jewelsCounterMO);
         insertCodelet(jewelDetectorCodelet, "Perception");
 
         Codelet jewelLearner = new PerceptualLearnerCodelet("JEWELS", "KNOWN_JEWELS");
+        jewelLearner.setIsMemoryObserver(true);
         jewelLearner.addInput(jewelsPerceptionMO);
         jewelLearner.addOutput(knownJewelsMO);
         insertCodelet(jewelLearner, "Perception");
 
 
-        Codelet jewelGridLocator = new GridLocatorCodelet("JEWELS", "JEWELS");
-        jewelGridLocator.addInput(jewelsPerceptionMO);
-        jewelGridLocator.addOutput(jewelsPerceptionMO);
-        jewelGridLocator.addInput(roomsMO);
-        jewelGridLocator.addInput(categoriesRoomMO);
-        insertCodelet(jewelGridLocator);
+        //Codelet jewelGridLocator = new GridLocatorCodelet("JEWELS", "JEWELS");
+        //jewelGridLocator.addInput(jewelsPerceptionMO);
+        //jewelGridLocator.addOutput(jewelsPerceptionMO);
+        //jewelGridLocator.addInput(roomsMO);
+        //jewelGridLocator.addInput(categoriesRoomMO);
+        //insertCodelet(jewelGridLocator);
 
         //Walls Detector Codelet
         Codelet wallsDetectorCodelet = new WallDetector(debug);
         wallsDetectorCodelet.addInput(visionMO);
+        wallsDetectorCodelet.addInput(roomsMO);
+        wallsDetectorCodelet.addInput(knownWallsMO);
         wallsDetectorCodelet.addOutput(wallsPerceptionMO);
         insertCodelet(wallsDetectorCodelet, "Perception");
 
         Codelet wallsLearner = new PerceptualLearnerCodelet("WALLS", knownWallsMO.getName());
+        wallsLearner.setIsMemoryObserver(true);
         wallsLearner.addInput(wallsPerceptionMO);
         wallsLearner.addOutput(knownWallsMO);
         insertCodelet(wallsLearner, "Perception");
 
-        Codelet wallGridLocator = new GridLocatorCodelet("WALLS", "WALLS");
-        wallGridLocator.addInput(wallsPerceptionMO);
-        wallGridLocator.addOutput(wallsPerceptionMO);
-        wallGridLocator.addInput(roomsMO);
-        wallGridLocator.addInput(categoriesRoomMO);
-        insertCodelet(wallGridLocator);
+        //Codelet wallGridLocator = new GridLocatorCodelet("WALLS", "WALLS");
+        //wallGridLocator.addInput(roomsMO);
+        //wallGridLocator.addInput(categoriesRoomMO);
+        //wallGridLocator.addInput(wallsPerceptionMO);
+        //wallGridLocator.addOutput(wallsPerceptionMO);
+        //insertCodelet(wallGridLocator);
 
         //RoomDetector Codelet
         Codelet roomDetectorCodelet = new RoomDetector();
@@ -486,7 +498,8 @@ public class AgentMind extends Mind {
         episodeBindingCodelet.addOutput(storyMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
 
-        Codelet perceptualBufferCodelet = new BufferCodelet();
+        BufferCodelet perceptualBufferCodelet = new BufferCodelet();
+        perceptualBufferCodelet.setCheckPerception(true);
         perceptualBufferCodelet.addInputs(getMemoryGroupList("Perceptual"));
         perceptualBufferCodelet.addOutput(perceptualBufferMO);
         insertCodelet(perceptualBufferCodelet);
