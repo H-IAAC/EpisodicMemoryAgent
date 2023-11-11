@@ -180,8 +180,11 @@ public class EpisodicGistExtraction extends Codelet {
 
             for (Idea objectNode : story.getObjectNodes()){
                 Idea objectContent = getNodeContent(objectNode);
-                Idea LTObjectNode = epLTMGraph.insertObjectNode(objectContent);
-                insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, LTObjectNode, instanceNodeToMemoryNode);
+                if(objectContent.get("Novelty") != null)
+                    if ((double) objectContent.get("Novelty").getValue() >= 0.9) {
+                        Idea LTObjectNode = epLTMGraph.insertObjectNode(objectContent);
+                        insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, LTObjectNode, instanceNodeToMemoryNode);
+                    }
             }
 
             //Clone links to LTM

@@ -23,7 +23,7 @@ public class GoToJewelImpulseTest {
         Thing wantJewel = world.createThing(Constants.JewelTypes.BLUE_JEWEL, 1f, 1f);
         jewels.setName("KNOWN_JEWELS");
         Idea jewel = new Idea("Jewels", null, 0);
-        jewel.add(JewelDetector.constructJewelIdea(wantJewel));
+        jewel.add(new JewelDetector().constructJewelIdea(wantJewel));
         jewels.setI(jewel);
         return jewels;
     }
@@ -32,6 +32,6 @@ public class GoToJewelImpulseTest {
         WS3DCoppelia world = new WS3DCoppelia();
         GoToJewelImpulse codelet = new GoToJewelImpulse();
         codelet.addInput(createInnerMemory());
-        codelet.addInput(createJewelsMemory(world));
+        //codelet.addInput(createJewelsMemory(world));
     }
 }

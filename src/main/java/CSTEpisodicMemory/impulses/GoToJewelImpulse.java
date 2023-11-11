@@ -18,11 +18,11 @@ public class GoToJewelImpulse extends Codelet {
     private MemoryContainer impulsesMO;
     private Idea inner;
     private Idea leaflets;
-    private Idea jewels;
+    private Idea known_jewels;
 
     private final double minDesire = 0.7;
     private final double maxDesire = 0.8;
-    private final String impulseCat = "GoTo";
+    private final String impulseCat = "GoToJewel";
 
     public GoToJewelImpulse(){
         this.name = "GoToJewelImpulse";
@@ -35,7 +35,7 @@ public class GoToJewelImpulse extends Codelet {
         this.leafletMO = (MemoryObject) getInput("LEAFLETS");
         this.leaflets = (Idea) leafletMO.getI();
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
-        this.jewels = (Idea) jewelsMO.getI();
+        this.known_jewels = (Idea) jewelsMO.getI();
         this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
     }
 
@@ -48,10 +48,10 @@ public class GoToJewelImpulse extends Codelet {
     public void proc() {
         removeSatisfiedImpulses();
 
-        int numJewels = jewels.getL().size();
+        int numJewels = known_jewels.getL().size();
         if (numJewels > 0){
             synchronized (jewelsMO) {
-                for (Idea jewel : jewels.getL()) {
+                for (Idea jewel : known_jewels.getL()) {
                     double desirability = calculateDesirability(jewel);
                     if (desirability > -1.0) {
                         desirability = desirability * (maxDesire - minDesire) + minDesire;
@@ -68,7 +68,7 @@ public class GoToJewelImpulse extends Codelet {
 
     private void removeSatisfiedImpulses() {
         List<Memory> toRemove = new ArrayList<>();
-        List<Integer> jewelsID = jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).collect(Collectors.toList());
+        List<Integer> jewelsID = known_jewels.getL().stream().map(e-> (int) e.get("ID").getValue()).collect(Collectors.toList());
         List<Memory> impulsesMemories = impulsesMO.getAllMemories();
         synchronized (impulsesMO) {
             for (Memory impulseMem : impulsesMemories){

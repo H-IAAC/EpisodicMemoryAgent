@@ -28,7 +28,7 @@ public class LinearEventCategory extends EventCategory {
 
     @Override
     protected boolean checkVectorSize(List<ArrayRealVector> propertiesVector) {
-        return propertiesVector.size() == 3;
+        return propertiesVector.size() >= 3;
     }
 
     private double getAbsAngle(ArrayRealVector vecA, ArrayRealVector vecB) {

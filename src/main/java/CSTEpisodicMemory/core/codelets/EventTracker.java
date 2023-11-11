@@ -129,17 +129,13 @@ public class EventTracker extends MemoryCodelet {
                             //Check if current state is coherent with previous states and event category
                             Idea initialEventIdea = getInitialEventOf(objectName);
                             Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
-                            if (trackedEventCategory.membership(testEvent) >= detectionTreashold && !isForcedSegmentation(objectName)) {
+                            if (trackedEventCategory.membership(testEvent) > detectionTreashold && !isForcedSegmentation(objectName)) {
                                 //Copies start of the event
                                 if (initialEventIdea == null) setBufferTopAsInitialEvent(objectName);
-                                if (objectName.contains("Agent"))
-                                    System.out.println("looking for event");
 
                                 pushStepToMemory(object, (long) timeStep.getValue());
                             } else {
                                 if (initialEventIdea != null) {
-                                    if (objectName.contains("Agent"))
-                                        System.out.println("Found evennt");
                                     Idea constraints = new Idea("Constraints");
                                     constraints.add(new Idea("0", initialEventIdea));
                                     constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
@@ -147,16 +143,6 @@ public class EventTracker extends MemoryCodelet {
                                     event.setName("Event" + count++);
                                     event.setValue(trackedEventCategory);
                                     restartEventStage(object, (long) timeStep.getValue());
-                                    PrintWriter out;
-                                    try {
-                                        FileWriter fw = new FileWriter("events", true);
-                                        BufferedWriter bw = new BufferedWriter(fw);
-                                        bw.write(IdeaHelper.csvPrint(event, 6));
-                                        bw.newLine();
-                                        bw.close();
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
                                     Idea eventsIdea = (Idea) eventsOutputMO.getI();
                                     synchronized (eventsIdea) {
                                         eventsIdea.add(event);
@@ -175,10 +161,6 @@ public class EventTracker extends MemoryCodelet {
             if (!ignoreObjects.contains(objectName)) {
                 Idea testEvent = constructTestEvent(new ArrayList<>(), object);
                 if (trackedEventCategory.membership(testEvent) >= detectionTreashold) {
-                    if (objectName.contains("Agent")) {
-                        System.out.println("start track");
-                        System.out.println(timeStep.getValue());
-                    }
                     pushStepToMemory(object, (long) timeStep.getValue());
                 } else {
                     ignoreObjects.add(objectName);
@@ -242,7 +224,7 @@ public class EventTracker extends MemoryCodelet {
 
     private List<Idea> constructCurrentBufferOf(String objectName) {
         List<Idea> stageEventSteps = internal.get(objectName);
-        if (stageEventSteps.size() > bufferSize) {
+        if (stageEventSteps.size() > 1) {
             return stageEventSteps.subList(1, stageEventSteps.size())
                     .stream()
                     .map(s -> s.getL().get(0))
@@ -282,11 +264,11 @@ public class EventTracker extends MemoryCodelet {
         Idea testEvent = new Idea("Event", null, "Episode", 0);
         List<Idea> steps = new ArrayList<>();
         for (int i = 0; i < inputIdeaBuffer.size(); i++) {
-            Idea step = new Idea("Step", i, "Timestep", 0);
+            Idea step = new Idea("Step_"+i, i, "Timestep", 0);
             step.add(inputIdeaBuffer.get(i));
             steps.add(step);
         }
-        Idea step = new Idea("Step", inputIdeaBuffer.size(), "Timestep", 0);
+        Idea step = new Idea("Step_"+inputIdeaBuffer.size(), inputIdeaBuffer.size(), "Timestep", 0);
         step.add(object);
         steps.add(step);
         testEvent.setL(steps);

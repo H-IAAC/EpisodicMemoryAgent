@@ -63,7 +63,7 @@ public class BufferCodelet extends Codelet {
                 for (Memory input : inputsMO) {
                     Idea content = (Idea) input.getI();
                     if (content != null) {
-                        if (checkPerception) {
+                        if (checkPerception && !content.getName().equals("Self")) {
                             if (content.get("Novelty") != null && content.get("Occupation") != null)
                                 currTimestep.add(IdeaHelper.cloneIdea(content));
                             else

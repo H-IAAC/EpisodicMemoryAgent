@@ -47,9 +47,10 @@ public class CollectJewelImpulse extends Codelet {
 
         int numJewels = jewels.getL().size();
         if (numJewels > 0){
-            for (Idea jewel : jewels.getL()){
+            synchronized (jewelsMO){
+            for (Idea jewel : jewels.getL()) {
                 double desirability = calculateDesirability(jewel);
-                if (desirability > -1.0){
+                if (desirability > -1.0) {
                     desirability = desirability * (maxDesire - minDesire) + minDesire;
                     Idea impulse = createImpulse(jewel, desirability);
                     addIfNotPresent(impulse);
@@ -57,6 +58,7 @@ public class CollectJewelImpulse extends Codelet {
                     Idea impulse = createImpulse(jewel, -1);
                     removeIfPresent(impulse);
                 }
+            }
             }
         }
     }
