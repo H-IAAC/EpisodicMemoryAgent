@@ -3,6 +3,7 @@ package CSTEpisodicMemory.representation;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.habits.AssimilatePropertyCategory;
 import CSTEpisodicMemory.habits.LocationCategoryGenerator;
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.representation.idea.Idea;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -105,10 +106,14 @@ public class GraphIdeaTest {
 
         LocationCategoryGenerator locGen = new LocationCategoryGenerator();
         List<Idea> locCat = new ArrayList<>();
+        List<Idea> subContexts = new ArrayList<>();
         for (int i = 0; i<4; i++){
             Idea newCat = locGen.exec(null);
             locCat.add(newCat);
             epltm.insertLocationNode(newCat);
+            subContexts.add(new Idea("SubContext"+i, null, 2));
+            Idea subNode = epltm.insertContextNode(subContexts.get(i));
+            epltm.insertLink(newCat, subNode, "SubContext");
         }
 
         Idea assimilateSubHabit = new Idea("assimilate", null);
@@ -234,5 +239,24 @@ public class GraphIdeaTest {
         Assertions.assertEquals(propCat.get(8), getNodeContent(beginEventFinalProperty));
         Assertions.assertEquals(propCat.get(9), getNodeContent(endEventInitialProperty));
         Assertions.assertEquals(propCat.get(10), getNodeContent(endEventFinalProperty));
+
+        List<Idea> loc = subGraph.getChildrenWithLink(beginEvent, "Location");
+        Assertions.assertEquals(locCat.get(2), getNodeContent(loc.get(0)));
+        List<Idea> subContext = subGraph.getChildrenWithLink(loc.get(0), "SubContext");
+        Assertions.assertEquals(subContexts.get(2), getNodeContent(subContext.get(0)));
+    }
+
+    @Test
+    public void ideaMatchTest(){
+        Idea a = new Idea("A", 0, 1);
+        a.add(new Idea("S1", 1, 2));
+        a.add(new Idea("S2", 2, 2));
+        Idea b = new Idea("A", 0, 1);
+        b.add(new Idea("S1", 1, 2));
+        b.add(new Idea("S2", 2, 2));
+        b.add(new Idea("S3", 3, 2));
+
+        Assertions.assertTrue(IdeaHelper.match(a, b));
+        Assertions.assertFalse(IdeaHelper.match(b, a));
     }
 }

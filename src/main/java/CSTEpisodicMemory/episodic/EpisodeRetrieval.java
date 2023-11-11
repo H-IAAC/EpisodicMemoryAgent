@@ -17,14 +17,14 @@ public class EpisodeRetrieval extends Codelet {
 
     private Memory cueMO;
     private Memory epltm;
-    private Memory propertiesMO;
+    //private Memory propertiesMO;
     private Memory recallMO;
 
     @Override
     public void accessMemoryObjects() {
         cueMO = (MemoryObject) getInput("CUE");
         epltm = (MemoryObject) getInput("EPLTM");
-        propertiesMO = (MemoryObject) getInput("PROPERTIES");
+        //propertiesMO = (MemoryObject) getInput("PROPERTIES");
         recallMO = (MemoryObject) getOutput("RECALL");
     }
 
@@ -40,25 +40,33 @@ public class EpisodeRetrieval extends Codelet {
         GraphIdea epGraph;
         GraphIdea recalledEpisode = new GraphIdea(new Idea("Failed"));
 
-        List<Idea> propertiesCat = new ArrayList<>();
+        //List<Idea> propertiesCat = new ArrayList<>();
         synchronized (cueMO) {
             cue = new GraphIdea((GraphIdea) cueMO.getI());
         }
         synchronized (epltm) {
             epGraph = (GraphIdea) epltm.getI();
 
-            synchronized (propertiesMO) {
-                for (Idea cat : (ArrayList<Idea>) propertiesMO.getI())
-                    propertiesCat.add(IdeaHelper.cloneIdea(cat));
-            }
+            //synchronized (propertiesMO) {
+            //    for (Idea cat : (ArrayList<Idea>) propertiesMO.getI())
+            //        propertiesCat.add(IdeaHelper.cloneIdea(cat));
+            //}
 
             List<Idea> eventNodes = new ArrayList<>();
 
             //Filter by desired context
-            List<Idea> cueContext = cue.getContextNodes();
+            List<Idea> cueContext = cue.getObjectNodes();
             for (Idea context : cueContext){
                 for (Map.Entry links : epGraph.getPredecessors(context).entrySet()){
-                    eventNodes.addAll((List<Idea>) links.getValue());
+                    if (links.getKey().equals("Object")) {
+                        for (Idea linkedNode : (List<Idea>) links.getValue()){
+                            for (Map.Entry spatialLink : epGraph.getPredecessors(context).entrySet()){
+                                if (spatialLink.getKey().equals("ObjectContex")){
+                                    eventNodes.addAll((List<Idea>) spatialLink.getValue());
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -90,44 +98,58 @@ public class EpisodeRetrieval extends Codelet {
                     epGraph.resetActivations();
                     String observedObject = (String) eventCategory.get("ObservedObject").getValue();
 
-                    Idea initialObjectState = eventContent.getL().get(0).get(observedObject);
-                    Idea finalObjectState = eventContent.getL().get(1).get(observedObject);
+                    Idea initialObjectState = eventContent.getL().get(0).getL().stream()
+                            .filter(o->!o.getName().equals("TimeStamp"))
+                            .findFirst().orElse(null);
+                    Idea finalObjectState = eventContent.getL().get(1).getL().stream()
+                            .filter(o->!o.getName().equals("TimeStamp"))
+                            .findFirst().orElse(null);
 
                     if (initialObjectState != null && finalObjectState != null) {
-                        Idea bestInitialProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(initialObjectState))).orElse(null);
-                        if (bestInitialProperty != null && bestInitialProperty.membership(initialObjectState) == 1) {
-                            Idea node = epGraph.setNodeActivation(bestInitialProperty, 1.0);
-                            epGraph.propagateActivations(node, new ArrayList<>(), Arrays.asList("Initial", "Final"));
-                        }
-                        Idea bestFinalProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(finalObjectState))).orElse(null);
-                        if (bestFinalProperty != null && bestFinalProperty.membership(finalObjectState) == 1) {
-                            Idea node = epGraph.setNodeActivation(bestFinalProperty, 1.0);
-                            epGraph.propagateActivations(node, new ArrayList<>(), Arrays.asList("Initial", "Final"));
-                        }
 
-                        eventNodes.sort(Comparator.comparingDouble(epGraph::getNodeActivation));
-                        Collections.reverse(eventNodes);
+                        List<Idea> eventsNodesFilteredByInitialObject = filterEventsWithLinkToObject(epGraph, eventNodes, initialObjectState, "Initial");
+                        List<Idea> eventsNodesFilteredByFinalObject = filterEventsWithLinkToObject(epGraph, eventNodes, finalObjectState, "Final");
+                        //Idea bestInitialProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(initialObjectState))).orElse(null);
+                        //if (bestInitialProperty != null && bestInitialProperty.membership(initialObjectState) == 1) {
+                        //    Idea node = epGraph.setNodeActivation(bestInitialProperty, 1.0);
+                        //    epGraph.propagateActivations(node, new ArrayList<>(), Arrays.asList("Initial", "Final"));
+                        //}
+                        //Idea bestFinalProperty = propertiesCat.stream().max(Comparator.comparingDouble(idea -> idea.membership(finalObjectState))).orElse(null);
+                        //if (bestFinalProperty != null && bestFinalProperty.membership(finalObjectState) == 1) {
+                        //    Idea node = epGraph.setNodeActivation(bestFinalProperty, 1.0);
+                        //    epGraph.propagateActivations(node, new ArrayList<>(), Arrays.asList("Initial", "Final"));
+                        //}
+
+                        //eventNodes.sort(Comparator.comparingDouble(epGraph::getNodeActivation));
+                        //Collections.reverse(eventNodes);
 
                         List<Idea> eventBestMatches = new ArrayList<>();
-                        int numMatchedProperties = 1;
-                        for (Idea eventMem : eventNodes) {
-                            if (epGraph.getNodeActivation(eventMem) > 0) {
-                                int c = 0;
-                                if (IdeaHelper.match(getNodeContent(epGraph.getChildrenWithLink(eventMem, "Initial").get(0)), bestInitialProperty))
-                                    c++;
-                                if (IdeaHelper.match(getNodeContent(epGraph.getChildrenWithLink(eventMem, "Final").get(0)), bestFinalProperty))
-                                    c++;
-
-                                if (c == numMatchedProperties) {
-                                    eventBestMatches.add(eventMem);
-                                }
-                                if (c > numMatchedProperties) {
-                                    numMatchedProperties = c;
-                                    eventBestMatches = new ArrayList<>();
-                                    eventBestMatches.add(eventMem);
-                                }
-                            }
+                        if (eventsNodesFilteredByInitialObject.stream().anyMatch(eventsNodesFilteredByFinalObject::contains)){
+                            eventsNodesFilteredByInitialObject.retainAll(eventsNodesFilteredByFinalObject);
+                            eventBestMatches = eventsNodesFilteredByInitialObject;
+                        } else {
+                            eventBestMatches.addAll(eventsNodesFilteredByInitialObject);
+                            eventBestMatches.addAll(eventsNodesFilteredByFinalObject);
                         }
+                        //int numMatchedProperties = 1;
+                        //for (Idea eventMem : eventNodes) {
+                        //    if (epGraph.getNodeActivation(eventMem) > 0) {
+                        //        int c = 0;
+                        //        if (IdeaHelper.match(getNodeContent(epGraph.getChildrenWithLink(eventMem, "Initial").get(0)), bestInitialProperty))
+                        //            c++;
+                        //        if (IdeaHelper.match(getNodeContent(epGraph.getChildrenWithLink(eventMem, "Final").get(0)), bestFinalProperty))
+                        //            c++;
+
+                        //        if (c == numMatchedProperties) {
+                        //            eventBestMatches.add(eventMem);
+                        //        }
+                        //        if (c > numMatchedProperties) {
+                        //            numMatchedProperties = c;
+                        //            eventBestMatches = new ArrayList<>();
+                        //            eventBestMatches.add(eventMem);
+                        //        }
+                        //    }
+                        //}
                         bestMatches.put(eventNode, eventBestMatches);
                     }
                 }
@@ -192,32 +214,31 @@ public class EpisodeRetrieval extends Codelet {
                     }
 
                     //Check context
-                    for (Idea context : cueContext){
-                        Map<String, List<Idea>> links = cue.getPredecessors(context);
-                        for (Map.Entry link : links.entrySet()){
-                            for (Idea parent : (List<Idea>) link.getValue()){
-                                List<Idea> memsContext = epGraph.getChildrenWithLink(bestMatches.get(parent).get(currCheckPos.get(parent)), (String) link.getKey());
-                                if (memsContext.isEmpty()){
-                                    valid = false;
-                                    break;
-                                } else {
-                                    Idea memContext = GraphIdea.getNodeContent(memsContext.get(0));
-                                    if (memContext.isCategory()){
-                                        if (!memContext.getName().equals(context.getValue())){
-                                            valid = false;
-                                            break;
-                                        }
-                                    } else {
-                                        if (!memContext.getValue().equals(context.getValue())){
-                                            valid = false;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                            }
-                        }
-                    }
+                    //for (Idea context : cueContext){
+                    //    Map<String, List<Idea>> links = cue.getPredecessors(context);
+                    //    for (Map.Entry link : links.entrySet()){
+                    //        for (Idea parent : (List<Idea>) link.getValue()){
+                    //            List<Idea> memsContext = epGraph.getChildrenWithLink(bestMatches.get(parent).get(currCheckPos.get(parent)), (String) link.getKey());
+                    //            if (memsContext.isEmpty()){
+                    //                valid = false;
+                    //                break;
+                    //            } else {
+                    //                Idea memContext = GraphIdea.getNodeContent(memsContext.get(0));
+                    //                if (memContext.isCategory()){
+                    //                    if (!memContext.getName().equals(context.getValue())){
+                    //                        valid = false;
+                    //                        break;
+                    //                    }
+                    //                } else {
+                    //                    if (!memContext.getValue().equals(context.getValue())){
+                    //                        valid = false;
+                    //                        break;
+                    //                    }
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //}
 
                     if (valid) {
                         for (int i = 0; i < events.size(); i++) {
@@ -298,38 +319,75 @@ public class EpisodeRetrieval extends Codelet {
             }
         }
         //Instantiate Properties
-        Set<Idea> removeCategoriesNodes = new HashSet<>();
-        for (Idea event : recalledEpisode.getEventNodes()) {
-            Idea initialProperty = recalledEpisode.getChildrenWithLink(event, "Initial").get(0);
-            Idea finalProperty = recalledEpisode.getChildrenWithLink(event, "Final").get(0);
-            removeCategoriesNodes.add(initialProperty);
-            removeCategoriesNodes.add(finalProperty);
+        //Set<Idea> removeCategoriesNodes = new HashSet<>();
+        //for (Idea event : recalledEpisode.getEventNodes()) {
+        //    Idea initialProperty = recalledEpisode.getChildrenWithLink(event, "Initial").get(0);
+        //    Idea finalProperty = recalledEpisode.getChildrenWithLink(event, "Final").get(0);
+        //    removeCategoriesNodes.add(initialProperty);
+        //    removeCategoriesNodes.add(finalProperty);
 
-            Idea initialPropertyInstance = getNodeContent(initialProperty).getInstance();
-            Idea finalPropertyInstance = getNodeContent(finalProperty).getInstance();
+        //    Idea initialPropertyInstance = getNodeContent(initialProperty).getInstance();
+        //    Idea finalPropertyInstance = getNodeContent(finalProperty).getInstance();
 
-            Idea initialPropertyNode = recalledEpisode.insertPropertyNode(initialPropertyInstance);
-            Idea finalPropertyNode = recalledEpisode.insertPropertyNode(finalPropertyInstance);
+        //    Idea initialPropertyNode = recalledEpisode.insertPropertyNode(initialPropertyInstance);
+        //    Idea finalPropertyNode = recalledEpisode.insertPropertyNode(finalPropertyInstance);
 
-            recalledEpisode.removeLink(event, initialProperty);
-            recalledEpisode.removeLink(event, finalProperty);
+        //    recalledEpisode.removeLink(event, initialProperty);
+        //    recalledEpisode.removeLink(event, finalProperty);
 
-            recalledEpisode.insertLink(event, initialPropertyNode, "Initial");
-            recalledEpisode.insertLink(event, finalPropertyNode, "Final");
+        //    recalledEpisode.insertLink(event, initialPropertyNode, "Initial");
+        //    recalledEpisode.insertLink(event, finalPropertyNode, "Final");
+        //}
+
+        for (Idea event : recalledEpisode.getEventNodes()){
+            for (Idea spatialLink : recalledEpisode.getChildrenWithLink(event, "ObjectContext")){
+                Idea objectNode = recalledEpisode.getChildrenWithLink(spatialLink, "Object").get(0);
+                List<Idea> occupationCells = recalledEpisode.getChildrenWithLink(spatialLink, "GridPlace");
+                recalledEpisode.insertLink(event, objectNode, "Object");
+                for (Idea gridCell : occupationCells){
+                    recalledEpisode.insertLink(objectNode, gridCell, "GridPlace");
+                }
+                recalledEpisode.removeNode(spatialLink);
+            }
         }
 
-        for (Idea disconnected : removeCategoriesNodes)
-            recalledEpisode.removeNode(disconnected);
-        //For each event
-        //Get properties nodes
-        //Propagate activation from properties in EPLTM
-        //Order event nodes with higher activation
-        //Search for events that have same start and end properties
-        //Add to a map (cue->memory)
-        //Check time relations
+        //for (Idea disconnected : removeCategoriesNodes)
+        //  recalledEpisode.removeNode(disconnected);
+
         synchronized (recallMO) {
             recallMO.setI(recalledEpisode);
         }
+    }
+
+    private List<Idea> filterEventsWithLinkToObject(GraphIdea epGraph, List<Idea> eventNodes, Idea initialObjectState, String linkType) {
+        List<Idea> allEventsWithLinkToObject = new ArrayList<>();
+
+        Idea objOccupation = initialObjectState.get("Occupation");
+        if (objOccupation != null){
+            initialObjectState.getL().remove(objOccupation);
+            List<Idea> objNodes = epGraph.getAllNodesWithSimilarContent(initialObjectState);
+            List<Idea> posNodes = new ArrayList<>();
+            for (Idea objGrid : objOccupation.getL()){
+                posNodes.add(epGraph.getNodeFromContent(objGrid));
+            }
+            for (Idea objNode : objNodes){
+                Idea spatialLinkNode = epGraph.commomParent(objNode, posNodes);
+                if (spatialLinkNode != null) {
+                    List<Idea> eventWithInitialObject = epGraph.getPredecessors(spatialLinkNode).getOrDefault(linkType, new ArrayList<>());
+                    allEventsWithLinkToObject.addAll(eventWithInitialObject);
+                }
+            }
+        } else {
+            List<Idea> objNodes = epGraph.getAllNodesWithSimilarContent(initialObjectState);
+            for (Idea objNode : objNodes){
+                List<Idea> spatialLinkNodes = epGraph.getPredecessors(objNode).getOrDefault("Object", new ArrayList<>());
+                for (Idea spatialLinkNode : spatialLinkNodes){
+                    List<Idea> eventWithInitialObject = epGraph.getPredecessors(spatialLinkNode).getOrDefault(linkType, new ArrayList<>());
+                    allEventsWithLinkToObject.addAll(eventWithInitialObject);
+                }
+            }
+        }
+        return eventNodes.stream().filter(e->allEventsWithLinkToObject.contains(e)).collect(Collectors.toList());
     }
 
 

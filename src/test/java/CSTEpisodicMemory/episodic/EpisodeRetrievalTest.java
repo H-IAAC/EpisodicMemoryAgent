@@ -1,11 +1,13 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.habits.AssimilatePropertyCategory;
 import CSTEpisodicMemory.habits.LocationCategoryGenerator;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
+import com.github.sh0nk.matplotlib4j.NumpyUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,8 +52,6 @@ public class EpisodeRetrievalTest {
         episodeRetrievalCodelet = new EpisodeRetrieval();
         episodeRetrievalCodelet.addInput(cueMO);
         episodeRetrievalCodelet.addInput(eplMO);
-        episodeRetrievalCodelet.addInput(propertiesMO);
-        episodeRetrievalCodelet.addInput(locationsMO);
         episodeRetrievalCodelet.addOutput(recallMO);
         episodeRetrievalCodelet.setIsMemoryObserver(true);
         cueMO.addMemoryObserver(episodeRetrievalCodelet);
@@ -179,38 +179,47 @@ public class EpisodeRetrievalTest {
         Idea epltmIdea = new Idea("EPLTM", null, "Episode", 1);
         GraphIdea epltm = new GraphIdea(epltmIdea);
 
-        LocationCategoryGenerator locGen = new LocationCategoryGenerator();
+        //LocationCategoryGenerator locGen = new LocationCategoryGenerator();
         locCat = new ArrayList<>();
-        for (int i = 0; i<4; i++){
-            Idea newCat = locGen.exec(null);
+        for (int i = 0; i<40; i++){
+            Idea newCat = GridLocation.getInstance().locateHCCIdea(new Random().nextFloat() * 10, new Random().nextFloat() * 10);
             locCat.add(newCat);
             epltm.insertLocationNode(newCat);
         }
 
-        Idea assimilateSubHabit = new Idea("assimilate", null);
-        assimilateSubHabit.setValue(new AssimilatePropertyCategory(assimilateSubHabit));
-        assimilateSubHabit.add(new Idea("properties", null, "Property", 1));
-        assimilateSubHabit.add(new Idea("samples", null, "Property", 1));
+        //Idea assimilateSubHabit = new Idea("assimilate", null);
+        //assimilateSubHabit.setValue(new AssimilatePropertyCategory(assimilateSubHabit));
+        //assimilateSubHabit.add(new Idea("properties", null, "Property", 1));
+        //assimilateSubHabit.add(new Idea("samples", null, "Property", 1));
 
-        assimilateSubHabit.get("properties").setValue(Arrays.asList("p1","p2"));
-        Idea toLearn = new Idea("object", "test", "AbstractObject", 1);
-        toLearn.add(new Idea("p1", 0, "QualityDimension", 1));
-        toLearn.add(new Idea("p2", 1, "QualityDimension", 1));
+        //assimilateSubHabit.get("properties").setValue(Arrays.asList("p1","p2"));
+        //Idea toLearn = new Idea("object", "test", "AbstractObject", 1);
+        //toLearn.add(new Idea("p1", 0, "QualityDimension", 1));
+        //toLearn.add(new Idea("p2", 1, "QualityDimension", 1));
 
-        propCat = new ArrayList<>();
-        for (int i = 0; i<16;i++) {
-            toLearn.get("p1").setValue(i);
-            toLearn.get("p2").setValue(i);
-            Idea newCat = assimilateSubHabit.exec(toLearn);
-            propCat.add(newCat);
-            epltm.insertPropertyNode(newCat);
-        }
+        //propCat = new ArrayList<>();
+        //for (int i = 0; i<16;i++) {
+        //    toLearn.get("p1").setValue(i);
+        //    toLearn.get("p2").setValue(i);
+        //    Idea newCat = assimilateSubHabit.exec(toLearn);
+        //    propCat.add(newCat);
+        //    epltm.insertPropertyNode(newCat);
+        //}
 
         objects = new ArrayList<>();
-        for (int i=0; i<8; i++){
-            Idea obj = new Idea("Object" + i, "ObjCat" + i/3, "AbstractObject", 1);
-            objects.add(obj);
-            epltm.insertContextNode(obj);
+        for (int i=0; i<30; i++){
+            Idea spatialLink = new Idea("SpatialLink" + i, null, "Link", 1);
+            Idea spatialNode = epltm.insertContextNode(spatialLink);
+            Idea obj = new Idea("Object", "ObjCat" + i/3, "AbstractObject", 1);
+            obj.add(new Idea("p1", i % 16, "Property", 1));
+            obj.add(new Idea("p2", i % 16, "Property", 1));
+            Idea objNode = epltm.insertObjectNode(obj);
+            Idea gridPlace = GridLocation.getInstance().locateHCCIdea(new Random().nextFloat() * 10, new Random().nextFloat() * 10);
+            //Idea gridNode = epltm.insertLocationNode(gridPlace);
+            Idea gridNode = locCat.get(i+5);
+            epltm.insertLink(spatialNode, objNode, "Object");
+            epltm.insertLink(spatialNode, gridNode, "GridPlace");
+            objects.add(spatialNode);
         }
 
         //Episodic Memory example
@@ -276,34 +285,34 @@ public class EpisodeRetrievalTest {
         epltm.insertLink(event7, event9, "Before");
         epltm.insertLink(event8, event9, "Meet");
 
-        epltm.insertLink(event1, propCat.get(0),"Initial");
-        epltm.insertLink(event1, propCat.get(1),"Final");
-        epltm.insertLink(event2, propCat.get(2),"Initial");
-        epltm.insertLink(event2, propCat.get(3),"Final");
-        epltm.insertLink(event3, propCat.get(4),"Initial");
-        epltm.insertLink(event3, propCat.get(5),"Final");
-        epltm.insertLink(event4, propCat.get(6),"Initial");
-        epltm.insertLink(event4, propCat.get(7),"Final");
-        epltm.insertLink(event5, propCat.get(2),"Initial");
-        epltm.insertLink(event5, propCat.get(8),"Final");
-        epltm.insertLink(event6, propCat.get(9),"Initial");
-        epltm.insertLink(event6, propCat.get(10),"Final");
-        epltm.insertLink(event7, propCat.get(11),"Initial");
-        epltm.insertLink(event7, propCat.get(12),"Final");
-        epltm.insertLink(event8, propCat.get(12),"Initial");
-        epltm.insertLink(event8, propCat.get(13),"Final");
-        epltm.insertLink(event9, propCat.get(14),"Initial");
-        epltm.insertLink(event9, propCat.get(15),"Final");
+        epltm.insertLink(event1, objects.get(0),"Initial");
+        epltm.insertLink(event1, objects.get(1),"Final");
+        epltm.insertLink(event2, objects.get(2),"Initial");
+        epltm.insertLink(event2, objects.get(3),"Final");
+        epltm.insertLink(event3, objects.get(4),"Initial");
+        epltm.insertLink(event3, objects.get(5),"Final");
+        epltm.insertLink(event4, objects.get(6),"Initial");
+        epltm.insertLink(event4, objects.get(7),"Final");
+        epltm.insertLink(event5, objects.get(2),"Initial");
+        epltm.insertLink(event5, objects.get(8),"Final");
+        epltm.insertLink(event6, objects.get(9),"Initial");
+        epltm.insertLink(event6, objects.get(10),"Final");
+        epltm.insertLink(event7, objects.get(11),"Initial");
+        epltm.insertLink(event7, objects.get(12),"Final");
+        epltm.insertLink(event8, objects.get(12),"Initial");
+        epltm.insertLink(event8, objects.get(13),"Final");
+        epltm.insertLink(event9, objects.get(14),"Initial");
+        epltm.insertLink(event9, objects.get(15),"Final");
 
-        epltm.insertLink(event1, objects.get(0), "Object");
-        epltm.insertLink(event2, objects.get(1), "Object");
-        epltm.insertLink(event3, objects.get(2), "Object");
-        epltm.insertLink(event4, objects.get(3), "Object");
-        epltm.insertLink(event5, objects.get(3), "Object");
-        epltm.insertLink(event6, objects.get(4), "Object");
-        epltm.insertLink(event7, objects.get(5), "Object");
-        epltm.insertLink(event8, objects.get(6), "Object");
-        epltm.insertLink(event9, objects.get(7), "Object");
+        epltm.insertLink(event1, objects.get(16), "Object");
+        epltm.insertLink(event2, objects.get(17), "Object");
+        epltm.insertLink(event3, objects.get(18), "Object");
+        epltm.insertLink(event4, objects.get(19), "Object");
+        epltm.insertLink(event5, objects.get(20), "Object");
+        epltm.insertLink(event6, objects.get(21), "Object");
+        epltm.insertLink(event7, objects.get(22), "Object");
+        epltm.insertLink(event8, objects.get(23), "Object");
+        epltm.insertLink(event9, objects.get(24), "Object");
 
         epltm.insertLink(event1, locCat.get(0), "Location");
         epltm.insertLink(event2, locCat.get(0), "Location");
@@ -331,7 +340,7 @@ public class EpisodeRetrievalTest {
         Idea cue = new Idea("EventTest", eventCategories.get(1), "Episode", 1);
         Idea step1 = new Idea("", 1, "TimeStep", 1);
         Idea step2 = new Idea("", 2, "TimeStep", 1);
-        Idea obj = new Idea("object", null, "AbstractObject", 1);
+        Idea obj = new Idea("Object", null, "AbstractObject", 1);
         obj.add(new Idea("p1", 2, "QualityDimension", 1));
         obj.add(new Idea("p2", 2, "QualityDimension", 1));
         Idea obj2 = obj.clone();

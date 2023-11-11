@@ -23,6 +23,16 @@ public class Environment {
 
     public Environment() {
         world = new WS3DCoppelia(8, 10);
+        try {
+            world.stopSimulation();
+        } catch (CborException ex) {
+            Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+        }
         creature = world.createAgent(1f, 1f);
         world.createAgent(2f, 2f);
         initializaRooms();

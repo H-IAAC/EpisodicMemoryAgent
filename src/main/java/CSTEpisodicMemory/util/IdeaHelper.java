@@ -214,4 +214,70 @@ public class IdeaHelper {
         }
         return(result);
     }
+
+    private static class Similarity{
+        protected double countTotal = 0;
+        protected double countSimilar = 0;
+    }
+
+    public static double scoreSimilarity(Idea a, Idea b){
+        return scoreSimilarity(a, b, new ArrayList<>(), new ArrayList<>(), new Similarity());
+    }
+
+    private static double scoreSimilarity(Idea a, Idea b, List<Idea> loopsA, List<Idea> loopsB, Similarity similarity) {
+        if (a == null || b == null) {
+            similarity.countTotal++;
+            similarity.countSimilar++;
+            return 1.0;
+        }
+
+        if (a.getId() == b.getId()) {
+            similarity.countTotal++;
+            similarity.countSimilar++;
+            return 1.0;
+        }
+
+        similarity.countTotal += 3; // Name, Value and Type
+        similarity.countSimilar += countSimpleSimilaity(a, b);
+
+        if (loopsA.contains(a) || loopsB.contains(b))
+            return similarity.countSimilar / similarity.countTotal;
+        loopsA.add(a);
+        loopsB.add(b);
+
+        for (Idea s : a.getL()){
+            double maxSubSimilarity = 0;
+            Idea bestSubIdea = null;
+            for (Idea ss : b.getL()){
+                double subSimilarity = countSimpleSimilaity(s, ss);
+                if (subSimilarity > maxSubSimilarity) {
+                    maxSubSimilarity = subSimilarity;
+                    bestSubIdea = ss;
+                }
+            }
+            scoreSimilarity(s, bestSubIdea, loopsA, loopsB, similarity);
+        }
+        return similarity.countSimilar / similarity.countTotal;
+    }
+
+    public static double countSimpleSimilaity(Idea a, Idea b){
+        if (a == null || b == null)
+            return 3;
+
+        if (a.getId() == b.getId())
+            return 3;
+
+        double countSimilar = 0;
+        if (a.getValue() == null && b.getValue() == null)
+            countSimilar++;
+        else if (a.getValue() != null && b.getValue() != null)
+            if (a.getValue().equals(b.getValue()))
+                countSimilar++;
+        if (a.getName().equals(b.getName()))
+            countSimilar++;
+        if (a.getType() == b.getType())
+            countSimilar++;
+
+        return countSimilar;
+    }
 }
