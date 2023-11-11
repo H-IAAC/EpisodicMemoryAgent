@@ -101,13 +101,6 @@ public class JewelDetector extends Codelet {
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
-        jewelIdea.add(posIdea);
-        Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
-        color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
-        color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
-        color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
-        jewelIdea.add(color);
-        jewelIdea.add(new Idea("ID", t.getId(), "Property", 1));
 
         if (detectedRoom != null) {
             if (detectedRoom.get("Location") != null) {
@@ -117,9 +110,12 @@ public class JewelDetector extends Codelet {
                 Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
                 Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
                 occupation.add(gridPlace);
+                posIdea.setValue(room);
                 jewelIdea.add(occupation);
             }
         }
+        jewelIdea.add(posIdea);
+
         synchronized (knownJewelsMO){
             Idea outputIdea = (Idea) knownJewelsMO.getI();
             List<Idea> known = Collections.synchronizedList(outputIdea.getL());
@@ -130,6 +126,19 @@ public class JewelDetector extends Codelet {
                 }
             }
         }
+
+        Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
+        color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
+        color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
+        color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
+        jewelIdea.add(color);
+        Idea size = new Idea("Size", null, "Property", 1);
+        size.add(new Idea("X", t.getSize().get(0), "QualityDimension", 1));
+        size.add(new Idea("Y", t.getSize().get(1), "QualityDimension", 1));
+        size.add(new Idea("Z", t.getSize().get(2), "QualityDimension", 1));
+        jewelIdea.add(size);
+        jewelIdea.add(new Idea("ID", t.getId(), "Property", 1));
+
         return jewelIdea;
     }
 }

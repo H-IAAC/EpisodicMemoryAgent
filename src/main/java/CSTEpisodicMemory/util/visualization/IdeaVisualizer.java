@@ -7,6 +7,7 @@ package CSTEpisodicMemory.util.visualization;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.util.viewer.representation.idea.IdeaPanel;
@@ -120,6 +121,14 @@ public class IdeaVisualizer extends javax.swing.JFrame {
                 .findFirst();
         if (selectedMem.isPresent()) {
             Object content = selectedMem.get().getI();
+            if (selectedMem.get() instanceof MemoryContainer){
+                List<Memory> memorieList = ((MemoryContainer) selectedMem.get()).getAllMemories();
+                Idea allContent = new Idea(memoryName);
+                for (Memory mem : memorieList){
+                    allContent.add((Idea) mem.getI());
+                }
+                content = allContent;
+            }
             if (content instanceof Idea) {
                 setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName,5)), Idea.class));
                 //setIdea(new Gson().fromJson(IdeaHelper.csvPrint((Idea) content, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));

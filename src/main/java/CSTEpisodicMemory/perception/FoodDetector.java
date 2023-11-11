@@ -76,6 +76,11 @@ public class FoodDetector extends Codelet {
         color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
         color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
         foodIdea.add(color);
+        Idea size = new Idea("Size", null, "Property", 1);
+        size.add(new Idea("X", t.getSize().get(0), "QualityDimension", 1));
+        size.add(new Idea("Y", t.getSize().get(1), "QualityDimension", 1));
+        size.add(new Idea("Z", t.getSize().get(2), "QualityDimension", 1));
+        foodIdea.add(size);
         foodIdea.add(new Idea("ID", t.getId(), "Property", 1));
         if (detectedRoom != null) {
             if (detectedRoom.get("Location") != null) {

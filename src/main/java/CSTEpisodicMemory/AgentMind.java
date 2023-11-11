@@ -384,6 +384,15 @@ public class AgentMind extends Mind {
         rotateEventTracker.addInput(episodeBoundariesMO);
         insertCodelet(rotateEventTracker, "Perception");
 
+        Idea shrinkEventCategory = constructEventCategory("Collected", Arrays.asList("Size.X", "Size.Y", "Size.Z"), "Linear");
+        EventTracker shrinkEventTracker = new EventTracker(this, "PERCEPTUAL_BUFFER", "EVENTS", shrinkEventCategory, debug);
+        shrinkEventTracker.setBufferSize(2);
+        shrinkEventTracker.setBufferStepSizeInMillis(50);
+        shrinkEventTracker.addInput(perceptualBufferMO);
+        shrinkEventTracker.addOutput(eventsMO);
+        shrinkEventTracker.addInput(episodeBoundariesMO);
+        insertCodelet(shrinkEventTracker, "Perception");
+
         //Found Jewel Event
         ////for (Constants.JewelTypes type : Constants.JewelTypes.values()){
         ////    Idea foundJewelEventCategory = constructEventCategory("Found_" + type.typeName(), Arrays.asList(type.typeName()), "StepUp");
@@ -551,7 +560,7 @@ public class AgentMind extends Mind {
             c.setProfiling(true);
         }
 
-        //bufferCodelet.setTimeStep(500);
+        //perceptualBufferCodelet.setTimeStep(250);
 
         start();
     }

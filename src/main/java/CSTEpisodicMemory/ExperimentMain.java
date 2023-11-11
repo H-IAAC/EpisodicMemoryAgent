@@ -19,33 +19,13 @@ public class ExperimentMain {
 
     static AgentMind a;
     public static void main(String[] args) {
-        //test();
-        normal();
+        test();
+        //normal();
     }
 
     private static void test(){
-        GraphIdea gg = new GraphIdea(new Idea("Graph", null));
-        Idea e1 = new Idea("Event1", null);
-        Idea e2 = new Idea("Event2", null);
-        Idea e3 = new Idea("Event3", null);
-        Idea l1 = new Idea("Location1", null);
-        Idea l2 = new Idea("Location2", null);
-        Idea l3 = new Idea("Location3", null);
-        Idea l4 = new Idea("Location4", null);
-        gg.insertEventNode(e1);
-        gg.insertEventNode(e2);
-        gg.insertEventNode(e3);
-        gg.insertLocationNode(l1);
-        gg.insertLocationNode(l2);
-        gg.insertLocationNode(l3);
-        gg.insertLocationNode(l4);
-        gg.insertLink(e1,l1,"loc");
-        gg.insertLink(e2,l2,"loc");
-        gg.insertLink(e3,l2,"loc");
-        gg.insertLink(e1,e2,"loc");
-        gg.insertLink(e1,e3,"loc");
-        gg.insertLink(e2,e3,"loc");
-        GraphIdeaVisualizer tt = new GraphIdeaVisualizer(800, 800, gg);
+        ExperimentEnvironment env = new ExperimentEnvironment();
+
     }
      private static void normal(){
          Logger.getLogger("codelets").setLevel(Level.SEVERE);
