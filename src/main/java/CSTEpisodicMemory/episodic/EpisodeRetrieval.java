@@ -56,16 +56,13 @@ public class EpisodeRetrieval extends Codelet {
 
             //Filter by desired context
             List<Idea> cueContext = cue.getObjectNodes();
-            for (Idea context : cueContext){
-                for (Map.Entry links : epGraph.getPredecessors(context).entrySet()){
-                    if (links.getKey().equals("Object")) {
-                        for (Idea linkedNode : (List<Idea>) links.getValue()){
-                            for (Map.Entry spatialLink : epGraph.getPredecessors(context).entrySet()){
-                                if (spatialLink.getKey().equals("ObjectContex")){
-                                    eventNodes.addAll((List<Idea>) spatialLink.getValue());
-                                }
-                            }
-                        }
+            for (Idea context : cueContext) {
+                List<Idea> similarObjectsMemory = epGraph.getAllNodesWithSimilarContent(getNodeContent(context), 0.7);
+
+                for (Idea similarObject : similarObjectsMemory) {
+                    for (Idea spatialLink : epGraph.getPredecessors(similarObject).getOrDefault("Object", new ArrayList<>())) {
+                        List<Idea> eventsWithObject = epGraph.getPredecessors(spatialLink).getOrDefault("ObjectContext", new ArrayList<>());
+                        eventNodes.addAll(eventsWithObject);
                     }
                 }
             }
@@ -99,10 +96,10 @@ public class EpisodeRetrieval extends Codelet {
                     String observedObject = (String) eventCategory.get("ObservedObject").getValue();
 
                     Idea initialObjectState = eventContent.getL().get(0).getL().stream()
-                            .filter(o->!o.getName().equals("TimeStamp"))
+                            .filter(o -> !o.getName().equals("TimeStamp"))
                             .findFirst().orElse(null);
                     Idea finalObjectState = eventContent.getL().get(1).getL().stream()
-                            .filter(o->!o.getName().equals("TimeStamp"))
+                            .filter(o -> !o.getName().equals("TimeStamp"))
                             .findFirst().orElse(null);
 
                     if (initialObjectState != null && finalObjectState != null) {
@@ -124,7 +121,7 @@ public class EpisodeRetrieval extends Codelet {
                         //Collections.reverse(eventNodes);
 
                         List<Idea> eventBestMatches = new ArrayList<>();
-                        if (eventsNodesFilteredByInitialObject.stream().anyMatch(eventsNodesFilteredByFinalObject::contains)){
+                        if (eventsNodesFilteredByInitialObject.stream().anyMatch(eventsNodesFilteredByFinalObject::contains)) {
                             eventsNodesFilteredByInitialObject.retainAll(eventsNodesFilteredByFinalObject);
                             eventBestMatches = eventsNodesFilteredByInitialObject;
                         } else {
@@ -155,7 +152,28 @@ public class EpisodeRetrieval extends Codelet {
                 }
             }
 
-            if (bestMatches.size() == 1) {
+            if (bestMatches.isEmpty()) {
+                if (eventNodes.size() < epGraph.getEventNodes().size()) {
+                    //Recall episodes from only the objects context
+                    epGraph.resetActivations();
+                    for (Idea event : eventNodes) {
+                        epGraph.setNodeActivation(event, 1.0);
+                        epGraph.propagateActivations(event, Arrays.asList("Before", "Meet", "Overlap", "Start", "During", "Finish", "Equal"), Arrays.asList("Begin", "End"));
+                    }
+
+                    List<Idea> activatedEpisodes = epGraph.getEpisodeNodes().stream()
+                            .filter(e->epGraph.getNodeActivation(e) > 0)
+                            //.sorted(Comparator.comparingDouble(epGraph::getNodeActivation))
+                            .collect(Collectors.toList());
+
+                    GraphIdea recall = new GraphIdea(new Idea("Recall"));
+                    for (Idea ep : activatedEpisodes) {
+                        GraphIdea episodeGraph = epGraph.getEpisodeSubGraph(ep);
+                        recall.addAll(episodeGraph);
+                    }
+                    recalledEpisode = recall;
+                }
+            } else if (bestMatches.size() == 1) {
                 List<Idea> bestMemEvents = bestMatches.get(cueEvents.get(0));
                 if (bestMemEvents.size() == 1) {
                     epGraph.resetActivations();
@@ -339,12 +357,12 @@ public class EpisodeRetrieval extends Codelet {
         //    recalledEpisode.insertLink(event, finalPropertyNode, "Final");
         //}
 
-        for (Idea event : recalledEpisode.getEventNodes()){
-            for (Idea spatialLink : recalledEpisode.getChildrenWithLink(event, "ObjectContext")){
+        for (Idea event : recalledEpisode.getEventNodes()) {
+            for (Idea spatialLink : recalledEpisode.getChildrenWithLink(event, "ObjectContext")) {
                 Idea objectNode = recalledEpisode.getChildrenWithLink(spatialLink, "Object").get(0);
                 List<Idea> occupationCells = recalledEpisode.getChildrenWithLink(spatialLink, "GridPlace");
-                recalledEpisode.insertLink(event, objectNode, "Object");
-                for (Idea gridCell : occupationCells){
+                recalledEpisode.insertLink(event, objectNode, "ObjectContext");
+                for (Idea gridCell : occupationCells) {
                     recalledEpisode.insertLink(objectNode, gridCell, "GridPlace");
                 }
                 recalledEpisode.removeNode(spatialLink);
@@ -363,14 +381,14 @@ public class EpisodeRetrieval extends Codelet {
         List<Idea> allEventsWithLinkToObject = new ArrayList<>();
 
         Idea objOccupation = initialObjectState.get("Occupation");
-        if (objOccupation != null){
+        if (objOccupation != null) {
             initialObjectState.getL().remove(objOccupation);
             List<Idea> objNodes = epGraph.getAllNodesWithSimilarContent(initialObjectState);
             List<Idea> posNodes = new ArrayList<>();
-            for (Idea objGrid : objOccupation.getL()){
+            for (Idea objGrid : objOccupation.getL()) {
                 posNodes.add(epGraph.getNodeFromContent(objGrid));
             }
-            for (Idea objNode : objNodes){
+            for (Idea objNode : objNodes) {
                 Idea spatialLinkNode = epGraph.commomParent(objNode, posNodes);
                 if (spatialLinkNode != null) {
                     List<Idea> eventWithInitialObject = epGraph.getPredecessors(spatialLinkNode).getOrDefault(linkType, new ArrayList<>());
@@ -379,15 +397,15 @@ public class EpisodeRetrieval extends Codelet {
             }
         } else {
             List<Idea> objNodes = epGraph.getAllNodesWithSimilarContent(initialObjectState);
-            for (Idea objNode : objNodes){
+            for (Idea objNode : objNodes) {
                 List<Idea> spatialLinkNodes = epGraph.getPredecessors(objNode).getOrDefault("Object", new ArrayList<>());
-                for (Idea spatialLinkNode : spatialLinkNodes){
+                for (Idea spatialLinkNode : spatialLinkNodes) {
                     List<Idea> eventWithInitialObject = epGraph.getPredecessors(spatialLinkNode).getOrDefault(linkType, new ArrayList<>());
                     allEventsWithLinkToObject.addAll(eventWithInitialObject);
                 }
             }
         }
-        return eventNodes.stream().filter(e->allEventsWithLinkToObject.contains(e)).collect(Collectors.toList());
+        return eventNodes.stream().filter(e -> allEventsWithLinkToObject.contains(e)).collect(Collectors.toList());
     }
 
 

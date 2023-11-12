@@ -416,6 +416,15 @@ public class GraphIdea {
                             if (!node.get("Type").getValue().equals("Event")) {
                                 subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
                                 subGraph.insertLink(getNodeContent(root), getNodeContent(node), linkType);
+                                Map<String, List<Idea>> subContext = getSuccesors(node);
+                                if (!subContext.isEmpty()){
+                                    for (String subLinkType : subContext.keySet()) {
+                                        for (Idea subContextNode : subContext.get(subLinkType)) {
+                                            subGraph.insertNode(getNodeContent(subContextNode), (String) subContextNode.get("Type").getValue());
+                                            subGraph.insertLink(getNodeContent(node), getNodeContent(subContextNode), subLinkType);
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
@@ -453,8 +462,12 @@ public class GraphIdea {
     }
 
     public List<Idea> getAllNodesWithSimilarContent(Idea content) {
+        return getAllNodesWithSimilarContent(content, 0.6);
+    }
+
+    public List<Idea> getAllNodesWithSimilarContent(Idea content, double threshold) {
         List<Idea> foundNodes = graph.getL().stream()
-                .filter(e -> IdeaHelper.scoreSimilarity(content, getNodeContent(e)) > 0.6)
+                .filter(e -> IdeaHelper.scoreSimilarity(content, getNodeContent(e)) > threshold)
                 .collect(Collectors.toList());
         return foundNodes;
     }

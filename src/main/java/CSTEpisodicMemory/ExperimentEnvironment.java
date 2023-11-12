@@ -29,8 +29,8 @@ public class ExperimentEnvironment {
         } catch (InterruptedException ex) {
             Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
         }
-        creature = world.createAgent(1f, 1f);
-        world.createAgent(2f, 2f);
+        creature = world.createAgent(3f, 3f);
+        //world.createAgent(2f, 2f);
         initializeRooms();
         try {
             world.startSimulation();

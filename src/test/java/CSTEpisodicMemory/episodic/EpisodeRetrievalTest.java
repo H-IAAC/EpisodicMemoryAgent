@@ -213,6 +213,7 @@ public class EpisodeRetrievalTest {
             Idea obj = new Idea("Object", "ObjCat" + i/3, "AbstractObject", 1);
             obj.add(new Idea("p1", i % 16, "Property", 1));
             obj.add(new Idea("p2", i % 16, "Property", 1));
+            obj.add(new Idea("ID", i % 5, "Property", 1));
             Idea objNode = epltm.insertObjectNode(obj);
             Idea gridPlace = GridLocation.getInstance().locateHCCIdea(new Random().nextFloat() * 10, new Random().nextFloat() * 10);
             //Idea gridNode = epltm.insertLocationNode(gridPlace);
@@ -277,10 +278,10 @@ public class EpisodeRetrievalTest {
         epltm.insertLink(event1, event2, "Meet");
         epltm.insertLink(event1, event3, "Before");
         epltm.insertLink(event2, event3, "Meet");
-        epltm.insertLink(event3, event4, "Before");
-        epltm.insertLink(event4, event5, "Before");
+        epltm.insertLink(event3, event4, "Next");
+        epltm.insertLink(event4, event5, "Next");
         epltm.insertLink(event5, event6, "Before");
-        epltm.insertLink(event6, event7, "Before");
+        epltm.insertLink(event6, event7, "Next");
         epltm.insertLink(event7, event8, "Meet");
         epltm.insertLink(event7, event9, "Before");
         epltm.insertLink(event8, event9, "Meet");
@@ -304,15 +305,15 @@ public class EpisodeRetrievalTest {
         epltm.insertLink(event9, objects.get(14),"Initial");
         epltm.insertLink(event9, objects.get(15),"Final");
 
-        epltm.insertLink(event1, objects.get(16), "Object");
-        epltm.insertLink(event2, objects.get(17), "Object");
-        epltm.insertLink(event3, objects.get(18), "Object");
-        epltm.insertLink(event4, objects.get(19), "Object");
-        epltm.insertLink(event5, objects.get(20), "Object");
-        epltm.insertLink(event6, objects.get(21), "Object");
-        epltm.insertLink(event7, objects.get(22), "Object");
-        epltm.insertLink(event8, objects.get(23), "Object");
-        epltm.insertLink(event9, objects.get(24), "Object");
+        epltm.insertLink(event1, objects.get(16), "ObjectContext");
+        epltm.insertLink(event2, objects.get(17), "ObjectContext");
+        epltm.insertLink(event3, objects.get(18), "ObjectContext");
+        epltm.insertLink(event4, objects.get(19), "ObjectContext");
+        epltm.insertLink(event5, objects.get(20), "ObjectContext");
+        epltm.insertLink(event6, objects.get(21), "ObjectContext");
+        epltm.insertLink(event7, objects.get(22), "ObjectContext");
+        epltm.insertLink(event8, objects.get(23), "ObjectContext");
+        epltm.insertLink(event9, objects.get(24), "ObjectContext");
 
         epltm.insertLink(event1, locCat.get(0), "Location");
         epltm.insertLink(event2, locCat.get(0), "Location");
@@ -362,7 +363,7 @@ public class EpisodeRetrievalTest {
         GraphIdea storyRecall = (GraphIdea) recallMO.getI();
 
         //Check number of items
-        Assertions.assertEquals(11, storyRecall.getNodes().size());
+        Assertions.assertEquals(17, storyRecall.getNodes().size());
 
         //Check if is correct episode
         List<Idea> ep = storyRecall.getEpisodeNodes();
@@ -383,15 +384,15 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
 
         //Check Properties
-        Idea beginEventInitialProperty = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
-        Idea beginEventFinalProperty = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
-        Idea endEventInitialProperty = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
-        Idea endEventFinalProperty = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
+        Idea beginEventInitialObject = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
+        Idea beginEventFinalObject = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
+        Idea endEventInitialObject = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
+        Idea endEventFinalObject = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
 
-        Assertions.assertEquals(propCat.get(2).membership(getNodeContent(beginEventInitialProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(8).membership(getNodeContent(beginEventFinalProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(9).membership(getNodeContent(endEventInitialProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(10).membership(getNodeContent(endEventFinalProperty)), 1.0);
+        Assertions.assertEquals(getNodeContent(objects.get(2)), getNodeContent(beginEventInitialObject));
+        Assertions.assertEquals(getNodeContent(objects.get(8)), getNodeContent(beginEventFinalObject));
+        Assertions.assertEquals(getNodeContent(objects.get(9)), getNodeContent(endEventInitialObject));
+        Assertions.assertEquals(getNodeContent(objects.get(10)), getNodeContent(endEventFinalObject));
 
     }
 
@@ -473,15 +474,15 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
 
         //Check Properties
-        Idea beginEventInitialProperty = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
-        Idea beginEventFinalProperty = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
-        Idea endEventInitialProperty = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
-        Idea endEventFinalProperty = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
+        Idea beginEventInitialObject = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
+        Idea beginEventFinalObject = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
+        Idea endEventInitialObject = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
+        Idea endEventFinalObject = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
 
-        Assertions.assertEquals(propCat.get(0).membership(getNodeContent(beginEventInitialProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(1).membership(getNodeContent(beginEventFinalProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(4).membership(getNodeContent(endEventInitialProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(5).membership(getNodeContent(endEventFinalProperty)), 1.0);
+        Assertions.assertEquals(getNodeContent(objects.get(0)), getNodeContent(beginEventInitialObject));
+        Assertions.assertEquals(getNodeContent(objects.get(1)), getNodeContent(beginEventFinalObject));
+        Assertions.assertEquals(getNodeContent(objects.get(4)), getNodeContent(endEventInitialObject));
+        Assertions.assertEquals(getNodeContent(objects.get(5)), getNodeContent(endEventFinalObject));
     }
 
     @Test
@@ -528,15 +529,15 @@ public class EpisodeRetrievalTest {
         Assertions.assertEquals(storyRecall.getChildrenWithLink(begin.get(0), "Before").get(0), end.get(0));
 
         //Check Properties
-        Idea beginEventInitialProperty = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
-        Idea beginEventFinalProperty = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
-        Idea endEventInitialProperty = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
-        Idea endEventFinalProperty = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
+        Idea beginEventInitialObject = storyRecall.getChildrenWithLink(begin.get(0), "Initial").get(0);
+        Idea beginEventFinalObject = storyRecall.getChildrenWithLink(begin.get(0), "Final").get(0);
+        Idea endEventInitialObject = storyRecall.getChildrenWithLink(end.get(0), "Initial").get(0);
+        Idea endEventFinalObject = storyRecall.getChildrenWithLink(end.get(0), "Final").get(0);
 
-        Assertions.assertEquals(propCat.get(11).membership(getNodeContent(beginEventInitialProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(12).membership(getNodeContent(beginEventFinalProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(14).membership(getNodeContent(endEventInitialProperty)), 1.0);
-        Assertions.assertEquals(propCat.get(15).membership(getNodeContent(endEventFinalProperty)), 1.0);
+        Assertions.assertEquals(getNodeContent(objects.get(11)), getNodeContent(beginEventInitialObject));
+        Assertions.assertEquals(getNodeContent(objects.get(12)), getNodeContent(beginEventFinalObject));
+        Assertions.assertEquals(getNodeContent(objects.get(14)), getNodeContent(endEventInitialObject));
+        Assertions.assertEquals(getNodeContent(objects.get(15)), getNodeContent(endEventFinalObject));
     }
 
     @Test
@@ -622,6 +623,25 @@ public class EpisodeRetrievalTest {
         createMind();
         setMemories();
 
+        //create a Cue
+        Idea object = new Idea("Object", null, "AbstractObject", 1);
+        object.add(new Idea("ID", 0, "Property", 1));
 
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertObjectNode(object);
+        cueMO.setI(cueGraph);
+
+        long start = System.currentTimeMillis();
+        while (recallMO.getI() == null){
+            assert System.currentTimeMillis() - start <= 5000; //Probably throw an error would be better
+        }
+
+        GraphIdea storyRecall = (GraphIdea) recallMO.getI();
+
+        //Check if is correct episode
+        List<Idea> ep = storyRecall.getEpisodeNodes();
+        Assertions.assertEquals(ep.size(), 1);
+        Idea epContent = getNodeContent(ep.get(0));
+        Assertions.assertEquals(epContent.getName(), "Episode1");
     }
 }
