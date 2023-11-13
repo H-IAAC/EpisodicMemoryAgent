@@ -107,7 +107,21 @@ public class EventTracker extends MemoryCodelet {
                 }
             }
         }
+        finishedUnupdatedEvents();
         commitInternalMemoryChanges();
+    }
+
+    private void finishedUnupdatedEvents() {
+        for (String objectName : internal.keySet()){
+            List<Idea> eventBuffer = constructCurrentBufferOf(objectName);
+            if (eventBuffer.size() == bufferSize) {
+                long lastUpdate = getLastTimeStampOf(objectName);
+                Idea lastBufferTime = buffer.getL().get(buffer.getL().size() - 1);
+                if (lastUpdate - (long) lastBufferTime.getValue() > 500) {
+                    insertEventInOutputMemory(lastBufferTime, eventBuffer.get(eventBuffer.size()-1), getInitialEventOf(objectName), eventBuffer);
+                }
+            }
+        }
     }
 
     private void processObjectTimeStep(Idea timeStep, Idea object, ArrayList<String> ignoreObjects) {
@@ -136,19 +150,7 @@ public class EventTracker extends MemoryCodelet {
                                 pushStepToMemory(object, (long) timeStep.getValue());
                             } else {
                                 if (initialEventIdea != null) {
-                                    Idea constraints = new Idea("Constraints");
-                                    constraints.add(new Idea("0", initialEventIdea));
-                                    constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
-                                    Idea event = trackedEventCategory.getInstance(constraints);
-                                    event.setName("Event" + count++);
-                                    event.setValue(trackedEventCategory);
-                                    restartEventStage(object, (long) timeStep.getValue());
-                                    Idea eventsIdea = (Idea) eventsOutputMO.getI();
-                                    synchronized (eventsIdea) {
-                                        eventsIdea.add(event);
-                                        if (debug)
-                                            System.out.println(csvPrint(eventsIdea));
-                                    }
+                                    insertEventInOutputMemory(timeStep, object, initialEventIdea, inputIdeaBuffer);
                                 } else {
                                     pushStepToMemory(object, (long) timeStep.getValue());
                                 }
@@ -166,6 +168,22 @@ public class EventTracker extends MemoryCodelet {
                     ignoreObjects.add(objectName);
                 }
             }
+        }
+    }
+
+    private void insertEventInOutputMemory(Idea timeStep, Idea object, Idea initialEventIdea, List<Idea> inputIdeaBuffer) {
+        Idea constraints = new Idea("Constraints");
+        constraints.add(new Idea("0", initialEventIdea));
+        constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
+        Idea event = trackedEventCategory.getInstance(constraints);
+        event.setName("Event" + count++);
+        event.setValue(trackedEventCategory);
+        restartEventStage(object, (long) timeStep.getValue());
+        Idea eventsIdea = (Idea) eventsOutputMO.getI();
+        synchronized (eventsIdea) {
+            eventsIdea.add(event);
+            if (debug)
+                System.out.println(csvPrint(eventsIdea));
         }
     }
 

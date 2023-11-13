@@ -5,12 +5,15 @@ package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.visualization.*;
+import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
+import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -26,6 +29,15 @@ public class ExperimentMain {
     private static void test(){
         ExperimentEnvironment env = new ExperimentEnvironment();
 
+        for (int i = 0; i < 4; i++){
+            SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);
+            execNPC.start();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
      private static void normal(){
          Logger.getLogger("codelets").setLevel(Level.SEVERE);

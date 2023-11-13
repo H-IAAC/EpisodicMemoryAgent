@@ -2,6 +2,7 @@ package CSTEpisodicMemory;
 
 import WS3DCoppelia.WS3DCoppelia;
 import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.util.Constants;
 import WS3DCoppelia.util.Constants.BrickTypes;
 import co.nstant.in.cbor.CborException;
 
@@ -119,4 +120,10 @@ public class ExperimentEnvironment {
             Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public Agent newAgent(float x, float y, Constants.Color color) {
+        Agent npc = world.createNPCAgent(x, y, color);
+        return npc;
+    }
+
 }
