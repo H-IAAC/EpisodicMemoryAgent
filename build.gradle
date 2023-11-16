@@ -49,14 +49,14 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'CSTEpisodicMemory.ExperimentMain'
+    mainClass = 'CSTEpisodicMemory.Main'
 }
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveClassifier = 'full'
     manifest {
       attributes(
-        'Main-Class': 'CSTEpisodicMemory.ExperimentMain'
+        'Main-Class': 'CSTEpisodicMemory.Main'
       )
     }
     from sourceSets.main.output

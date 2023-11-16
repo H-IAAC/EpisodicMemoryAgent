@@ -61,7 +61,7 @@ public class ExploreImpulse extends Codelet {
                     Vector2D curr = new Vector2D(
                             (float) inner.get("Position.X").getValue(),
                             (float) inner.get("Position.Y").getValue());
-                    if (dest.sub(curr).magnitude() < 0.55) {
+                    if (dest.sub(curr).magnitude() < 0.40) {
                         //removeSatisfiedImpulses();
                         Idea newDest = chooseLocation();
                         impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);

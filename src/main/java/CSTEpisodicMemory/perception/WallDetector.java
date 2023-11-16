@@ -85,7 +85,7 @@ public class WallDetector extends Codelet {
         color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
         wallIdea.add(color);
         wallIdea.add(new Idea("ID", t.getId(), "Property", 1));
-        if (detectedRoom != null) {
+        if (detectedRoom.get("Location") != null) {
             Idea room = (Idea) detectedRoom.get("Location").getValue();
             double px = t.getPos().get(0) - (double) room.get("center.x").getValue();
             double py = t.getPos().get(1) - (double) room.get("center.y").getValue();

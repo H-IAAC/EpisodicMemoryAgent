@@ -1,5 +1,6 @@
-package CSTEpisodicMemory;
+package CSTEpisodicMemory.experiments;
 
+import CSTEpisodicMemory.experiments.Environment;
 import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.util.Constants;
 import org.graphstream.algorithm.Dijkstra;
@@ -12,11 +13,11 @@ import java.util.*;
 public class SimpleAgentExecutor extends Thread{
 
     private Agent agent;
-    private ExperimentEnvironment env;
+    private Environment env;
     private List<Float[]> route = new ArrayList<>();
     private Random rnd = new Random();
 
-    public SimpleAgentExecutor(ExperimentEnvironment env){
+    public SimpleAgentExecutor(Environment env){
         this.env = env;
         initializeRoute();
     }

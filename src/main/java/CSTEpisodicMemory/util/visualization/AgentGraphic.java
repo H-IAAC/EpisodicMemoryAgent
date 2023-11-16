@@ -1,6 +1,6 @@
 package CSTEpisodicMemory.util.visualization;
 
-import CSTEpisodicMemory.Environment;
+import CSTEpisodicMemory.experiments.Environment;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

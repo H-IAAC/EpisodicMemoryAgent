@@ -3,31 +3,28 @@
  */
 package CSTEpisodicMemory;
 
-import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.experiments.*;
 import CSTEpisodicMemory.util.visualization.*;
-import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
-import br.unicamp.cst.core.entities.Mind;
 import br.unicamp.cst.representation.idea.Idea;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class ExperimentMain {
+public class Main {
 
     static AgentMind a;
     public static void main(String[] args) {
-        test();
-        //normal();
+        new ExperimentB().run();
     }
 
     private static void test(){
-        ExperimentEnvironment env = new ExperimentEnvironment();
+        Environment env = new EnvironmentB();
 
         for (int i = 0; i < 4; i++){
             SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);
@@ -35,15 +32,15 @@ public class ExperimentMain {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException ex) {
-                Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
      private static void normal(){
          Logger.getLogger("codelets").setLevel(Level.SEVERE);
          // Create Environment
-         Environment env=new Environment(); //Creates only a creature and some apples
-         a = new AgentMind(env);  // Creates the Agent Mind and start it
+         Environment env=new EnvironmentA(); //Creates only a creature and some apples
+         a = new AgentMind(env, new ArrayList<>());  // Creates the Agent Mind and start it
          // The following lines create the MindViewer and configure it
          //MindViewer mv = new MindViewer(a,"MindViewer", a.bList);
          //mv.setVisible(true);
@@ -67,6 +64,7 @@ public class ExperimentMain {
      }
 
     public static void runTestCommands(Environment env, AgentMind a){
+        /*
         env.world.createThing(Constants.FoodTypes.NPFOOD, 7.5f, 1.5f);
         env.world.createThing(Constants.FoodTypes.NPFOOD, 7.5f, 9.5f);
         env.world.createThing(Constants.JewelTypes.RED_JEWEL, 0.2f, 9.5f);
@@ -78,7 +76,7 @@ public class ExperimentMain {
         try {
             Thread.sleep(3000);
         } catch (InterruptedException ex) {
-            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 //        env.creature.moveTo(2f,2f);
 //        try {
@@ -117,7 +115,7 @@ public class ExperimentMain {
         try {
             Thread.sleep(10000);
         } catch (InterruptedException ex) {
-            Logger.getLogger(ExperimentMain.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         CategoriesPerEventView cc = new CategoriesPerEventView(a);
@@ -140,5 +138,6 @@ public class ExperimentMain {
             }
         }
         //env.creature.moveTo(0.5f,9f);
+        */
     }
 }

@@ -6,12 +6,13 @@ import CSTEpisodicMemory.util.KDTree;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GridLocation {
 
-    private final static double SCALE = 0.3;
+    private final static double SCALE = 0.15;
     private final static double SQRT_3 = Math.sqrt(3);
-    private final static int GRID_SIZE = 40;
+    private final static int GRID_SIZE = 120;
     private static Idea[][] adjencyMap = new Idea[GRID_SIZE][GRID_SIZE];
     private static Idea[][] referenceMap = new Idea[GRID_SIZE][GRID_SIZE];
     private static BKDTree grid;
@@ -101,10 +102,16 @@ public class GridLocation {
     }
 
     public List<Idea> trajectoryInHCC(double[] start, double[] end) {
+        System.out.println(start[0] + ", " + start[1]);
+        System.out.println(end[0] + ", " + end[1]);
         List<Idea> plan = new LinkedList<>();
         double[] currPlanPos = start;
         double bestDist = dist(currPlanPos, end);
+        int count=0;
         while (dist(currPlanPos, end) > 0) {
+            System.out.println(currPlanPos[0] + ", " + currPlanPos[1]);
+            if(count++%100000 == 0)
+                System.out.println(count);
             for (double[] adj : adjacentCellsHCC(currPlanPos)) {
                 if (dist(adj, end) < bestDist) {
                     currPlanPos = adj;
@@ -117,11 +124,19 @@ public class GridLocation {
     }
 
     public double dist(double[] a, double[] b) {
+        a = toXY(a[0], a[1]);
+        b = toXY(b[0], b[1]);
         return Math.hypot(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
     }
 
+    public double manhattanDist(double[] a, double[] b) {
+        a = toXY(a[0], a[1]);
+        b = toXY(b[0], b[1]);
+        return Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]);
+    }
+
     public List<double[]> adjacentCellsHCC(double[] pos) {
-        return Arrays.asList(
+        List<double[]> adj = Arrays.asList(
                 new double[]{pos[0] + 1, pos[1] + 1},
                 new double[]{pos[0] + 1, pos[1] - 1},
                 new double[]{pos[0] + 1, pos[1]},
@@ -129,6 +144,15 @@ public class GridLocation {
                 new double[]{pos[0], pos[1] - 1},
                 new double[]{pos[0], pos[1] + 1}
         );
+        return adj.stream().sorted(Comparator.comparingDouble(e->manhattanDist(e,new double[]{0,0}))).collect(Collectors.toList());
+        //return Arrays.asList(
+        //        new double[]{pos[0] + 1, pos[1] + 1},
+        //        new double[]{pos[0] + 1, pos[1] - 1},
+        //        new double[]{pos[0] + 1, pos[1]},
+        //        new double[]{pos[0] - 1, pos[1]},
+        //        new double[]{pos[0], pos[1] - 1},
+        //        new double[]{pos[0], pos[1] + 1}
+        //);
     }
 
     public static GridLocation getInstance() {

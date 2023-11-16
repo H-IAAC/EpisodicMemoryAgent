@@ -1,10 +1,9 @@
 package CSTEpisodicMemory.util.visualization;
 
-import CSTEpisodicMemory.Environment;
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.experiments.Environment;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.Mind;
-import br.unicamp.cst.representation.idea.Idea;
 
 import javax.swing.*;
 import java.awt.*;

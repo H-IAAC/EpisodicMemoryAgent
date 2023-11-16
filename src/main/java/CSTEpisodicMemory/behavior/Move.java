@@ -8,6 +8,7 @@ import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import com.github.sh0nk.matplotlib4j.NumpyUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,27 +69,27 @@ public class Move extends Codelet {
     @Override
     public void proc() {
         if (impulse != null) {
-            if (impulse.get("State.Self.Position") != null && innerMO.getI() != null) {
-                currPos = ((Idea) innerMO.getI()).get("Occupation").getL().get(0);
-                synchronized (roomMO) {
-                    room = (Idea) ((Idea) roomMO.getI()).get("Location").getValue();
-                }
-                if (!IdeaHelper.match(impulse, lastImpulse)) {
-                    locations = (List<Idea>) locationsMO.getI();
-                    epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());
+            synchronized (innerMO) {
+                if (impulse.get("State.Self.Position") != null && innerMO.getI() != null) {
+                    currPos = ((Idea) innerMO.getI()).get("Occupation").getL().get(0);
+                    room = (Idea) ((Idea) innerMO.getI()).get("Position").getValue();
+                    if (!IdeaHelper.match(impulse, lastImpulse)) {
+                        locations = (List<Idea>) locationsMO.getI();
+                        epltmGraph = new GraphIdea((GraphIdea) epltMO.getI());
 
-                    planTrajectory(impulse.get("State.Self.Position"));
-                    lastImpulse = impulse;
+                        planTrajectory(impulse.get("State.Self.Position"));
+                        lastImpulse = impulse;
+                    }
+                    Idea action = nextPlanAction();
+                    //float px = (float) impulse.get("State.Self.Position.X").getValue();
+                    //float py = (float) impulse.get("State.Self.Position.Y").getValue();
+                    //Idea action = new Idea("Action", "Move", "Episode", 0);
+                    //action.add(new Idea("X", px));
+                    //action.add(new Idea("Y", py));
+                    legsMO.setI(action, (double) impulse.get("State.Desire").getValue(), this.name);
+                } else {
+                    legsMO.setI(null, 0.0, this.name);
                 }
-                Idea action = nextPlanAction();
-                //float px = (float) impulse.get("State.Self.Position.X").getValue();
-                //float py = (float) impulse.get("State.Self.Position.Y").getValue();
-                //Idea action = new Idea("Action", "Move", "Episode", 0);
-                //action.add(new Idea("X", px));
-                //action.add(new Idea("Y", py));
-                legsMO.setI(action, (double) impulse.get("State.Desire").getValue(), this.name);
-            } else {
-                legsMO.setI(null, 0.0, this.name);
             }
         }
     }
@@ -99,6 +100,7 @@ public class Move extends Codelet {
 
             if (room != destRoom) {
                 highPlan = path(room, destRoom);
+                System.out.println("High Plan Created");
                 plan = null;
                 return;
             }
@@ -220,6 +222,8 @@ public class Move extends Codelet {
                 Idea nextGridPlace = plan.get(0);
                 if (plan.get(0) == currPos || room != lastRoom){
                     plan.remove(0);
+                    if (plan.isEmpty())
+                        System.out.println("Finished plan");
                 }
                 lastRoom = room;
 
@@ -232,29 +236,37 @@ public class Move extends Codelet {
                 action.add(new Idea("Y", (float) destPos[1]));
                 return action;
             } else {
+                System.out.println("Trying to plan");
                 if (room == highPlan.get(0) && highPlan.size()>1){
                     highPlan.remove(0);
+                    System.out.println("Next room");
                 }
                 lastRoom = room;
                 Idea nextRoom = highPlan.get(0);
                 Optional<Idea> exit = room.get("Exits").getL().stream().filter(e->((Idea) e.get("Room").getValue()) == nextRoom).findFirst();
+                System.out.println(exit.isPresent()? "Has exit" : "NO EXIT");
                 if (exit.isPresent()){
+                    Idea roomCenter = GridLocation.getInstance().getReferenceGridIdea(0,0);
                     Idea gridDest = (Idea) exit.get().get("Grid_Place").getValue();
                     double[] start = new double[]{
-                            (double) currPos.get("u").getValue(),
-                            (double) currPos.get("v").getValue()
+                            (double) roomCenter.get("u").getValue(),
+                            (double) roomCenter.get("v").getValue()
                     };
                     double[] end = new double[]{
                             (double) gridDest.get("u").getValue(),
                             (double) gridDest.get("v").getValue()
                     };
+                    System.out.println("Calculating plan");
                     List<Idea> path = GridLocation.getInstance().trajectoryInHCC(start,end);
                     Iterator<Idea> it = path.listIterator();
                     int count = 0;
+                    System.out.println("Checking plan");
                     while (it.hasNext() && room.membership(it.next()) > 0.5){
                         count++;
                     }
-                    plan = path.subList(count > 0 ? count - 1 : 0, path.size());
+                    plan = path.subList(Math.max(0, count-2), path.size());
+                    plan.add(0, roomCenter);
+                    System.out.println("Plan created");
                 }
             }
         }

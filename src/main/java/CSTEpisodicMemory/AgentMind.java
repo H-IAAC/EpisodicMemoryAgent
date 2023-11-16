@@ -17,6 +17,7 @@ import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.BufferCodelet;
+import CSTEpisodicMemory.experiments.Environment;
 import CSTEpisodicMemory.habits.*;
 import CSTEpisodicMemory.impulses.*;
 import CSTEpisodicMemory.motor.HandsActuatorCodelet;
@@ -42,24 +43,20 @@ import java.util.List;
  */
 public class AgentMind extends Mind {
 
-    public Idea roomA;
-    public Idea roomB;
-    public Idea roomC;
-
     private boolean debug = false;
     public List<Codelet> bList = new ArrayList<>();
 
-    public AgentMind(Environment env, boolean debug) {
+    public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug) {
         this.debug = debug;
-        initializeMindAndStar(env);
+        initializeMindAndStar(env, roomsCategories);
     }
 
-    public AgentMind(Environment env) {
+    public AgentMind(Environment env, List<Idea> roomsCategories) {
         super();
-        initializeMindAndStar(env);
+        initializeMindAndStar(env, roomsCategories);
     }
 
-    private void initializeMindAndStar(Environment env) {
+    private void initializeMindAndStar(Environment env, List<Idea> roomsCategoriesIdea) {
         // Create CodeletGroups and MemoryGroups for organizing Codelets and Memories
         createCodeletGroup("Sensory");
         createCodeletGroup("Motor");
@@ -179,43 +176,6 @@ public class AgentMind extends Mind {
         EPLTMO = createMemoryObject("EPLTM", epLTMGraph);
         //----Categories----
         //Rooms
-        List<Idea> roomsCategoriesIdea = new ArrayList<>();
-        roomA = constructRoomCategory("RoomA",
-                new Vector2D(0, 0),
-                new Vector2D(8, 3));
-        roomB = constructRoomCategory("RoomB",
-                new Vector2D(0, 3),
-                new Vector2D(1, 7));
-        roomC = constructRoomCategory("RoomC",
-                new Vector2D(0, 7),
-                new Vector2D(8, 10));
-        roomA.get("Adjacent").add(roomB);
-        roomB.get("Adjacent").add(roomA);
-        roomB.get("Adjacent").add(roomC);
-        roomC.get("Adjacent").add(roomB);
-
-        Idea exit = new Idea("Exit1", null, "Link", 1);
-        exit.add(new Idea("Room", roomB));
-        exit.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(-7,4)));
-        roomA.get("Exits").add(exit);
-
-        Idea exit2 = new Idea("Exit2", null, "Link", 1);
-        exit2.add(new Idea("Room", roomA));
-        exit2.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(0,-5)));
-        Idea exit3 = new Idea("Exit3", null, "Link", 1);
-        exit3.add(new Idea("Room", roomC));
-        exit3.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(0,5)));
-        roomB.get("Exits").add(exit2);
-        roomB.get("Exits").add(exit3);
-
-        Idea exit4 = new Idea("Exit4", null, "Link", 1);
-        exit4.add(new Idea("Room", roomB));
-        exit4.add(new Idea("Grid_Place", GridLocation.getInstance().getReferenceGridIdea(-7,-4)));
-        roomC.get("Exits").add(exit4);
-
-        roomsCategoriesIdea.add(roomA);
-        roomsCategoriesIdea.add(roomB);
-        roomsCategoriesIdea.add(roomC);
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
         Idea roomIdea = new Idea("Room", null, "AbstractObject", 1);
         roomsMO = createMemoryObject("ROOM", roomIdea);
@@ -579,7 +539,7 @@ public class AgentMind extends Mind {
         return innerSense;
     }
 
-    private Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB) {
+    public static Idea constructRoomCategory(String name, Vector2D cornerA, Vector2D cornerB) {
         Idea idea = new Idea(name, null, "AbstractObject", 0);
         idea.setValue(new RoomCategoryIdeaFunctions(idea, name, cornerA, cornerB));
         idea.add(new Idea("Adjacent", null, "Link", 1));

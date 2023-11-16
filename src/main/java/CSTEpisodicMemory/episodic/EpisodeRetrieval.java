@@ -357,16 +357,29 @@ public class EpisodeRetrieval extends Codelet {
         //    recalledEpisode.insertLink(event, finalPropertyNode, "Final");
         //}
 
+        Set<Idea> nodesToRemove = new HashSet<>();
         for (Idea event : recalledEpisode.getEventNodes()) {
             for (Idea spatialLink : recalledEpisode.getChildrenWithLink(event, "ObjectContext")) {
                 Idea objectNode = recalledEpisode.getChildrenWithLink(spatialLink, "Object").get(0);
+                Idea copyObject = IdeaHelper.cloneIdea(getNodeContent(objectNode));
+                Idea objectOccupation = new Idea("Occupation", null, "Aggregate", 1);
                 List<Idea> occupationCells = recalledEpisode.getChildrenWithLink(spatialLink, "GridPlace");
-                recalledEpisode.insertLink(event, objectNode, "ObjectContext");
-                for (Idea gridCell : occupationCells) {
-                    recalledEpisode.insertLink(objectNode, gridCell, "GridPlace");
+                for (Idea gridCell : occupationCells){
+                    objectOccupation.add(getNodeContent(gridCell));
                 }
-                recalledEpisode.removeNode(spatialLink);
+                copyObject.add(objectOccupation);
+                Idea copyObjectNode = recalledEpisode.insertObjectNode(copyObject);
+
+                recalledEpisode.insertLink(event, copyObjectNode, "ObjectContext");
+                for (Idea gridCell : occupationCells) {
+                    recalledEpisode.insertLink(copyObjectNode, gridCell, "GridPlace");
+                }
+                nodesToRemove.add(spatialLink);
+                nodesToRemove.add(objectNode);
             }
+        }
+        for (Idea node : nodesToRemove){
+            recalledEpisode.removeNode(node);
         }
 
         //for (Idea disconnected : removeCategoriesNodes)
