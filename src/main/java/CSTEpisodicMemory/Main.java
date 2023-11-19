@@ -53,7 +53,7 @@ public class Main {
          visu.setMemoryWatchPrintLevel("EVENTS", 5);
          visu.setVisible(true);
 
-         GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80);
+         GraphicMind lv = new GraphicMind(a, env, 10,8,10*80,8*80,0);
 
 
          EventVisualizer ev = new EventVisualizer(1000, 200, a);

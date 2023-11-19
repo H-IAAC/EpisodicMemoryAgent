@@ -426,6 +426,7 @@ public class AgentMind extends Mind {
         //Move Action/Behaviour
         Codelet moveActionCodelet = new Move();
         moveActionCodelet.addInput(impulsesMO);
+        moveActionCodelet.addInput(knownWallsMO);
         moveActionCodelet.addOutput(legsMO);
         moveActionCodelet.addInput(innerSenseMO);
         moveActionCodelet.addInput(locationsMO);

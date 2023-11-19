@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class GridLocation {
 
-    private final static double SCALE = 0.15;
+    public final static double SCALE = 0.15;
     private final static double SQRT_3 = Math.sqrt(3);
     private final static int GRID_SIZE = 120;
     private static Idea[][] adjencyMap = new Idea[GRID_SIZE][GRID_SIZE];
@@ -102,20 +102,24 @@ public class GridLocation {
     }
 
     public List<Idea> trajectoryInHCC(double[] start, double[] end) {
-        System.out.println(start[0] + ", " + start[1]);
-        System.out.println(end[0] + ", " + end[1]);
+        return trajectoryInHCC(start, end, new ArrayList<>());
+    }
+
+    public List<Idea> trajectoryInHCC(double[] start, double[] end, List<double[]> occupied) {
         List<Idea> plan = new LinkedList<>();
         double[] currPlanPos = start;
         double bestDist = dist(currPlanPos, end);
-        int count=0;
+        int count = 1;
         while (dist(currPlanPos, end) > 0) {
-            System.out.println(currPlanPos[0] + ", " + currPlanPos[1]);
-            if(count++%100000 == 0)
+            System.out.println(Arrays.toString(toXY(currPlanPos[0], currPlanPos[1])));
+            if (count++ % 100000 == 0)
                 System.out.println(count);
             for (double[] adj : adjacentCellsHCC(currPlanPos)) {
-                if (dist(adj, end) < bestDist) {
-                    currPlanPos = adj;
-                    bestDist = dist(adj, end);
+                if (!occupied.contains(adj)) {
+                    if (dist(adj, end) < bestDist) {
+                        currPlanPos = adj;
+                        bestDist = dist(adj, end);
+                    }
                 }
             }
             plan.add(referenceMap[(int) currPlanPos[0] + GRID_SIZE / 2][(int) currPlanPos[1] + GRID_SIZE / 2]);
@@ -144,7 +148,7 @@ public class GridLocation {
                 new double[]{pos[0], pos[1] - 1},
                 new double[]{pos[0], pos[1] + 1}
         );
-        return adj.stream().sorted(Comparator.comparingDouble(e->manhattanDist(e,new double[]{0,0}))).collect(Collectors.toList());
+        return adj.stream().sorted(Comparator.comparingDouble(e -> manhattanDist(e, new double[]{0, 0}))).collect(Collectors.toList());
         //return Arrays.asList(
         //        new double[]{pos[0] + 1, pos[1] + 1},
         //        new double[]{pos[0] + 1, pos[1] - 1},
