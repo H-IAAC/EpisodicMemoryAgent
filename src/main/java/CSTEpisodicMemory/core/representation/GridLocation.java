@@ -111,7 +111,6 @@ public class GridLocation {
         double bestDist = dist(currPlanPos, end);
         int count = 1;
         while (dist(currPlanPos, end) > 0) {
-            System.out.println(Arrays.toString(toXY(currPlanPos[0], currPlanPos[1])));
             if (count++ % 100000 == 0)
                 System.out.println(count);
             for (double[] adj : adjacentCellsHCC(currPlanPos)) {

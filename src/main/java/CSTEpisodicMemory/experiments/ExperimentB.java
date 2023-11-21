@@ -10,6 +10,8 @@ import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static CSTEpisodicMemory.AgentMind.constructRoomCategory;
@@ -18,17 +20,6 @@ public class ExperimentB {
 
     public static void run(){
         Environment env = new EnvironmentB(16,24);
-
-        //for (int i = 0; i < 4; i++){
-        //    SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);
-        //    execNPC.start();
-        //    try {
-        //        Thread.sleep(10000);
-        //    } catch (InterruptedException ex) {
-        //        Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        //    }
-        //}
-
         AgentMind mind = new AgentMind(env, createRoomsCategories());
         IdeaVisualizer visu = new IdeaVisualizer(mind);
         for (String mem : mind.getRawMemory().getAllMemoryObjects().stream().map(Memory::getName).collect(Collectors.toList()))
@@ -37,6 +28,17 @@ public class ExperimentB {
         visu.setMemoryWatchPrintLevel("EVENTS", 5);
         visu.setVisible(true);
         GraphicMind gm = new GraphicMind(mind, env, 16,24,1000,650,1);
+
+        for (int i = 0; i < 4; i++){
+            SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);
+            execNPC.setRecursive(true);
+            execNPC.start();
+            try {
+                Thread.sleep(15000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ExperimentB.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     private static List<Idea> createRoomsCategories(){

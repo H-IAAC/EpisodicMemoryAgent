@@ -527,7 +527,7 @@ public class GraphIdea {
             parents.add(parent.orElse(null));
         }
 
-        if (parents.contains(null) || parents.stream().distinct().count() > 1)
+        if (parents.contains(null) || parents.stream().distinct().count() != 1)
             return null;
         return parents.get(0);
     }

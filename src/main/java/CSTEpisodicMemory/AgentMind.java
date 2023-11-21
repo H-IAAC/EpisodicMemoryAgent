@@ -468,13 +468,13 @@ public class AgentMind extends Mind {
         episodeBindingCodelet.addOutput(storyMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
 
-        BufferCodelet perceptualBufferCodelet = new BufferCodelet();
+        BufferCodelet perceptualBufferCodelet = new BufferCodelet(200);
         perceptualBufferCodelet.setCheckPerception(true);
         perceptualBufferCodelet.addInputs(getMemoryGroupList("Perceptual"));
         perceptualBufferCodelet.addOutput(perceptualBufferMO);
         insertCodelet(perceptualBufferCodelet);
 
-        Codelet contextBufferCodelet = new BufferCodelet();
+        Codelet contextBufferCodelet = new BufferCodelet(200);
         contextBufferCodelet.addInputs(getMemoryGroupList("Context"));
         contextBufferCodelet.addInput(innerSenseMO);
         contextBufferCodelet.addOutput(contextBufferMO);
@@ -521,7 +521,8 @@ public class AgentMind extends Mind {
             c.setProfiling(true);
         }
 
-        //perceptualBufferCodelet.setTimeStep(250);
+        perceptualBufferCodelet.setTimeStep(150);
+        contextBufferCodelet.setTimeStep(150);
 
         start();
     }

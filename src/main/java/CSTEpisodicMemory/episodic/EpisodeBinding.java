@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class EpisodeBinding extends Codelet {
 
@@ -23,7 +24,7 @@ public class EpisodeBinding extends Codelet {
 
     private static final int intervalThreshold = 200;
 
-    public EpisodeBinding(){
+    public EpisodeBinding() {
         this.name = "EpisodeBinding";
     }
 
@@ -73,14 +74,15 @@ public class EpisodeBinding extends Codelet {
                     List<Idea> segmentedEvents = new ArrayList<>();
                     for (Idea event : eventsIdea.getL()) {
                         if (!story.hasNodeContent(event)) {
+                            long eventBegin = (long) event.getL().get(0).get("TimeStamp").getValue();
                             long eventEnd = (long) event.getL().get(1).get("TimeStamp").getValue();
                             Optional<Idea> context = timeline.getL().stream()
                                     .filter(e -> ((long) e.getValue()) <= eventEnd)
                                     .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
 
-                            Optional<Idea> objects = objectsTimeline.getL().stream()
-                                    .filter(e -> ((long) e.getValue()) <= eventEnd)
-                                    .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
+                            List<Idea> objects = objectsTimeline.getL().stream()
+                                    .filter(e -> eventBegin <= ((long) e.getValue()) && ((long) e.getValue()) <= eventEnd)
+                                    .collect(Collectors.toList());
 
                             if (context.isPresent() && isSegmentationEvent(story)) {
                                 segmentedEvents.add(event);
@@ -106,11 +108,13 @@ public class EpisodeBinding extends Codelet {
                                             story.insertLocationNode(grid);
                                         }
                                         story.insertLink(event, grid, "GridPlace");
+                                    } else {
+                                        System.out.println("NO GRID");
                                     }
 
                                     //Agent environment
                                     Idea room = contextIdea.get("Room");
-                                    if (room != null){
+                                    if (room != null) {
                                         Idea roomCat = room.get("Location");
                                         if (roomCat != null) {
                                             story.insertContextNode((Idea) roomCat.getValue());
@@ -129,34 +133,39 @@ public class EpisodeBinding extends Codelet {
                                     }
 
                                     //Context objects
-                                    if (objects.isPresent()){
+                                    if (!objects.isEmpty()) {
                                         Idea eventObject = event.getL().get(0).getL().stream()
-                                                .filter(o->!o.getName().equals("TimeStamp"))
+                                                .filter(o -> !o.getName().equals("TimeStamp"))
                                                 .findFirst()
                                                 .orElse(null);
 
-                                        Idea objectsIdea = objects.get();
-                                        for (Idea object : objectsIdea.getL()){
-                                            Idea occupation = object.get("Occupation");
-                                            if (occupation != null){
-                                                if (!object.getName().equals(eventObject.getName())) {
-                                                    story.insertObjectNode(object);
-                                                    story.insertLink(event, object, "ObjectContext");
-                                                    for (Idea objGrid : occupation.getL()){
-                                                        story.insertLocationNode(objGrid);
-                                                        story.insertLink(object, objGrid, "GridPlace");
+                                        for (Idea objectsIdea : objects) {
+                                            for (Idea object : objectsIdea.getL()) {
+                                                Idea occupation = object.get("Occupation");
+                                                if (occupation != null) {
+                                                    if (!story.hasNodeContent(object)) {
+                                                        if (!object.getName().equals(eventObject.getName())) {
+                                                            story.insertObjectNode(object);
+                                                            story.insertLink(event, object, "ObjectContext");
+                                                            for (Idea objGrid : occupation.getL()) {
+                                                                story.insertLocationNode(objGrid);
+                                                                story.insertLink(object, objGrid, "GridPlace");
+                                                            }
+                                                        }
                                                     }
-                                                }
-                                            } else {
-                                                for (Idea subObject : object.getL()){
-                                                    Idea subOccupation = subObject.get("Occupation");
-                                                    if (subOccupation != null) {
-                                                        if (!subObject.getName().equals(eventObject.getName())) {
-                                                            story.insertObjectNode(subObject);
-                                                            story.insertLink(event, subObject, "ObjectContext");
-                                                            for (Idea subObjGrid : subOccupation.getL()){
-                                                                story.insertLocationNode(subObjGrid);
-                                                                story.insertLink(subObject, subObjGrid, "GridPlace");
+                                                } else {
+                                                    for (Idea subObject : object.getL()) {
+                                                        if (!story.hasNodeContent(subObject)) {
+                                                            Idea subOccupation = subObject.get("Occupation");
+                                                            if (subOccupation != null) {
+                                                                if (!subObject.getName().equals(eventObject.getName())) {
+                                                                    story.insertObjectNode(subObject);
+                                                                    story.insertLink(event, subObject, "ObjectContext");
+                                                                    for (Idea subObjGrid : subOccupation.getL()) {
+                                                                        story.insertLocationNode(subObjGrid);
+                                                                        story.insertLink(subObject, subObjGrid, "GridPlace");
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }

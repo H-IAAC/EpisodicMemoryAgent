@@ -1,11 +1,15 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import br.unicamp.cst.util.viewer.representation.idea.IdeaPanel;
+import com.google.gson.Gson;
 
+import javax.swing.*;
 import java.util.*;
 
 import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
@@ -148,7 +152,18 @@ public class EpisodicGistExtraction extends Codelet {
                 //epLTMGraph.insertLink(LTEventNode, propertyEndNode, "Final");
 
                 //Get grid location
-                Idea gridPlace = getNodeContent(story.getChildrenWithLink(eventNode, "GridPlace").get(0));
+                List<Idea> grids = story.getChildrenWithLink(eventNode, "GridPlace");
+                if (grids.isEmpty()){
+                    JPanel panel = new JPanel();
+                    Idea ideaToShow = new Gson().fromJson(new Gson().toJson(story.graph), Idea.class);
+                    IdeaPanel ip = new IdeaPanel(story.graph, false);
+                    ip.updateTree();
+                    ip.expandAllNodes();
+                    panel.add(ip);
+                    panel.revalidate();
+                    panel.setVisible(true);
+                }
+                Idea gridPlace = getNodeContent(grids.get(0));
                 Idea gridNode = epLTMGraph.insertLocationNode(gridPlace);
                 epLTMGraph.insertLink(LTEventNode, gridNode, "GridPlace");
 
@@ -241,6 +256,14 @@ public class EpisodicGistExtraction extends Codelet {
             instanceNodeToMemoryNode.put(contextNode, spatialLinkNode);
         } else {
             instanceNodeToMemoryNode.put(contextNode, LTContextNode);
+            //System.out.println(getNodeContent(contextNode));
+            //JPanel panel = new JPanel();
+            //IdeaPanel ip = new IdeaPanel(story.graph, false);
+            //ip.updateTree();
+            //ip.expandAllNodes();
+            //panel.add(ip);
+            //panel.revalidate();
+            //panel.setVisible(true);
         }
     }
 

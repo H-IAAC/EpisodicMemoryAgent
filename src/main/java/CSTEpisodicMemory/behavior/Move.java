@@ -213,7 +213,6 @@ public class Move extends Codelet {
 
     private Idea nextPlanAction() {
         if (highPlan != null && !highPlan.isEmpty()) {
-            /*
             if (plan != null && !plan.isEmpty() && room != highPlan.get(0)) {
 
                 Idea nextGridPlace = plan.get(0);
@@ -231,8 +230,8 @@ public class Move extends Codelet {
                 action.add(new Idea("Y", (float) destPos[1]));
                 return action;
 
-             */
-            //} else {
+            } else {
+                /*
                 List<double[]> occupiedCells = new ArrayList<>();
                 synchronized (wallsMO){
                     Idea walls = (Idea) wallsMO.getI();
@@ -281,17 +280,25 @@ public class Move extends Codelet {
                         }
                     }
 
-
-                    double[] destPos = GridLocation.getInstance().toXY((double) plan.get(0).get("u").getValue(), (double) plan.get(0).get("v").getValue());
-                    destPos[0] += (double) room.get("center.x").getValue();
-                    destPos[1] += (double) room.get("center.y").getValue();
-
-                    Idea action = new Idea("Action", "Move", "Action", 1);
-                    action.add(new Idea("X", (float) destPos[0]));
-                    action.add(new Idea("Y", (float) destPos[1]));
-                    return action;
+                 */
+                if (room == highPlan.get(0) && highPlan.size()>1){
+                    highPlan.remove(0);
                 }
-            //}
+                lastRoom = room;
+                Idea nextRoom = highPlan.get(0);
+                    plan = testPlan(nextRoom);
+
+
+                    //double[] destPos = GridLocation.getInstance().toXY((double) plan.get(0).get("u").getValue(), (double) plan.get(0).get("v").getValue());
+                    //destPos[0] += (double) room.get("center.x").getValue();
+                    //destPos[1] += (double) room.get("center.y").getValue();
+
+                    //Idea action = new Idea("Action", "Move", "Action", 1);
+                    //action.add(new Idea("X", (float) destPos[0]));
+                    //action.add(new Idea("Y", (float) destPos[1]));
+                    //return action;
+                //}
+            }
         }
 
         float px = (float) impulse.get("State.Self.Position.X").getValue();
@@ -300,5 +307,35 @@ public class Move extends Codelet {
         action.add(new Idea("X", px));
         action.add(new Idea("Y", py));
         return action;
+    }
+
+    private List<Idea> testPlan(Idea nextRoom) {
+        List<Idea> myPlan = new ArrayList<>();
+        double selfU = (double) currPos.get("u").getValue();
+        double selfV = (double) currPos.get("v").getValue();
+        if (Math.abs(selfU) > Math.abs(selfV)) {
+            myPlan.add(GridLocation.getInstance().getReferenceGridIdea((int) selfU, 0));
+        }else {
+            myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0, (int) selfV));
+        }
+
+        //myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0,0));
+        //System.out.println("0 0");
+
+        Optional<Idea> exit = room.get("Exits").getL().stream().filter(e->((Idea) e.get("Room").getValue()) == nextRoom).findFirst();
+        if (exit.isPresent()) {
+            Idea gridDest = (Idea) exit.get().get("Grid_Place").getValue();
+            int gU = (int) ((double) gridDest.get("u").getValue());
+            int gV = (int) ((double) gridDest.get("v").getValue());
+            if (room.membership(GridLocation.getInstance().getReferenceGridIdea(gU, 0)) == 1) {
+                myPlan.add(GridLocation.getInstance().getReferenceGridIdea(gU, 0));
+            } else if (room.membership(GridLocation.getInstance().getReferenceGridIdea(0, gV)) == 1) {
+                myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0, gV));
+            }
+
+            myPlan.add(GridLocation.getInstance().getReferenceGridIdea(gU, gV));
+            return myPlan;
+        }
+        return new ArrayList<>();
     }
 }

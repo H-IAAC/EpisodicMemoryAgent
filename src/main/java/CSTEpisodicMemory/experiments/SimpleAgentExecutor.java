@@ -16,6 +16,7 @@ public class SimpleAgentExecutor extends Thread{
     private Environment env;
     private List<Float[]> route = new ArrayList<>();
     private Random rnd = new Random();
+    private boolean recursive = false;
 
     public SimpleAgentExecutor(Environment env){
         this.env = env;
@@ -66,6 +67,12 @@ public class SimpleAgentExecutor extends Thread{
         }
 
         agent.setRemove(true);
+
+        if (recursive){
+            SimpleAgentExecutor recursiveAgent = new SimpleAgentExecutor(env);
+            recursiveAgent.setRecursive(true);
+            recursiveAgent.start();
+        }
     }
 
     public List<Float[]> calculateRoute(int start, int end){
@@ -174,5 +181,9 @@ public class SimpleAgentExecutor extends Thread{
         String sa = String.valueOf(a);
         String sb = String.valueOf(b);
         g.addEdge(sa+sb, sa, sb, true);
+    }
+
+    public void setRecursive(boolean recursive) {
+        this.recursive = recursive;
     }
 }
