@@ -64,13 +64,15 @@ public class BufferCodelet extends Codelet {
                     Idea content = (Idea) input.getI();
                     if (content != null) {
                         if (checkPerception && !content.getName().equals("Self")) {
-                            if (content.get("Novelty") != null && content.get("Occupation") != null)
+                            if (content.get("Novelty") != null && content.get("Occupation") != null) {
                                 currTimestep.add(IdeaHelper.cloneIdea(content));
-                            else
+                            }else {
                                 for (Idea sub : content.getL()) {
-                                    if (sub.get("Novelty") != null && sub.get("Occupation") != null)
+                                    if (sub.get("Novelty") != null && sub.get("Occupation") != null) {
                                         currTimestep.add(IdeaHelper.cloneIdea(sub));
+                                    }
                                 }
+                            }
                         } else {
                             currTimestep.add(IdeaHelper.cloneIdea(content));
                         }

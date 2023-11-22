@@ -20,11 +20,11 @@ public class Main {
 
     static AgentMind a;
     public static void main(String[] args) {
-        new ExperimentB().run();
+        new ExperimentA().run();
     }
 
     private static void test(){
-        Environment env = new EnvironmentB();
+        Environment env = new EnvironmentA();
 
         for (int i = 0; i < 4; i++){
             SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);

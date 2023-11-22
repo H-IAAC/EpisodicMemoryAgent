@@ -53,6 +53,7 @@ public class AgentDetector extends Codelet {
                         agentsIdea.add(constructAgentIdea((Agent) obj));
                     }
                 }
+                currentAgentsMO.setI(agentsIdea);
             }
         }
     }

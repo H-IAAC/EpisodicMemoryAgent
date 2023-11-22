@@ -13,7 +13,6 @@ import CSTEpisodicMemory.categories.StepEventCategory;
 import CSTEpisodicMemory.core.codelets.EpisodeBoundaryDetection;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.BufferCodelet;
@@ -26,11 +25,9 @@ import CSTEpisodicMemory.perception.*;
 import CSTEpisodicMemory.sensor.Propriosensor;
 import CSTEpisodicMemory.sensor.LeafletSense;
 import CSTEpisodicMemory.sensor.Vision;
-import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
 import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.util.Constants;
-import bibliothek.gui.dock.station.screen.window.InternalScreenDockWindowFactory;
 import br.unicamp.cst.core.entities.*;
 import br.unicamp.cst.representation.idea.Idea;
 
@@ -44,19 +41,22 @@ import java.util.List;
 public class AgentMind extends Mind {
 
     private boolean debug = false;
+    private boolean stop = false;
     public List<Codelet> bList = new ArrayList<>();
 
-    public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug) {
+    public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug, boolean stop) {
+        super();
         this.debug = debug;
-        initializeMindAndStar(env, roomsCategories);
+        this.stop = stop;
+        initializeMindAndStart(env, roomsCategories);
     }
 
     public AgentMind(Environment env, List<Idea> roomsCategories) {
         super();
-        initializeMindAndStar(env, roomsCategories);
+        initializeMindAndStart(env, roomsCategories);
     }
 
-    private void initializeMindAndStar(Environment env, List<Idea> roomsCategoriesIdea) {
+    private void initializeMindAndStart(Environment env, List<Idea> roomsCategoriesIdea) {
         // Create CodeletGroups and MemoryGroups for organizing Codelets and Memories
         createCodeletGroup("Sensory");
         createCodeletGroup("Motor");
@@ -412,16 +412,17 @@ public class AgentMind extends Mind {
         Memory extra;
         extra = createMemoryObject("extra");
         //Explore
-        Codelet exploreImpulse = new ExploreImpulse();
-        exploreImpulse.addInput(knownJewelsMO);
-        exploreImpulse.addInput(innerSenseMO);
-        exploreImpulse.addInput(roomsMO);
-        exploreImpulse.addInput(locationsMO);
-        exploreImpulse.addInput(EPLTMO);
-        exploreImpulse.addInput(categoriesRoomMO);
-        exploreImpulse.addOutput(impulsesMO);
-        insertCodelet(exploreImpulse, "Behavioral");
-
+        if (!stop) {
+            Codelet exploreImpulse = new ExploreImpulse();
+            exploreImpulse.addInput(knownJewelsMO);
+            exploreImpulse.addInput(innerSenseMO);
+            exploreImpulse.addInput(roomsMO);
+            exploreImpulse.addInput(locationsMO);
+            exploreImpulse.addInput(EPLTMO);
+            exploreImpulse.addInput(categoriesRoomMO);
+            exploreImpulse.addOutput(impulsesMO);
+            insertCodelet(exploreImpulse, "Behavioral");
+        }
 
         //Move Action/Behaviour
         Codelet moveActionCodelet = new Move();

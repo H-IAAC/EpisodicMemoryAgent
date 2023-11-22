@@ -117,7 +117,7 @@ public class EventTracker extends MemoryCodelet {
             if (eventBuffer.size() == bufferSize) {
                 long lastUpdate = getLastTimeStampOf(objectName);
                 Idea lastBufferTime = buffer.getL().get(buffer.getL().size() - 1);
-                if (lastUpdate - (long) lastBufferTime.getValue() > 500) {
+                if ((long) lastBufferTime.getValue() - lastUpdate > 500) {
                     insertEventInOutputMemory(lastBufferTime, eventBuffer.get(eventBuffer.size()-1), getInitialEventOf(objectName), eventBuffer);
                 }
             }

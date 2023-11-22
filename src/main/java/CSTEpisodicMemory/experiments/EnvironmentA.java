@@ -13,7 +13,8 @@ public class EnvironmentA extends Environment{
 
     @Override
     protected void createCreature() {
-        creature = world.createAgent(1,1);
+        creature = world.createAgent(4,2.6F);
+        creature.moveTo(4,2.5F);
     }
 
     public void initializeRooms(){
@@ -28,10 +29,12 @@ public class EnvironmentA extends Environment{
         insertWall(Constants.BrickTypes.RED_BRICK, 8,7,8,10);
         insertWall(Constants.BrickTypes.RED_BRICK, 0,10,8,10);
 
-        int[] hcc = GridLocation.getInstance().locateHCC(-3.5,1.8);
-        double[] xy = GridLocation.getInstance().toXY(hcc[0], hcc[1]);
-        xy[0] += 4;
-        xy[1] += 1.5;
-        insertWall(Constants.BrickTypes.MAGENTA_BRICK, (float) (xy[0]-0.02), (float) (xy[1]-0.02), (float) (xy[0]+0.02), (float) (xy[1]+0.02));
+        insertWall(Constants.BrickTypes.GREEN_BRICK, 3.75F, 0.1F, 4.25F, 0.2F);
+        insertWall(Constants.BrickTypes.MAGENTA_BRICK, 3.25F, 0.1F, 3.75F, 0.2F);
+        insertWall(Constants.BrickTypes.ORANGE_BRICK, 4.25F, 0.1F, 4.75F, 0.2F);
+
+        insertWall(Constants.BrickTypes.GREEN_BRICK, 3.75F, 9.8F, 4.25F, 9.9F);
+        insertWall(Constants.BrickTypes.MAGENTA_BRICK, 3.25F, 9.8F, 3.75F, 9.9F);
+        insertWall(Constants.BrickTypes.ORANGE_BRICK, 4.25F, 9.8F, 4.75F, 9.9F);
     }
 }
