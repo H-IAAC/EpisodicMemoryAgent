@@ -19,6 +19,8 @@ public class IdeaHelper {
     }
 
     private static String fullPrint(Idea idea, String pre){
+        if (idea == null)
+            return pre + "NULL\n";
         String ideaString = idea.toString() + "[" + printValue(idea) + "]";
         StringBuilder out = new StringBuilder(pre + typeScopeString(idea) + ideaString + "\n");
         if (!listtoavoidloops.contains(idea.getId())) {

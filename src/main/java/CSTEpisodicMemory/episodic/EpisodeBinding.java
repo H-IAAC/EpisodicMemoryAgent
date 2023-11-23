@@ -84,7 +84,7 @@ public class EpisodeBinding extends Codelet {
                                     .filter(e -> eventBegin <= ((long) e.getValue()) && ((long) e.getValue()) <= eventEnd)
                                     .collect(Collectors.toList());
 
-                            if (context.isPresent() && isSegmentationEvent(story)) {
+                            if (context.isPresent() && isSegmentationEvent(story, eventBegin)) {
                                 segmentedEvents.add(event);
                             } else {
                                 List<Idea> otherNodes = new ArrayList<>(story.getEventNodes());
@@ -195,10 +195,18 @@ public class EpisodeBinding extends Codelet {
         }
     }
 
-    private boolean isSegmentationEvent(GraphIdea story) {
+    private boolean isSegmentationEvent(GraphIdea story, long testEvent) {
         Idea firstEvent = story.getEventNodes().stream().min(Comparator.comparingLong(e -> (long) GraphIdea.getNodeContent(e).getL().get(0).get("TimeStamp").getValue())).orElse(null);
-        if (firstEvent != null)
-            return (long) GraphIdea.getNodeContent(firstEvent).getL().get(0).get("TimeStamp").getValue() < latestSegmentationTime;
+        if (firstEvent != null) {
+            boolean test = (long) GraphIdea.getNodeContent(firstEvent).getL().get(0).get("TimeStamp").getValue() < latestSegmentationTime;
+            test = test && (testEvent > latestSegmentationTime);
+            if (test) {
+                System.out.println("Segmenting--------------------------------------------");
+                System.out.println((long) GraphIdea.getNodeContent(firstEvent).getL().get(0).get("TimeStamp").getValue());
+                System.out.println(latestSegmentationTime);
+            }
+            return test;
+        }
         return false;
     }
 

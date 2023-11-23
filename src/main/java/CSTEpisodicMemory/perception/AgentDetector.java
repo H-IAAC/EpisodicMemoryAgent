@@ -59,7 +59,7 @@ public class AgentDetector extends Codelet {
     }
 
     private Idea constructAgentIdea(Agent agent) {
-        Idea agentIdea = new Idea("Agent" + agent.getId(), "Agent" + agent.getId(), "AbstractObject", 1);
+        Idea agentIdea = new Idea("Agent" + agent.getId(), "AGENT", "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", agent.getPosition().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", agent.getPosition().get(1), "QualityDimension", 1));

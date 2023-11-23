@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 
 public class LinearEventCategory extends EventCategory {
 
+    public static double threashold = 0.01;
+
     public LinearEventCategory(String name, List<String> properiesList) {
         super(name, properiesList);
     }
@@ -22,7 +24,7 @@ public class LinearEventCategory extends EventCategory {
         }
         ArrayRealVector prevDirVector = propertiesVector.get(1).subtract(propertiesVector.get(0));
         ArrayRealVector currDirVector = propertiesVector.get(2).subtract(propertiesVector.get(1));
-        boolean check = prevDirVector.getNorm() > 0.01 && getAbsAngle(prevDirVector, currDirVector) < 0.02;
+        boolean check = prevDirVector.getNorm() > threashold && getAbsAngle(prevDirVector, currDirVector) < 0.02;
         return check;
     }
 

@@ -118,7 +118,8 @@ public class EventTracker extends MemoryCodelet {
                 long lastUpdate = getLastTimeStampOf(objectName);
                 Idea lastBufferTime = buffer.getL().get(buffer.getL().size() - 1);
                 if ((long) lastBufferTime.getValue() - lastUpdate > 500) {
-                    insertEventInOutputMemory(lastBufferTime, eventBuffer.get(eventBuffer.size()-1), getInitialEventOf(objectName), eventBuffer);
+                    if (getInitialEventOf(objectName) != null)
+                        insertEventInOutputMemory(lastBufferTime, eventBuffer.get(eventBuffer.size()-1), getInitialEventOf(objectName), eventBuffer);
                 }
             }
         }
@@ -173,6 +174,8 @@ public class EventTracker extends MemoryCodelet {
 
     private void insertEventInOutputMemory(Idea timeStep, Idea object, Idea initialEventIdea, List<Idea> inputIdeaBuffer) {
         Idea constraints = new Idea("Constraints");
+        if (initialEventIdea.get("TimeStamp") == null)
+            System.out.println(IdeaHelper.fullPrint(initialEventIdea));
         constraints.add(new Idea("0", initialEventIdea));
         constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
         Idea event = trackedEventCategory.getInstance(constraints);
@@ -193,7 +196,11 @@ public class EventTracker extends MemoryCodelet {
 
     private void restartEventStage(Idea object, long timeStamp) {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
-        step.add(IdeaHelper.cloneIdea(object));
+        Idea stepObj = IdeaHelper.cloneIdea(object);
+        if (stepObj.get("TimeStamp") == null){
+            stepObj.add(new Idea("TimeStamp", timeStamp, "Property", 1));
+        }
+        step.add(stepObj);
         String objName = object.getName();
         internal.put(objName, new LinkedList<Idea>() {{
             add(null);

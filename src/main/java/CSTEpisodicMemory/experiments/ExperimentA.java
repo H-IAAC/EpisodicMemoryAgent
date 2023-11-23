@@ -2,22 +2,27 @@ package CSTEpisodicMemory.experiments;
 
 import CSTEpisodicMemory.AgentMind;
 import CSTEpisodicMemory.Main;
+import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.util.Vector2D;
+import CSTEpisodicMemory.util.visualization.GraphicMind;
 import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
 import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.util.Constants;
 import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.io.rest.RESTServer;
 import br.unicamp.cst.representation.idea.Idea;
 
 import javax.script.ScriptEngine;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static CSTEpisodicMemory.AgentMind.constructRoomCategory;
+import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 
 public class ExperimentA {
 
@@ -25,6 +30,7 @@ public class ExperimentA {
         Environment env = new EnvironmentA(8,10);
 
         AgentMind mind = new AgentMind(env, createRoomsCategories(), false, true);
+        RESTServer rs = new RESTServer(mind, 5000, true);
 
         IdeaVisualizer visu = new IdeaVisualizer(mind);
         for (String mem : mind.getRawMemory().getAllMemoryObjects().stream().map(Memory::getName).collect(Collectors.toList()))
@@ -33,14 +39,74 @@ public class ExperimentA {
         visu.setMemoryWatchPrintLevel("EVENTS", 5);
         visu.setVisible(true);
 
+        GraphicMind gm = new GraphicMind(mind, env, 8, 10, 700, 700, 0);
+
+        //Show an moving agent
         Agent npc = env.newAgent(1,1.5F, Constants.Color.AGENT_RED);
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("Go");
+        System.out.println("Move Agent");
         npc.moveTo(7F,1.5F);
+
+        //Force Episode segmentation
+        Memory selectedMem = mind.getRawMemory().getAllMemoryObjects()
+        .stream().filter(m -> m.getName().equalsIgnoreCase("BOUNDARIES"))
+        .findFirst().get();
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Force episode Segmentation");
+        Idea boundaries = (Idea) selectedMem.getI();
+        Idea forcedBoundary = new Idea("EP Boundary", "Hard", "Property", 1);
+        forcedBoundary.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
+        boundaries.add(forcedBoundary);
+        selectedMem.setI(boundaries);
+
+        selectedMem = mind.getRawMemory().getAllMemoryObjects()
+                .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
+                .findFirst().get();
+        GraphIdea story = new GraphIdea(((Idea) selectedMem.getI()).getL().get(0).get("Story"));
+        env.creature.moveTo(4, 2.3F);
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("####Report####");
+        System.out.println("---Encoding---");
+        System.out.println("Número de nós: " + story.getNodes().size());
+        System.out.println("Detected Events: " +  story.getEventNodes().size());
+        System.out.println("Contextos: " + story.getContextNodes().size());
+        System.out.println("Objetos: " + story.getObjectNodes().size());
+        System.out.println("Links espaciais: " + story.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count());
+        System.out.println("Número de células de grade: " + story.getLocationNodes().size());
+
+        selectedMem = mind.getRawMemory().getAllMemoryObjects()
+                .stream().filter(m -> m.getName().equalsIgnoreCase("EPLTM"))
+                .findFirst().get();
+        GraphIdea epLTMGraph = (GraphIdea) selectedMem.getI();
+        System.out.println("--Armazenamento--");
+        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
+        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
+        long links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
+        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
+        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
+        System.out.println("Links espaciais: " + links);
+        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
+
+        mind.shutDown();
+        visu.setVisible(false);
+        gm.stop();
+        //env.stopSimulation();
 
     }
 

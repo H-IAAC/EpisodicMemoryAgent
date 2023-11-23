@@ -26,6 +26,7 @@ public class GraphicMind extends JFrame {
     private final Environment env;
 
     private LocationGraphic loc;
+    private java.util.Timer t;
 
     public GraphicMind(Mind m, Environment env, double envW, double envH, int windowW, int windoH, int experiment) {
         this.envW = envW;
@@ -37,7 +38,7 @@ public class GraphicMind extends JFrame {
 
         initComponents(experiment);
 
-        java.util.Timer t = new Timer();
+        t = new Timer();
         GraphicMind.mainTimerTask tt = new mainTimerTask(this);
         t.scheduleAtFixedRate(tt, 200, 100);
 
@@ -57,8 +58,13 @@ public class GraphicMind extends JFrame {
         }
     }
 
+    public void stop(){
+        t.cancel();
+        setVisible(false);
+    }
+
     private void initComponents(int experiment){
-        setSize(windowW,windowH);
+        setSize(windowW + 180,windowH-50);
 
         JToolBar toolBar = new JToolBar();
         JPopupMenu popup = new JPopupMenu();
@@ -95,9 +101,9 @@ public class GraphicMind extends JFrame {
 
         JComponent display = new JComponent() {
             //LocationGraphic loc = new LocationGraphic(m, envW,envH,windowW,windowH);
-            AgentGraphic agentGraphic = new AgentGraphic(env, envW,envH,windowH,windowW);
-            GoalGraphic goalGraphic = new GoalGraphic(m, envW,envH,windowH,windowW);
-            MoveGraphic moveGraphic = new MoveGraphic(m, envW,envH,windowH,windowW);
+            AgentGraphic agentGraphic = new AgentGraphic(env, envW,envH,windowW,windowH);
+            GoalGraphic goalGraphic = new GoalGraphic(m, envW,envH,windowW,windowH);
+            MoveGraphic moveGraphic = new MoveGraphic(m, envW,envH,windowW,windowH);
 
             @Override
             protected void paintComponent(Graphics g) {
@@ -105,13 +111,14 @@ public class GraphicMind extends JFrame {
                 drawWalls(g2d, experiment);
                 //loc.draw2(g2d);
                 moveGraphic.draw(g2d);
-                goalGraphic.draw(g2d);
+                if (experiment != 0)
+                    goalGraphic.draw(g2d);
                 agentGraphic.draw(g2d);
             }
 
             private void drawWalls(Graphics2D g, int experiment){
-                double sx = windowW/envH;
-                double sy = windowH/envW;
+                double sx = windowW/envW;
+                double sy = windowH/envH;
 
                 List<Rectangle2D.Double> walls = new ArrayList<>();
                 if (experiment == 0) {

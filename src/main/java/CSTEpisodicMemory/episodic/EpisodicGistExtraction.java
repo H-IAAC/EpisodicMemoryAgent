@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.episodic;
 
+import CSTEpisodicMemory.categories.ObjectCategory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
@@ -132,8 +133,17 @@ public class EpisodicGistExtraction extends Codelet {
                 Optional<Idea> finalObject = eventContent.getL().get(1).getL().stream()
                         .filter(o->!o.getName().equals("TimeStamp"))
                         .findFirst();
-                Idea initialNode = makeSpatialLink(initialObject, epLTMGraph);
-                Idea finalNode = makeSpatialLink(finalObject, epLTMGraph);
+
+                Idea initialNode;
+                if (initialObject.isPresent())
+                    initialNode = makeSpatialLink(initialObject.get(), epLTMGraph);
+                else
+                    initialNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
+                Idea finalNode;
+                if (finalObject.isPresent())
+                    finalNode = makeSpatialLink(finalObject.get(), epLTMGraph);
+                else
+                    finalNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
                 epLTMGraph.insertLink(LTEventNode, initialNode, "Initial");
                 epLTMGraph.insertLink(LTEventNode, finalNode, "Final");
 
@@ -197,8 +207,9 @@ public class EpisodicGistExtraction extends Codelet {
                 Idea objectContent = getNodeContent(objectNode);
                 if(objectContent.get("Novelty") != null)
                     if ((double) objectContent.get("Novelty").getValue() >= 0.9) {
-                        Idea LTObjectNode = epLTMGraph.insertObjectNode(objectContent);
-                        insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, LTObjectNode, instanceNodeToMemoryNode);
+                        Idea spatialLinkNode = makeSpatialLink(objectContent, epLTMGraph);
+                        instanceNodeToMemoryNode.put(objectNode, spatialLinkNode);
+                        //insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, instanceNodeToMemoryNode);
                     }
             }
 
@@ -267,14 +278,15 @@ public class EpisodicGistExtraction extends Codelet {
         }
     }
 
-    private Idea makeSpatialLink(Optional<Idea> initialObject, GraphIdea epLTMGraph) {
+    private Idea makeSpatialLink(Idea objectContent, GraphIdea epLTMGraph) {
         Idea initialNode;
-        if(initialObject.isPresent()){
-            Idea obj = initialObject.get();
-            Idea objOccupation = obj.get("Occupation");
+            Idea objOccupation = objectContent.get("Occupation");
             if (objOccupation != null){
-                obj.getL().remove(objOccupation);
-                Idea objNode = epLTMGraph.insertObjectNode(obj);
+                if (objectContent.get("Position") != null)
+                    objectContent.get("Position").setL(new ArrayList<>());
+                objectContent.getL().remove(objOccupation);
+                //Idea objNode = epLTMGraph.insertObjectNode(objectContent);
+                Idea objNode = assimilateObject(objectContent, epLTMGraph);
                 List<Idea> posNodes = new ArrayList<>();
                 for (Idea objGrid : objOccupation.getL()){
                     posNodes.add(epLTMGraph.insertLocationNode(objGrid));
@@ -289,11 +301,32 @@ public class EpisodicGistExtraction extends Codelet {
                 }
                 initialNode = spatialLinkNode;
             } else {
-                initialNode = epLTMGraph.insertObjectNode(obj);
+                initialNode = epLTMGraph.insertObjectNode(objectContent);
             }
-        }else {
-            initialNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
-        }
         return initialNode;
+    }
+
+    private Idea assimilateObject(Idea objectContent, GraphIdea epLTMGraph) {
+        double bestMem = 0;
+        Idea bestObjCat = null;
+        for (Idea objNode : epLTMGraph.getObjectNodes()){
+            Idea objCat = getNodeContent(objNode);
+            double mem = objCat.membership(objectContent);
+            if (mem > bestMem) {
+                bestMem = mem;
+                bestObjCat = objCat;
+            }
+        }
+        if (bestObjCat != null){
+            if (bestMem >= 0.9){
+                ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();
+                cat.insertExamplar(objectContent);
+                bestObjCat.setValue(cat);
+                return epLTMGraph.getNodeFromContent(bestObjCat);
+            }
+        }
+        ObjectCategory newObjCatFunc = new ObjectCategory(objectContent);
+        Idea newObjCat = new Idea(objectContent.getName(), newObjCatFunc, "AbstractObject", 2);
+        return epLTMGraph.insertObjectNode(newObjCat);
     }
 }

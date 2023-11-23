@@ -43,8 +43,8 @@ public class Propriosensor extends Codelet{
             cis.get("Position").get("Y").setValue(agent.getPosition().get(1));
             cis.get("Pitch").setValue(agent.getPitch());
             cis.get("Fuel").setValue(agent.getFuel());
-            int step = (int) cis.get("Step").getValue();
-            cis.get("Step").setValue(step + 1);
+            //int step = (int) cis.get("Step").getValue();
+            //cis.get("Step").setValue(step + 1);
             cis.get("TimeStamp").setValue(System.currentTimeMillis());
             if (debug) {
                 System.out.println(cis.toStringFull());

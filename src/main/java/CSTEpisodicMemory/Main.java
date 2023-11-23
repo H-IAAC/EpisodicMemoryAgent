@@ -3,6 +3,7 @@
  */
 package CSTEpisodicMemory;
 
+import CSTEpisodicMemory.categories.LinearEventCategory;
 import CSTEpisodicMemory.experiments.*;
 import CSTEpisodicMemory.util.visualization.*;
 import WS3DCoppelia.util.Constants;
@@ -20,7 +21,9 @@ public class Main {
 
     static AgentMind a;
     public static void main(String[] args) {
-        new ExperimentA().run();
+        //new ExperimentA().run();
+        LinearEventCategory.threashold = 0.001;
+        ExperimentB.run();
     }
 
     private static void test(){
