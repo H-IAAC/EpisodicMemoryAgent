@@ -52,27 +52,29 @@ public class EpisodicGistExtraction extends Codelet {
     @Override
     public void proc() {
 
-        GraphIdea epLTMGraph = (GraphIdea) epLTM.getI();
-        Idea stories = (Idea) episodesMO.getI();
-        List<Idea> memLocations = new ArrayList<>((ArrayList) locationMO.getI());
-        List<Idea> propertiesCategories = new ArrayList<>((ArrayList) propertiesMO.getI());
+        synchronized (episodesMO){
+            synchronized (epLTM) {
+                GraphIdea epLTMGraph = (GraphIdea) epLTM.getI();
+                Idea stories = (Idea) episodesMO.getI();
+                List<Idea> memLocations = new ArrayList<>((ArrayList) locationMO.getI());
+                List<Idea> propertiesCategories = new ArrayList<>((ArrayList) propertiesMO.getI());
 
-        //System.out.println("--------------------");
-        //System.out.println(IdeaHelper.csvPrint(epLTMGraph.graph,4).replace("\n"," "));
+                //System.out.println("--------------------");
+                //System.out.println(IdeaHelper.csvPrint(epLTMGraph.graph,4).replace("\n"," "));
 
-        //If there is a segmented episode
-        if (stories.getL().size() > 1) {
-            Idea oldestEpisode = stories.getL().get(0);
-            for (Idea ep : stories.getL()) {
-                if ((int) ep.getValue() < (int) oldestEpisode.getValue())
-                    oldestEpisode = ep;
-            }
-            GraphIdea story = new GraphIdea(oldestEpisode.get("Story"));
+                //If there is a segmented episode
+                if (stories.getL().size() > 1) {
+                    Idea oldestEpisode = stories.getL().get(0);
+                    for (Idea ep : stories.getL()) {
+                        if ((int) ep.getValue() < (int) oldestEpisode.getValue())
+                            oldestEpisode = ep;
+                    }
+                    GraphIdea story = new GraphIdea(oldestEpisode.get("Story"));
 
-            Map<Idea, Idea> instanceNodeToMemoryNode = new HashMap<>();
+                    Map<Idea, Idea> instanceNodeToMemoryNode = new HashMap<>();
 
-            //Extract locations
-            List<Idea> epLocations = story.getLocationNodes();
+                    //Extract locations
+                    List<Idea> epLocations = story.getLocationNodes();
 
             /*for (Idea loc : epLocations) {
                 if (memLocations.isEmpty()) {
@@ -108,143 +110,145 @@ public class EpisodicGistExtraction extends Codelet {
             }
              */
 
-            Idea startEvent = null;
-            Idea endEvent = null;
-            //Copy events and impulses to memory and add links
-            for (Idea eventNode : story.getEventNodes()) {
-                Idea eventContent = getNodeContent(eventNode);
-                Idea eventCategory = (Idea) eventContent.getValue();
-                Idea LTEventContent = new Idea(eventContent.getName(),
-                        eventCategory.getName(),
-                        "Episode", 1);
-                LTEventContent.add(new Idea("Start",
-                        eventContent.getL().get(0).get("TimeStamp").getValue(),
-                        "TimeStep", 1));
-                LTEventContent.add(new Idea("End",
-                        eventContent.getL().get(1).get("TimeStamp").getValue(),
-                        "TimeStep", 1));
-                Idea LTEventNode = epLTMGraph.insertEventNode(LTEventContent);
-                instanceNodeToMemoryNode.put(eventNode, LTEventNode);
+                    Idea startEvent = null;
+                    Idea endEvent = null;
+                    //Copy events and impulses to memory and add links
+                    for (Idea eventNode : story.getEventNodes()) {
+                        Idea eventContent = getNodeContent(eventNode);
+                        Idea eventCategory = (Idea) eventContent.getValue();
+                        Idea LTEventContent = new Idea(eventContent.getName(),
+                                eventCategory.getName(),
+                                "Episode", 1);
+                        LTEventContent.add(new Idea("Start",
+                                eventContent.getL().get(0).get("TimeStamp").getValue(),
+                                "TimeStep", 1));
+                        LTEventContent.add(new Idea("End",
+                                eventContent.getL().get(1).get("TimeStamp").getValue(),
+                                "TimeStep", 1));
+                        Idea LTEventNode = epLTMGraph.insertEventNode(LTEventContent);
+                        instanceNodeToMemoryNode.put(eventNode, LTEventNode);
 
-                //Event Object
-                Optional<Idea> initialObject = eventContent.getL().get(0).getL().stream()
-                        .filter(o->!o.getName().equals("TimeStamp"))
-                        .findFirst();
-                Optional<Idea> finalObject = eventContent.getL().get(1).getL().stream()
-                        .filter(o->!o.getName().equals("TimeStamp"))
-                        .findFirst();
+                        //Event Object
+                        Optional<Idea> initialObject = eventContent.getL().get(0).getL().stream()
+                                .filter(o -> !o.getName().equals("TimeStamp"))
+                                .findFirst();
+                        Optional<Idea> finalObject = eventContent.getL().get(1).getL().stream()
+                                .filter(o -> !o.getName().equals("TimeStamp"))
+                                .findFirst();
 
-                Idea initialNode;
-                if (initialObject.isPresent())
-                    initialNode = makeSpatialLink(initialObject.get(), epLTMGraph);
-                else
-                    initialNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
-                Idea finalNode;
-                if (finalObject.isPresent())
-                    finalNode = makeSpatialLink(finalObject.get(), epLTMGraph);
-                else
-                    finalNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
-                epLTMGraph.insertLink(LTEventNode, initialNode, "Initial");
-                epLTMGraph.insertLink(LTEventNode, finalNode, "Final");
+                        Idea initialNode;
+                        if (initialObject.isPresent())
+                            initialNode = makeSpatialLink(initialObject.get(), epLTMGraph);
+                        else
+                            initialNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
+                        Idea finalNode;
+                        if (finalObject.isPresent())
+                            finalNode = makeSpatialLink(finalObject.get(), epLTMGraph);
+                        else
+                            finalNode = epLTMGraph.insertObjectNode(new Idea("Null Object"));
+                        epLTMGraph.insertLink(LTEventNode, initialNode, "Initial");
+                        epLTMGraph.insertLink(LTEventNode, finalNode, "Final");
 
-                //Get start and end properties
-                //Idea catParam = trackedPropertiesAssimilateAccommodateHabit.get("Input_Category");
-                //catParam.getL().clear();
-                /////catParam.add(eventCategory.get("ObservedObject"));
-                //catParam.add(eventCategory.get("properties"));
-                //Idea catss = trackedPropertiesAssimilateAccommodateHabit.get("categories");
-                //catss.setL(propertiesCategories);
+                        //Get start and end properties
+                        //Idea catParam = trackedPropertiesAssimilateAccommodateHabit.get("Input_Category");
+                        //catParam.getL().clear();
+                        /////catParam.add(eventCategory.get("ObservedObject"));
+                        //catParam.add(eventCategory.get("properties"));
+                        //Idea catss = trackedPropertiesAssimilateAccommodateHabit.get("categories");
+                        //catss.setL(propertiesCategories);
 
-                //Idea eventPropertiesCategories = trackedPropertiesAssimilateAccommodateHabit.exec(eventContent);
-                //Idea propertyStartNode = epLTMGraph.insertNode((Idea) eventPropertiesCategories.get("0").getValue(), "Property");
-                //Idea propertyEndNode = epLTMGraph.insertNode((Idea) eventPropertiesCategories.get("1").getValue(), "Property");
-                //epLTMGraph.insertLink(LTEventNode, propertyStartNode, "Initial");
-                //epLTMGraph.insertLink(LTEventNode, propertyEndNode, "Final");
+                        //Idea eventPropertiesCategories = trackedPropertiesAssimilateAccommodateHabit.exec(eventContent);
+                        //Idea propertyStartNode = epLTMGraph.insertNode((Idea) eventPropertiesCategories.get("0").getValue(), "Property");
+                        //Idea propertyEndNode = epLTMGraph.insertNode((Idea) eventPropertiesCategories.get("1").getValue(), "Property");
+                        //epLTMGraph.insertLink(LTEventNode, propertyStartNode, "Initial");
+                        //epLTMGraph.insertLink(LTEventNode, propertyEndNode, "Final");
 
-                //Get grid location
-                List<Idea> grids = story.getChildrenWithLink(eventNode, "GridPlace");
-                if (grids.isEmpty()){
-                    JPanel panel = new JPanel();
-                    Idea ideaToShow = new Gson().fromJson(new Gson().toJson(story.graph), Idea.class);
-                    IdeaPanel ip = new IdeaPanel(story.graph, false);
-                    ip.updateTree();
-                    ip.expandAllNodes();
-                    panel.add(ip);
-                    panel.revalidate();
-                    panel.setVisible(true);
-                }
-                Idea gridPlace = getNodeContent(grids.get(0));
-                Idea gridNode = epLTMGraph.insertLocationNode(gridPlace);
-                epLTMGraph.insertLink(LTEventNode, gridNode, "GridPlace");
+                        //Get grid location
+                        List<Idea> grids = story.getChildrenWithLink(eventNode, "GridPlace");
+                        if (grids.isEmpty()) {
+                            JPanel panel = new JPanel();
+                            Idea ideaToShow = new Gson().fromJson(new Gson().toJson(story.graph), Idea.class);
+                            IdeaPanel ip = new IdeaPanel(story.graph, false);
+                            ip.updateTree();
+                            ip.expandAllNodes();
+                            panel.add(ip);
+                            panel.revalidate();
+                            panel.setVisible(true);
+                        }
+                        Idea gridPlace = getNodeContent(grids.get(0));
+                        Idea gridNode = epLTMGraph.insertLocationNode(gridPlace);
+                        epLTMGraph.insertLink(LTEventNode, gridNode, "GridPlace");
 
-                if (startEvent == null) {
-                    startEvent = LTEventNode;
-                } else {
-                    long bestStart = (long) getNodeContent(startEvent).get("Start").getValue();
-                    long currStart = (long) eventContent.getL().get(0)
-                            .get("TimeStamp").getValue();
-                    if (currStart < bestStart)
-                        startEvent = LTEventNode;
-                }
+                        if (startEvent == null) {
+                            startEvent = LTEventNode;
+                        } else {
+                            long bestStart = (long) getNodeContent(startEvent).get("Start").getValue();
+                            long currStart = (long) eventContent.getL().get(0)
+                                    .get("TimeStamp").getValue();
+                            if (currStart < bestStart)
+                                startEvent = LTEventNode;
+                        }
 
-                if (endEvent == null){
-                    endEvent = LTEventNode;
-                } else {
-                    long bestEnd = (long) getNodeContent(startEvent).get("End").getValue();
-                    long currEnd = (long) eventContent.getL().get(1)
-                            .get("TimeStamp").getValue();
-                    if (currEnd > bestEnd)
-                        endEvent = LTEventNode;
-                }
-            }
-            for (Idea contextNode : story.getContextNodes()){
-                Idea contextContent = getNodeContent(contextNode);
-                Idea LTContextNode = epLTMGraph.insertContextNode(contextContent);
-                insertContextWithSpatialLink(contextNode, story, contextContent, epLTMGraph, LTContextNode, instanceNodeToMemoryNode);
-            }
-
-            for (Idea objectNode : story.getObjectNodes()){
-                Idea objectContent = getNodeContent(objectNode);
-                if(objectContent.get("Novelty") != null)
-                    if ((double) objectContent.get("Novelty").getValue() >= 0.9) {
-                        Idea spatialLinkNode = makeSpatialLink(objectContent, epLTMGraph);
-                        instanceNodeToMemoryNode.put(objectNode, spatialLinkNode);
-                        //insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, instanceNodeToMemoryNode);
+                        if (endEvent == null) {
+                            endEvent = LTEventNode;
+                        } else {
+                            long bestEnd = (long) getNodeContent(startEvent).get("End").getValue();
+                            long currEnd = (long) eventContent.getL().get(1)
+                                    .get("TimeStamp").getValue();
+                            if (currEnd > bestEnd)
+                                endEvent = LTEventNode;
+                        }
                     }
-            }
-
-            //Clone links to LTM
-            for (Idea eventNode : story.getEventNodes()) {
-                Idea eventMemoryNode = instanceNodeToMemoryNode.get(eventNode);
-                Map<String, List<Idea>> linksOut = story.getSuccesors(eventNode);
-                for (String linkType : linksOut.keySet()){
-                    for (Idea node : linksOut.get(linkType)){
-                        Idea linkedMemoryNode = instanceNodeToMemoryNode.get(node);
-                        if(linkedMemoryNode != null)
-                            epLTMGraph.insertLink(eventMemoryNode, linkedMemoryNode, linkType);
+                    for (Idea contextNode : story.getContextNodes()) {
+                        Idea contextContent = getNodeContent(contextNode);
+                        Idea LTContextNode = epLTMGraph.insertContextNode(contextContent);
+                        insertContextWithSpatialLink(contextNode, story, contextContent, epLTMGraph, LTContextNode, instanceNodeToMemoryNode);
                     }
+
+                    for (Idea objectNode : story.getObjectNodes()) {
+                        Idea objectContent = getNodeContent(objectNode);
+                        if (objectContent.get("Novelty") != null)
+                            if ((double) objectContent.get("Novelty").getValue() >= 0.9) {
+                                Idea spatialLinkNode = makeSpatialLink(objectContent, epLTMGraph);
+                                instanceNodeToMemoryNode.put(objectNode, spatialLinkNode);
+                                //insertContextWithSpatialLink(objectNode, story, objectContent, epLTMGraph, instanceNodeToMemoryNode);
+                            }
+                    }
+
+                    //Clone links to LTM
+                    for (Idea eventNode : story.getEventNodes()) {
+                        Idea eventMemoryNode = instanceNodeToMemoryNode.get(eventNode);
+                        Map<String, List<Idea>> linksOut = story.getSuccesors(eventNode);
+                        for (String linkType : linksOut.keySet()) {
+                            for (Idea node : linksOut.get(linkType)) {
+                                Idea linkedMemoryNode = instanceNodeToMemoryNode.get(node);
+                                if (linkedMemoryNode != null)
+                                    epLTMGraph.insertLink(eventMemoryNode, linkedMemoryNode, linkType);
+                            }
+                        }
+                    }
+
+                    //Create an Episode node
+                    Idea ep = new Idea("Episode" + (int) oldestEpisode.getValue(), oldestEpisode.getValue(), "Episode", 1);
+                    epLTMGraph.insertEpisodeNode(ep);
+                    epLTMGraph.insertLink(ep, startEvent, "Begin");
+                    epLTMGraph.insertLink(ep, endEvent, "End");
+                    if (prevEp != null) {
+                        epLTMGraph.insertLink(prevEp, ep, "Next");
+                        epLTMGraph.insertLink(prevLastEvent, startEvent, "Next");
+                    }
+                    prevEp = ep;
+                    prevLastEvent = endEvent;
+
+                    stories.getL().remove(oldestEpisode);
                 }
             }
-
-            //Create an Episode node
-            Idea ep = new Idea("Episode" + (int) oldestEpisode.getValue(), oldestEpisode.getValue(), "Episode", 1);
-            epLTMGraph.insertEpisodeNode(ep);
-            epLTMGraph.insertLink(ep, startEvent, "Begin");
-            epLTMGraph.insertLink(ep, endEvent, "End");
-            if (prevEp != null) {
-                epLTMGraph.insertLink(prevEp, ep, "Next");
-                epLTMGraph.insertLink(prevLastEvent, startEvent, "Next");
-            }
-            prevEp = ep;
-            prevLastEvent = endEvent;
-
-            stories.getL().remove(oldestEpisode);
-            synchronized (locationMO) {
-                locationMO.setI(memLocations);
-            }
-            synchronized (propertiesMO) {
-                propertiesMO.setI(propertiesCategories);
-            }
+            //synchronized (locationMO) {
+            //    locationMO.setI(memLocations);
+            //}
+            //synchronized (propertiesMO) {
+            //    propertiesMO.setI(propertiesCategories);
+            //}
         }
     }
 

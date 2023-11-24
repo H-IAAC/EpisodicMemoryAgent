@@ -1,6 +1,7 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
+import CSTEpisodicMemory.experiments.ExperimentB;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -45,14 +46,13 @@ public class EpisodeBinding extends Codelet {
 
     @Override
     public void proc() {
-        Idea eventsIdea = (Idea) eventsMO.getI();
-        Idea timeline = (Idea) contextBufferMO.getI();
-        Idea objectsTimeline = (Idea) objectBufferMO.getI();
-        Idea stories = (Idea) storyMO.getI();
-
-        synchronized (stories) {
-            synchronized (timeline) {
-                synchronized (eventsIdea) {
+        synchronized (storyMO) {
+            synchronized (contextBufferMO) {
+                synchronized (eventsMO) {
+                    Idea eventsIdea = (Idea) eventsMO.getI();
+                    Idea timeline = (Idea) contextBufferMO.getI();
+                    Idea objectsTimeline = (Idea) objectBufferMO.getI();
+                    Idea stories = (Idea) storyMO.getI();
 
                     Idea currentEpisode = stories.getL().get(0);
                     for (Idea ep : stories.getL()) {
@@ -76,6 +76,9 @@ public class EpisodeBinding extends Codelet {
                         if (!story.hasNodeContent(event)) {
                             long eventBegin = (long) event.getL().get(0).get("TimeStamp").getValue();
                             long eventEnd = (long) event.getL().get(1).get("TimeStamp").getValue();
+                            //System.out.println("--Event--"+event.getL().get(0).getL().stream().filter(e->!e.getName().equals("TimeStamp")).findFirst().orElse(null));
+                            //System.out.println(eventBegin- ExperimentB.starTime);
+                            //System.out.println(eventEnd-ExperimentB.starTime);
                             Optional<Idea> context = timeline.getL().stream()
                                     .filter(e -> ((long) e.getValue()) <= eventEnd)
                                     .max((a, b) -> (int) ((long) a.getValue() - (long) b.getValue()));
@@ -108,8 +111,6 @@ public class EpisodeBinding extends Codelet {
                                             story.insertLocationNode(grid);
                                         }
                                         story.insertLink(event, grid, "GridPlace");
-                                    } else {
-                                        System.out.println("NO GRID");
                                     }
 
                                     //Agent environment
@@ -180,7 +181,7 @@ public class EpisodeBinding extends Codelet {
 
                     //Segment Episode
                     if (!segmentedEvents.isEmpty()) {
-                        //Set contextual drift flag
+                        //System.out.println("New Episode");
                         //Create new episode
                         Idea newStory = new Idea("Story", null, "Composition", 1);
                         Idea newEpisode = new Idea("Episode", (int) currentEpisode.getValue() + 1, "Episode", 1);
@@ -200,11 +201,6 @@ public class EpisodeBinding extends Codelet {
         if (firstEvent != null) {
             boolean test = (long) GraphIdea.getNodeContent(firstEvent).getL().get(0).get("TimeStamp").getValue() < latestSegmentationTime;
             test = test && (testEvent > latestSegmentationTime);
-            if (test) {
-                System.out.println("Segmenting--------------------------------------------");
-                System.out.println((long) GraphIdea.getNodeContent(firstEvent).getL().get(0).get("TimeStamp").getValue());
-                System.out.println(latestSegmentationTime);
-            }
             return test;
         }
         return false;

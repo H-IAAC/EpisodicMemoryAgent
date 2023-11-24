@@ -21,7 +21,10 @@ import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 
 public class ExperimentB {
 
+    public static long starTime = 0;
+
     public static void run(){
+        starTime = System.currentTimeMillis();
         Environment env = new EnvironmentA(8,10);
 
         AgentMind mind = new AgentMind(env, createRoomsCategories(), false, true);
@@ -57,12 +60,14 @@ public class ExperimentB {
             throw new RuntimeException(e);
         }
 
-        System.out.println("Force episode Segmentation");
         Idea boundaries = (Idea) selectedMem.getI();
         Idea forcedBoundary = new Idea("EP Boundary", "Hard", "Property", 1);
-        forcedBoundary.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
+        long boundary = System.currentTimeMillis();
+        forcedBoundary.add(new Idea("TimeStamp", boundary, "Property", 1));
         boundaries.add(forcedBoundary);
         selectedMem.setI(boundaries);
+        System.out.println("Force episode Segmentation - " + (boundary-starTime));
+
 
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
@@ -111,11 +116,12 @@ public class ExperimentB {
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("BOUNDARIES"))
                 .findFirst().get();
-        System.out.println("Force episode Segmentation");
         forcedBoundary = new Idea("EP Boundary", "Hard", "Property", 1);
-        forcedBoundary.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
+        boundary = System.currentTimeMillis();
+        forcedBoundary.add(new Idea("TimeStamp", boundary, "Property", 1));
         boundaries.add(forcedBoundary);
         selectedMem.setI(boundaries);
+        System.out.println("Force episode Segmentation - " + (boundary-starTime));
 
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
@@ -163,11 +169,12 @@ public class ExperimentB {
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("BOUNDARIES"))
                 .findFirst().get();
-        System.out.println("Force episode Segmentation");
         forcedBoundary = new Idea("EP Boundary", "Hard", "Property", 1);
-        forcedBoundary.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
+        boundary = System.currentTimeMillis();
+        forcedBoundary.add(new Idea("TimeStamp", boundary, "Property", 1));
         boundaries.add(forcedBoundary);
         selectedMem.setI(boundaries);
+        System.out.println("Force episode Segmentation - " + (boundary-starTime));
 
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
@@ -215,11 +222,11 @@ public class ExperimentB {
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("BOUNDARIES"))
                 .findFirst().get();
-        System.out.println("Force episode Segmentation");
         forcedBoundary = new Idea("EP Boundary", "Hard", "Property", 1);
-        forcedBoundary.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));
+        forcedBoundary.add(new Idea("TimeStamp", boundary, "Property", 1));
         boundaries.add(forcedBoundary);
         selectedMem.setI(boundaries);
+        System.out.println("Force episode Segmentation - " + (boundary-starTime));
 
         selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))

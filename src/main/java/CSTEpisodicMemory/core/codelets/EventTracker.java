@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.core.codelets;
 
+import CSTEpisodicMemory.experiments.ExperimentB;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
@@ -12,6 +13,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static CSTEpisodicMemory.experiments.ExperimentB.*;
 import static CSTEpisodicMemory.util.IdeaHelper.csvPrint;
 
 public class EventTracker extends MemoryCodelet {
@@ -39,7 +41,7 @@ public class EventTracker extends MemoryCodelet {
         this.outputMemoryName = outputMemoryName;
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
-        this.name = "Tracker"+trackedEventCategory.getName();
+        this.name = "Tracker" + trackedEventCategory.getName();
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, Idea trackedEventCategory, boolean debug) {
@@ -50,7 +52,7 @@ public class EventTracker extends MemoryCodelet {
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
         this.debug = debug;
-        this.name = "Tracker"+trackedEventCategory.getName();
+        this.name = "Tracker" + trackedEventCategory.getName();
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory) {
@@ -61,7 +63,7 @@ public class EventTracker extends MemoryCodelet {
         this.detectionTreashold = detectionTreashold;
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
-        this.name = "Tracker"+trackedEventCategory.getName();
+        this.name = "Tracker" + trackedEventCategory.getName();
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory, boolean debug) {
@@ -73,7 +75,7 @@ public class EventTracker extends MemoryCodelet {
         if (trackedEventCategory.getValue() instanceof Category)
             this.trackedEventCategory = trackedEventCategory;
         this.debug = debug;
-        this.name = "Tracker"+trackedEventCategory.getName();
+        this.name = "Tracker" + trackedEventCategory.getName();
     }
 
     @Override
@@ -97,8 +99,8 @@ public class EventTracker extends MemoryCodelet {
         synchronized (buffer) {
             for (Idea timeStep : buffer.getL()) {
                 for (Idea object : timeStep.getL()) {
-                    if (object.getType() == 5){
-                        for (Idea subObj : object.getL()){
+                    if (object.getType() == 5) {
+                        for (Idea subObj : object.getL()) {
                             processObjectTimeStep(timeStep, subObj, ignoreObjects);
                         }
                     } else {
@@ -112,16 +114,16 @@ public class EventTracker extends MemoryCodelet {
     }
 
     private void finishedUnupdatedEvents() {
-        for (String objectName : internal.keySet()){
+        for (String objectName : internal.keySet()) {
             List<Idea> eventBuffer = constructCurrentBufferOf(objectName);
-            if (eventBuffer.size() == bufferSize) {
-                long lastUpdate = getLastTimeStampOf(objectName);
-                Idea lastBufferTime = buffer.getL().get(buffer.getL().size() - 1);
-                if ((long) lastBufferTime.getValue() - lastUpdate > 500) {
-                    if (getInitialEventOf(objectName) != null)
-                        insertEventInOutputMemory(lastBufferTime, eventBuffer.get(eventBuffer.size()-1), getInitialEventOf(objectName), eventBuffer);
-                }
+            //if (eventBuffer.size() == bufferSize) {
+            long lastUpdate = getLastTimeStampOf(objectName);
+            Idea lastBufferTime = buffer.getL().get(buffer.getL().size() - 1);
+            if ((long) lastBufferTime.getValue() - lastUpdate > 500 || isForcedSegmentation(objectName)) {
+                if (getInitialEventOf(objectName) != null)
+                    insertEventInOutputMemory(lastBufferTime, eventBuffer.get(eventBuffer.size() - 1), getInitialEventOf(objectName), eventBuffer);
             }
+            //}
         }
     }
 
@@ -174,8 +176,6 @@ public class EventTracker extends MemoryCodelet {
 
     private void insertEventInOutputMemory(Idea timeStep, Idea object, Idea initialEventIdea, List<Idea> inputIdeaBuffer) {
         Idea constraints = new Idea("Constraints");
-        if (initialEventIdea.get("TimeStamp") == null)
-            System.out.println(IdeaHelper.fullPrint(initialEventIdea));
         constraints.add(new Idea("0", initialEventIdea));
         constraints.add(new Idea("1", inputIdeaBuffer.get(inputIdeaBuffer.size() - 1)));
         Idea event = trackedEventCategory.getInstance(constraints);
@@ -197,7 +197,7 @@ public class EventTracker extends MemoryCodelet {
     private void restartEventStage(Idea object, long timeStamp) {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
         Idea stepObj = IdeaHelper.cloneIdea(object);
-        if (stepObj.get("TimeStamp") == null){
+        if (stepObj.get("TimeStamp") == null) {
             stepObj.add(new Idea("TimeStamp", timeStamp, "Property", 1));
         }
         step.add(stepObj);
@@ -216,23 +216,25 @@ public class EventTracker extends MemoryCodelet {
     private void pushStepToMemory(Idea object, long timeStamp) {
         Idea step = new Idea("", timeStamp, "TimeStep", 1);
         Idea stepObj = IdeaHelper.cloneIdea(object);
-        if (stepObj.get("TimeStamp") == null){
+        if (stepObj.get("TimeStamp") == null) {
             stepObj.add(new Idea("TimeStamp", timeStamp, "Property", 1));
         }
         step.add(stepObj);
         String objName = object.getName();
         if (internal.containsKey(objName)) {
             List<Idea> stageEventSteps = internal.get(objName);
-            stageEventSteps.add(step);
-            if (stageEventSteps.size() > bufferSize + 1) {
-                stageEventSteps.remove(1);
+            if (timeStamp - (long) stageEventSteps.get(1).getL().get(0).get("TimeStamp").getValue() < 500) {
+                stageEventSteps.add(step);
+                if (stageEventSteps.size() > bufferSize + 1) {
+                    stageEventSteps.remove(1);
+                }
+                return;
             }
-        } else {
-            internal.put(objName, new LinkedList<Idea>() {{
-                add(null);
-                add(step);
-            }});
         }
+        internal.put(objName, new LinkedList<Idea>() {{
+            add(null);
+            add(step);
+        }});
     }
 
     private boolean isTrackedObject(String objectName) {
@@ -289,11 +291,11 @@ public class EventTracker extends MemoryCodelet {
         Idea testEvent = new Idea("Event", null, "Episode", 0);
         List<Idea> steps = new ArrayList<>();
         for (int i = 0; i < inputIdeaBuffer.size(); i++) {
-            Idea step = new Idea("Step_"+i, i, "Timestep", 0);
+            Idea step = new Idea("Step_" + i, i, "Timestep", 0);
             step.add(inputIdeaBuffer.get(i));
             steps.add(step);
         }
-        Idea step = new Idea("Step_"+inputIdeaBuffer.size(), inputIdeaBuffer.size(), "Timestep", 0);
+        Idea step = new Idea("Step_" + inputIdeaBuffer.size(), inputIdeaBuffer.size(), "Timestep", 0);
         step.add(object);
         steps.add(step);
         testEvent.setL(steps);
