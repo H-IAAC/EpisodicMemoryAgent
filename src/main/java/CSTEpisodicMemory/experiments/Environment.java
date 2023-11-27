@@ -52,6 +52,10 @@ public abstract class Environment {
         world.createBrick(color, x1 - wallWidth, y1 - wallWidth, x2, y2);
     }
 
+    protected void insertFood(float x, float y){
+        world.createThing(Constants.FoodTypes.NPFOOD,x,y);
+    }
+
     public abstract void initializeRooms();
 
     public Agent newAgent(float x, float y, Constants.Color color) {

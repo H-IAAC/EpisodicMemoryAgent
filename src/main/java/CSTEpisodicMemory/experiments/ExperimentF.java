@@ -27,7 +27,7 @@ public class ExperimentF {
         visu.setMemoryWatchPrintLevel("EPLTM", 4);
         visu.setMemoryWatchPrintLevel("EVENTS", 5);
         visu.setVisible(true);
-        GraphicMind gm = new GraphicMind(mind, env, 16,24,1000,650,1);
+        GraphicMind gm = new GraphicMind(mind, env, 16,24,16*30,24*30,1);
 
         for (int i = 0; i < 4; i++){
             SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);

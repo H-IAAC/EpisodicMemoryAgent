@@ -140,6 +140,16 @@ public class IdeaVisualizer extends javax.swing.JFrame {
                 show.setL((List<Idea>) content);
                 setIdea(new Gson().fromJson(IdeaHelper.csvPrint(show, memoryLevels.getOrDefault(memoryName, 5)), Idea.class));
             }
+            if (content instanceof Map){
+                Map<String, List<Idea>> internal = (Map<String, List<Idea>>) content;
+                Idea show = new Idea(memoryName, null);
+                for (Map.Entry<String,List<Idea>> entry : internal.entrySet()){
+                    Idea obj = new Idea(entry.getKey(), null, "AbstractObject", 1);
+                    obj.setL(entry.getValue());
+                    show.add(obj);
+                }
+                setIdea(new Gson().fromJson(IdeaHelper.csvPrint(show, memoryLevels.getOrDefault(memoryName,5)), Idea.class));
+            }
 
         }
     }//GEN-LAST:event_jList1ValueChanged

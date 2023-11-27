@@ -84,15 +84,17 @@ public class GoToFoodImpulse extends Codelet {
         double desire = 0.;
 
         Idea innerSense = (Idea) innerSenseMO.getI();
-        float energy = (float) innerSense.get("Fuel").getValue();
-        if (energy < 800) {
-            desire = 0.2;
+        if (innerSense != null) {
+            float energy = (float) innerSense.get("Fuel").getValue();
+            if (energy < 800) {
+                desire = 0.2;
+            }
+            if (energy < 400) {
+                desire = 0.8;
+            }
+            if (food.getValue().equals("P_FOOD"))
+                desire += 0.1;
         }
-        if (energy < 400){
-            desire = 0.8;
-        }
-        if (food.getValue().equals("P_FOOD"))
-            desire += 0.1;
 
         return desire;
     }

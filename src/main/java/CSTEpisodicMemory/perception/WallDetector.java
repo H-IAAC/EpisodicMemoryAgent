@@ -74,7 +74,6 @@ public class WallDetector extends Codelet {
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
-        wallIdea.add(posIdea);
         Idea sizeIdea = new Idea("Size", null, "Property", 1);
         sizeIdea.add(new Idea("Width", t.getWidth(), "QualityDimension", 1));
         sizeIdea.add(new Idea("Depth", t.getDepth(), "QualityDimension", 1));
@@ -85,21 +84,25 @@ public class WallDetector extends Codelet {
         color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
         wallIdea.add(color);
         wallIdea.add(new Idea("ID", t.getId(), "Property", 1));
-        if (detectedRoom.get("Location") != null) {
-            Idea room = (Idea) detectedRoom.get("Location").getValue();
-            double px = t.getPos().get(0) - (double) room.get("center.x").getValue();
-            double py = t.getPos().get(1) - (double) room.get("center.y").getValue();
-            Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
-            int[] minCorner = GridLocation.getInstance().locateHCC(px - t.getWidth() / 2, py - t.getDepth() / 2);
-            int[] maxCorner = GridLocation.getInstance().locateHCC(px + t.getWidth() / 2, py + t.getDepth() / 2);
-            for (int i = minCorner[0]; i <= maxCorner[0]; i++) {
-                for (int j = minCorner[1]; j <= maxCorner[1]; j++) {
-                    Idea gridPlace = GridLocation.getInstance().getReferenceGridIdea(i, j);
-                    occupation.add(gridPlace);
+        synchronized (detectedRoom) {
+            if (detectedRoom.get("Location") != null) {
+                Idea room = (Idea) detectedRoom.get("Location").getValue();
+                double px = t.getPos().get(0) - (double) room.get("center.x").getValue();
+                double py = t.getPos().get(1) - (double) room.get("center.y").getValue();
+                Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+                int[] minCorner = GridLocation.getInstance().locateHCC(px - t.getWidth() / 2, py - t.getDepth() / 2);
+                int[] maxCorner = GridLocation.getInstance().locateHCC(px + t.getWidth() / 2, py + t.getDepth() / 2);
+                for (int i = minCorner[0]; i <= maxCorner[0]; i++) {
+                    for (int j = minCorner[1]; j <= maxCorner[1]; j++) {
+                        Idea gridPlace = GridLocation.getInstance().getReferenceGridIdea(i, j);
+                        occupation.add(gridPlace);
+                    }
                 }
+                wallIdea.add(occupation);
+                posIdea.setValue(room);
             }
-            wallIdea.add(occupation);
         }
+        wallIdea.add(posIdea);
         synchronized (knownWallsMO){
             Idea outputIdea = (Idea) knownWallsMO.getI();
             List<Idea> known = Collections.synchronizedList(outputIdea.getL());

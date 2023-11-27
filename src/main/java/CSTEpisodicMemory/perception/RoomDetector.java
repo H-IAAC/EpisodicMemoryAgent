@@ -39,14 +39,17 @@ public class RoomDetector extends Codelet {
         synchronized (roomMO) {
             synchronized (innerSenseMO) {
                 this.detectedRoom = (Idea) roomMO.getI();
-                this.innerSense = (Idea) innerSenseMO.getI();
-                detectedRoom.setL(new ArrayList<>());
-                for (Idea category : roomCategories) {
-                    if (category.membership(innerSense) > 0) {
-                        detectedRoom.add(new Idea("Location", category, "Property", 1));
+                synchronized (detectedRoom) {
+                    this.innerSense = (Idea) innerSenseMO.getI();
+                    detectedRoom.setL(new ArrayList<>());
+                    for (Idea category : roomCategories) {
+                        if (category.membership(innerSense) > 0) {
+                            detectedRoom.add(new Idea("Location", category, "Property", 1));
+                        }
                     }
                 }
             }
+            roomMO.setI(detectedRoom);
         }
         //System.out.println((float) innerSense.get("Position.Y").getValue());
         //System.out.printf(fullPrint(detectedRoom));

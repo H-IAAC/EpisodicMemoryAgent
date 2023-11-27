@@ -25,6 +25,15 @@ public class EnvironmentB extends Environment{
         insertWall(BLUE_BRICK, 3, 6, 4, 6);
         insertWall(BLUE_BRICK, 0, 6, 2, 6);
 
+        insertFood(3, 2.2F);
+        insertFood(3.2F, 2.2F);
+        insertFood(3.4F, 2.2F);
+        insertFood(3.6F, 2.2F);
+        insertFood(3.8F, 2.2F);
+        insertFood(3.8F, 2.4F);
+        insertFood(3.8F, 2.6F);
+        insertFood(3.8F, 2.8F);
+
         insertWall(RED_BRICK, 5,0,5,6);
         insertWall(RED_BRICK, 5,0,9,0);
         insertWall(RED_BRICK, 9,0,9,6);

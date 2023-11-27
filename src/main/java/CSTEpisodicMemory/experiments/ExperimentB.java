@@ -73,6 +73,11 @@ public class ExperimentB {
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
                 .findFirst().get();
         GraphIdea story = new GraphIdea(((Idea) selectedMem.getI()).getL().get(0).get("Story"));
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         env.creature.moveTo(4, 2.3F);
 
         try {
@@ -89,20 +94,6 @@ public class ExperimentB {
         System.out.println("Objetos: " + story.getObjectNodes().size());
         System.out.println("Links espaciais: " + story.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count());
         System.out.println("Número de células de grade: " + story.getLocationNodes().size());
-
-        selectedMem = mind.getRawMemory().getAllMemoryObjects()
-                .stream().filter(m -> m.getName().equalsIgnoreCase("EPLTM"))
-                .findFirst().get();
-        GraphIdea epLTMGraph = new GraphIdea (((GraphIdea) selectedMem.getI()));
-        System.out.println("--Armazenamento--");
-        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
-        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
-        long links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
-        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
-        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
-        System.out.println("Links espaciais: " + links);
-        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
-        System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
 
         //Second pass
         System.out.println("Move Agent");
@@ -127,6 +118,11 @@ public class ExperimentB {
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
                 .findFirst().get();
         story = new GraphIdea(((Idea) selectedMem.getI()).getL().get(0).get("Story"));
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         env.creature.moveTo(4, 2.1F);
         try {
             Thread.sleep(2000);
@@ -143,19 +139,6 @@ public class ExperimentB {
         System.out.println("Links espaciais: " + story.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count());
         System.out.println("Número de células de grade: " + story.getLocationNodes().size());
 
-        selectedMem = mind.getRawMemory().getAllMemoryObjects()
-                .stream().filter(m -> m.getName().equalsIgnoreCase("EPLTM"))
-                .findFirst().get();
-        epLTMGraph = new GraphIdea (((GraphIdea) selectedMem.getI()));
-        System.out.println("--Armazenamento--");
-        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
-        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
-        links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
-        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
-        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
-        System.out.println("Links espaciais: " + links);
-        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
-        System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
 
         //Third pass
         System.out.println("Move Agent");
@@ -180,6 +163,11 @@ public class ExperimentB {
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
                 .findFirst().get();
         story = new GraphIdea(((Idea) selectedMem.getI()).getL().get(0).get("Story"));
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         env.creature.moveTo(4, 1.9F);
         try {
             Thread.sleep(2000);
@@ -196,19 +184,6 @@ public class ExperimentB {
         System.out.println("Links espaciais: " + story.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count());
         System.out.println("Número de células de grade: " + story.getLocationNodes().size());
 
-        selectedMem = mind.getRawMemory().getAllMemoryObjects()
-                .stream().filter(m -> m.getName().equalsIgnoreCase("EPLTM"))
-                .findFirst().get();
-        epLTMGraph = new GraphIdea (((GraphIdea) selectedMem.getI()));
-        System.out.println("--Armazenamento--");
-        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
-        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
-        links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
-        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
-        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
-        System.out.println("Links espaciais: " + links);
-        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
-        System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
 
         //Fourth pass
         System.out.println("Move Agent");
@@ -223,6 +198,7 @@ public class ExperimentB {
                 .stream().filter(m -> m.getName().equalsIgnoreCase("BOUNDARIES"))
                 .findFirst().get();
         forcedBoundary = new Idea("EP Boundary", "Hard", "Property", 1);
+        boundary = System.currentTimeMillis();
         forcedBoundary.add(new Idea("TimeStamp", boundary, "Property", 1));
         boundaries.add(forcedBoundary);
         selectedMem.setI(boundaries);
@@ -232,7 +208,12 @@ public class ExperimentB {
                 .stream().filter(m -> m.getName().equalsIgnoreCase("STORY"))
                 .findFirst().get();
         story = new GraphIdea(((Idea) selectedMem.getI()).getL().get(0).get("Story"));
-        env.creature.moveTo(5, 1.9F);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        env.creature.moveTo(4.5F, 1.9F);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -248,23 +229,9 @@ public class ExperimentB {
         System.out.println("Links espaciais: " + story.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count());
         System.out.println("Número de células de grade: " + story.getLocationNodes().size());
 
-        selectedMem = mind.getRawMemory().getAllMemoryObjects()
-                .stream().filter(m -> m.getName().equalsIgnoreCase("EPLTM"))
-                .findFirst().get();
-        epLTMGraph = new GraphIdea (((GraphIdea) selectedMem.getI()));
-        System.out.println("--Armazenamento--");
-        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
-        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
-        links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
-        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
-        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
-        System.out.println("Links espaciais: " + links);
-        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
-        System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
-
         mind.shutDown();
         //visu.setVisible(false);
-        gm.stop();
+        //gm.stop();
         //env.stopSimulation();
 
     }

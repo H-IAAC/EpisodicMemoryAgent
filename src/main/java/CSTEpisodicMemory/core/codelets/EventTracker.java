@@ -24,6 +24,7 @@ public class EventTracker extends MemoryCodelet {
     private Memory eventsOutputMO;
     private Memory contextSegmentationMO;
     private long latestBoundary;
+    private Idea eventsIdea;
 
     private Map<String, List<Idea>> internal;
     private int bufferSize = 1;
@@ -35,7 +36,7 @@ public class EventTracker extends MemoryCodelet {
     private boolean debug = false;
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, Idea trackedEventCategory) {
-        super(m);
+        super(m, trackedEventCategory.getName());
         setInternalI(new HashMap<String, Idea>());
         this.inputBufferMemoryName = inputBufferMemoryName;
         this.outputMemoryName = outputMemoryName;
@@ -45,7 +46,7 @@ public class EventTracker extends MemoryCodelet {
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, Idea trackedEventCategory, boolean debug) {
-        super(m);
+        super(m, trackedEventCategory.getName());
         setInternalI(new HashMap<String, Idea>());
         this.inputBufferMemoryName = inputBufferMemoryName;
         this.outputMemoryName = outputMemoryName;
@@ -56,7 +57,7 @@ public class EventTracker extends MemoryCodelet {
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory) {
-        super(m);
+        super(m, trackedEventCategory.getName());
         setInternalI(new HashMap<String, Idea>());
         this.inputBufferMemoryName = inputBufferMemoryName;
         this.outputMemoryName = outputMemoryName;
@@ -67,7 +68,7 @@ public class EventTracker extends MemoryCodelet {
     }
 
     public EventTracker(Mind m, String inputBufferMemoryName, String outputMemoryName, double detectionTreashold, Idea trackedEventCategory, boolean debug) {
-        super(m);
+        super(m, trackedEventCategory.getName());
         setInternalI(new HashMap<String, Idea>());
         this.inputBufferMemoryName = inputBufferMemoryName;
         this.outputMemoryName = outputMemoryName;
@@ -86,6 +87,7 @@ public class EventTracker extends MemoryCodelet {
         this.contextSegmentationMO = (MemoryObject) this.getInput("BOUNDARIES");
         this.latestBoundary = getLatestBoundaryTime();
         this.internal = (Map<String, List<Idea>>) getInternalMemoryI();
+        this.eventsIdea = (Idea) eventsOutputMO.getI();
     }
 
     @Override
@@ -97,20 +99,22 @@ public class EventTracker extends MemoryCodelet {
     public void proc() {
         ArrayList<String> ignoreObjects = new ArrayList<>();
         synchronized (buffer) {
-            for (Idea timeStep : buffer.getL()) {
-                for (Idea object : timeStep.getL()) {
-                    if (object.getType() == 5) {
-                        for (Idea subObj : object.getL()) {
-                            processObjectTimeStep(timeStep, subObj, ignoreObjects);
+            synchronized (eventsOutputMO) {
+                for (Idea timeStep : buffer.getL()) {
+                    for (Idea object : timeStep.getL()) {
+                        if (object.getType() == 5) {
+                            for (Idea subObj : object.getL()) {
+                                processObjectTimeStep(timeStep, subObj, ignoreObjects);
+                            }
+                        } else {
+                            processObjectTimeStep(timeStep, object, ignoreObjects);
                         }
-                    } else {
-                        processObjectTimeStep(timeStep, object, ignoreObjects);
                     }
                 }
+                finishedUnupdatedEvents();
+                commitInternalMemoryChanges();
             }
         }
-        finishedUnupdatedEvents();
-        commitInternalMemoryChanges();
     }
 
     private void finishedUnupdatedEvents() {
@@ -146,9 +150,13 @@ public class EventTracker extends MemoryCodelet {
                             //Check if current state is coherent with previous states and event category
                             Idea initialEventIdea = getInitialEventOf(objectName);
                             Idea testEvent = constructTestEvent(inputIdeaBuffer, object);
+                            //System.out.println(name +": "+ objectName + " - " + trackedEventCategory.membership(testEvent) + " - " + isForcedSegmentation(objectName) + " - " + (initialEventIdea==null));
                             if (trackedEventCategory.membership(testEvent) > detectionTreashold && !isForcedSegmentation(objectName)) {
                                 //Copies start of the event
-                                if (initialEventIdea == null) setBufferTopAsInitialEvent(objectName);
+                                if (initialEventIdea == null) {
+                                    setBufferTopAsInitialEvent(objectName);
+                                    //System.out.println("top----------------------");
+                                }
 
                                 pushStepToMemory(object, (long) timeStep.getValue());
                             } else {
@@ -182,7 +190,6 @@ public class EventTracker extends MemoryCodelet {
         event.setName("Event" + count++);
         event.setValue(trackedEventCategory);
         restartEventStage(object, (long) timeStep.getValue());
-        Idea eventsIdea = (Idea) eventsOutputMO.getI();
         synchronized (eventsIdea) {
             eventsIdea.add(event);
             if (debug)
@@ -192,6 +199,7 @@ public class EventTracker extends MemoryCodelet {
 
     private void commitInternalMemoryChanges() {
         setInternalI(internal);
+        eventsOutputMO.setI(eventsIdea);
     }
 
     private void restartEventStage(Idea object, long timeStamp) {

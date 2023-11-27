@@ -206,8 +206,8 @@ public class GraphicMind extends JFrame {
     }
 
     private Rectangle2D.Double makeRectangle(double x1, double y1, double x2, double y2){
-        double sx = windowW/envH;
-        double sy = windowH/envW;
+        double sx = windowW/envW;
+        double sy = windowH/envH;
         return new Rectangle2D.Double(y1*sx,x1*sy, (y2-y1+0.05)*sx,(x2-x1+0.05)*sy);
     }
 }

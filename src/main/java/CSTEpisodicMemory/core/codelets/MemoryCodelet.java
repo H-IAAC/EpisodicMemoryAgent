@@ -7,9 +7,10 @@ import br.unicamp.cst.core.entities.Mind;
 public abstract class MemoryCodelet extends Codelet {
 
     private Memory internalMO;
+    private static int count = 0;
 
-    public MemoryCodelet(Mind m){
-        internalMO = m.createMemoryObject("internal_memory");
+    public MemoryCodelet(Mind m, String name){
+        internalMO = m.createMemoryObject(name + "_internal_memory");
         this.addInput(internalMO);
     }
 

@@ -110,12 +110,13 @@ public class GridLocatorCodelet extends Codelet {
             }
         }
         out.add(occupation);
-        List<Idea> roomCats = Collections.synchronizedList((List<Idea>) roomCategories.getI());
-        for (Idea cat : roomCats) {
-            if (cat.membership(pos) > 0) {
-                out.get("Position").setValue(cat);
-            }
-        }
+        out.get("Position").setValue(room);
+        //List<Idea> roomCats = Collections.synchronizedList((List<Idea>) roomCategories.getI());
+        //for (Idea cat : roomCats) {
+        //    if (cat.membership(pos) > 0) {
+        //        out.get("Position").setValue(cat);
+        //    }
+        //}
         return out;
     }
 }

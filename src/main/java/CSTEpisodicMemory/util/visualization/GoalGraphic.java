@@ -33,7 +33,7 @@ public class GoalGraphic {
         for (Memory mo : mems) {
             if (mo.getName() != null && mo.getName().equalsIgnoreCase("IMPULSES")) {
                 MemoryContainer impulseMO = (MemoryContainer) mo;
-                impulse = (Idea) impulseMO.getLastI();
+                impulse = (Idea) impulseMO.getI();
             }
         }
 
