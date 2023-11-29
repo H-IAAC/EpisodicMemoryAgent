@@ -191,6 +191,7 @@ public class EpisodeBinding extends Codelet {
                         //Clear events buffer
                         eventsIdea.setL(segmentedEvents);
                     }
+                    storyMO.setI(stories);
                 }
             }
         }

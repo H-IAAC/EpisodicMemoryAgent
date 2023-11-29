@@ -36,8 +36,8 @@ public class RoomDetector extends Codelet {
 
     @Override
     public void proc() {
-        synchronized (roomMO) {
-            synchronized (innerSenseMO) {
+        synchronized (innerSenseMO) {
+            synchronized (roomMO) {
                 this.detectedRoom = (Idea) roomMO.getI();
                 synchronized (detectedRoom) {
                     this.innerSense = (Idea) innerSenseMO.getI();

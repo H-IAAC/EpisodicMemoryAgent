@@ -40,6 +40,7 @@ public abstract class EventCategory implements Category {
         if (!checkVectorSize(propertiesVector))
             return 0.5;
 
+        //System.out.println("Checking");
         boolean check = checkVectorChange(propertiesVector);
         if (check)
             return 1.0;

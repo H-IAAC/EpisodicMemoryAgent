@@ -51,7 +51,7 @@ public class ExploreImpulse extends Codelet {
         Idea inner = (Idea) innerMO.getI();
 
         int numJewels = jewels.getL().size();
-        if (numJewels == 0){
+        //if (numJewels == 0){
             synchronized (impulsesMO) {
                 Idea impulse = (Idea) impulsesMO.getI(this.impulseCat);
                 if (impulse != null && inner != null) {
@@ -64,16 +64,16 @@ public class ExploreImpulse extends Codelet {
                     if (dest.sub(curr).magnitude() < 0.40) {
                         //removeSatisfiedImpulses();
                         Idea newDest = chooseLocation();
-                        impulsesMO.setI(createImpulse(newDest, 0.1), 0.1, this.impulseCat);
+                        impulsesMO.setI(createImpulse(newDest, 0.3), 0.3, this.impulseCat);
                     }
                 } else {
                     Idea dest = chooseLocation();
-                    impulsesMO.setI(createImpulse(dest, 0.1), 0.1, this.impulseCat);
+                    impulsesMO.setI(createImpulse(dest, 0.3), 0.3, this.impulseCat);
                 }
             }
-        } else {
-            removeSatisfiedImpulses();
-        }
+        //} else {
+        //    removeSatisfiedImpulses();
+        //}
     }
 
     private Idea chooseLocation() {

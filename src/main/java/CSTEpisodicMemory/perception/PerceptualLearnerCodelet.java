@@ -71,6 +71,7 @@ public class PerceptualLearnerCodelet extends Codelet {
                         }
                     }
                 }
+                outputMO.setI(outputIdea);
             }
         }
     }

@@ -7,6 +7,7 @@ import CSTEpisodicMemory.util.visualization.GraphicMind;
 import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
+import br.unicamp.cst.util.viewer.MindViewer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class ExperimentF {
         visu.setVisible(true);
         GraphicMind gm = new GraphicMind(mind, env, 16,24,16*30,24*30,1);
 
-        for (int i = 0; i < 4; i++){
+        for (int i = 0; i < 5; i++){
             SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);
             execNPC.setRecursive(true);
             execNPC.start();
@@ -117,7 +118,7 @@ public class ExperimentF {
 
         Idea exit4 = new Idea("Exit4", null, "Link", 1);
         exit4.add(new Idea("Room", roomsCategoriesIdea.get(9)));
-        exit4.add(new Idea("Grid_Place", GridLocation.getInstance().locateHCCIdea(2,-0.5)));
+        exit4.add(new Idea("Grid_Place", GridLocation.getInstance().locateHCCIdea(2.5,-0.5)));
         roomsCategoriesIdea.get(3).get("Exits").add(exit4);
 
         Idea exit5 = new Idea("Exit5", null, "Link", 1);

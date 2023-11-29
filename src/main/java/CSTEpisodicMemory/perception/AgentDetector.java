@@ -63,7 +63,6 @@ public class AgentDetector extends Codelet {
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", agent.getPosition().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", agent.getPosition().get(1), "QualityDimension", 1));
-        agentIdea.add(posIdea);
         agentIdea.add(new Idea("ID", agent.getId(), "Property", 1));
         Idea color = new Idea("Color", agent.getColorName(), "Property", 1);
         color.add(new Idea("R", agent.getColor().get(0), "QualityDimension", 1));
@@ -79,8 +78,10 @@ public class AgentDetector extends Codelet {
                 Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
                 occupation.add(gridPlace);
                 agentIdea.add(occupation);
+                posIdea.setValue(room);
             }
         }
+        agentIdea.add(posIdea);
         synchronized (knownAgentsMO){
             Idea outputIdea = (Idea) knownAgentsMO.getI();
             List<Idea> known = Collections.synchronizedList(outputIdea.getL());

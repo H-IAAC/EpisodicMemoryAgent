@@ -2,6 +2,8 @@ package CSTEpisodicMemory.experiments;
 
 import CSTEpisodicMemory.experiments.Environment;
 import WS3DCoppelia.model.Agent;
+import WS3DCoppelia.model.Identifiable;
+import WS3DCoppelia.model.Thing;
 import WS3DCoppelia.util.Constants;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.Graph;
@@ -17,26 +19,44 @@ public class SimpleAgentExecutor extends Thread{
     private List<Float[]> route = new ArrayList<>();
     private Random rnd = new Random();
     private boolean recursive = false;
+    private int searchJewelStep;
+    private int start = -1;
+    private int exit;
 
     public SimpleAgentExecutor(Environment env){
         this.env = env;
-        initializeRoute();
+    }
+
+    public SimpleAgentExecutor(SimpleAgentExecutor copy){
+        this.env = copy.env;
+        this.agent = copy.agent;
+        this.recursive = copy.recursive;
+        this.start = copy.start;
+        this.exit = copy.exit;
     }
 
     private void initializeRoute() {
-
-
+        route = new ArrayList<>();
         //Chose spawn
-        int start = 0;
-        switch (rnd.nextInt(2)){
-            case 0:
-                start = 0;
-                agent = env.newAgent(0.5F, 18.5F, Constants.Color.AGENT_RED);
-                break;
-            case 1:
+        if (start == -1) {
+            switch (rnd.nextInt(2)) {
+                case 0:
+                    start = 0;
+                    agent = env.newAgent(0.5F, 18.5F, Constants.Color.AGENT_RED);
+                    break;
+                case 1:
+                    start = 16;
+                    agent = env.newAgent(11.5F, 0.5F, Constants.Color.AGENT_RED);
+                    break;
+            }
+        } else {
+            if (exit == 15) {
                 start = 16;
-                agent = env.newAgent(11.5F, 0.5F, Constants.Color.AGENT_RED);
-                break;
+                route.add(new Float[]{11.5F, 0.5F});
+            } else {
+                start = 0;
+                route.add(new Float[]{0.5F, 18.5F});
+            }
         }
 
         //Chose room to visit
@@ -45,33 +65,62 @@ public class SimpleAgentExecutor extends Thread{
 
         //Chose exit
         int[] exits = new int[]{15,24};
-        int exit = exits[rnd.nextInt(exits.length)];
+        exit = exits[rnd.nextInt(exits.length)];
 
         //Construct route
-        route = calculateRoute(start, roomToVisit);
+        route.addAll(calculateRoute(start, roomToVisit));
+        searchJewelStep = route.size();
         route.addAll(calculateRoute(roomToVisit, exit));
     }
 
     public void run(){
+        initializeRoute();
         for (Float[] nextPos : route){
+            if (route.indexOf(nextPos) == searchJewelStep) {
+                Thing objective = null;
+                List<Identifiable> vision = agent.getThingsInVision();
+                System.out.println(vision.size());
+                for (Identifiable object : vision) {
+                    if (object instanceof Thing) {
+                        Thing thing = (Thing) object;
+                        if (thing.isJewel()) {
+                            objective = thing;
+                            break;
+                        }
+                    }
+                }
+
+                if (objective != null) {
+                    List<Float> pos = objective.getPos();
+                    agent.moveTo(pos.get(0), pos.get(1));
+                    while (!agent.isInOccupancyArea(pos.get(0), pos.get(1))) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    agent.sackIt(objective.getId());
+                }
+            }
+
             float offX = rnd.nextFloat() * 0.5F - 0.25F;
             float offY = rnd.nextFloat() * 0.5F - 0.25F;
             agent.moveTo(nextPos[0] + offX, nextPos[1] + offY);
             while (!agent.isInOccupancyArea(nextPos[0] + offX, nextPos[1] + offY)){
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
         }
 
-        agent.setRemove(true);
-
         if (recursive){
-            SimpleAgentExecutor recursiveAgent = new SimpleAgentExecutor(env);
-            recursiveAgent.setRecursive(true);
+            SimpleAgentExecutor recursiveAgent = new SimpleAgentExecutor(this);
             recursiveAgent.start();
+        } else {
+            agent.setRemove(true);
         }
     }
 

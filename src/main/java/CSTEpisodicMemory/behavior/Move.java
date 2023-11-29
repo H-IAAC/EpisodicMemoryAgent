@@ -10,6 +10,7 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Move extends Codelet {
 
@@ -29,6 +30,7 @@ public class Move extends Codelet {
     private Idea currPos;
     private Idea room;
     private Idea lastRoom;
+    private long lastId = 0;
 
     public Move() {
         this.name = "MoveBehaviour";
@@ -49,6 +51,10 @@ public class Move extends Codelet {
                     }
                 }
             }
+        }
+        if (this.impulse != null && this.impulse.getId() != lastId){
+            lastId = this.impulse.getId();
+            System.out.println("Curr impulse: "+ lastId);
         }
         this.legsMO = (MemoryContainer) getOutput("LEGS");
         this.epltMO = (MemoryObject) getInput("EPLTM");
@@ -97,6 +103,7 @@ public class Move extends Codelet {
             if (room != destRoom) {
                 highPlan = path(room, destRoom);
                 System.out.println("High Plan Created");
+                System.out.println(Arrays.toString(highPlan.stream().map(Idea::getName).collect(Collectors.toList()).toArray()));
                 plan = null;
                 return;
             }
@@ -313,10 +320,13 @@ public class Move extends Codelet {
         List<Idea> myPlan = new ArrayList<>();
         double selfU = (double) currPos.get("u").getValue();
         double selfV = (double) currPos.get("v").getValue();
+        int futureU = 0, futureV = 0;
         if (Math.abs(selfU) > Math.abs(selfV)) {
-            myPlan.add(GridLocation.getInstance().getReferenceGridIdea((int) selfU, 0));
+            myPlan.add(GridLocation.getInstance().getReferenceGridIdea((int) selfU + (selfU > 0 ? -1:1), 0));
+            futureU = (int) selfU + (selfU > 0 ? -1:1);
         }else {
-            myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0, (int) selfV));
+            myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0, (int) selfV + (selfV > 0? -1:1)));
+            futureV = (int) selfV + (selfV > 0 ? -1:1);
         }
 
         //myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0,0));
@@ -328,12 +338,17 @@ public class Move extends Codelet {
             int gU = (int) ((double) gridDest.get("u").getValue());
             int gV = (int) ((double) gridDest.get("v").getValue());
             if (room.membership(GridLocation.getInstance().getReferenceGridIdea(gU, 0)) == 1) {
-                myPlan.add(GridLocation.getInstance().getReferenceGridIdea(gU, 0));
+                myPlan.add(GridLocation.getInstance().getReferenceGridIdea(gU, futureV));
             } else if (room.membership(GridLocation.getInstance().getReferenceGridIdea(0, gV)) == 1) {
-                myPlan.add(GridLocation.getInstance().getReferenceGridIdea(0, gV));
+                myPlan.add(GridLocation.getInstance().getReferenceGridIdea(futureU, gV));
             }
 
             myPlan.add(GridLocation.getInstance().getReferenceGridIdea(gU, gV));
+
+            List<Idea> extraIdea = new LinkedList<>();
+            extraIdea.add(IdeaHelper.cloneIdea(room));
+            extraIdea.addAll(myPlan);
+            this.extra.setI(extraIdea);
             return myPlan;
         }
         return new ArrayList<>();

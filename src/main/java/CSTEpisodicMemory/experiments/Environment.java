@@ -7,6 +7,7 @@ import WS3DCoppelia.util.Constants;
 import co.nstant.in.cbor.CborException;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +55,11 @@ public abstract class Environment {
 
     protected void insertFood(float x, float y){
         world.createThing(Constants.FoodTypes.NPFOOD,x,y);
+    }
+
+    protected void insertJewel(float x, float y){
+        Constants.JewelTypes[] types = Constants.JewelTypes.values();
+        world.createThing(types[new Random().nextInt(types.length)],x,y);
     }
 
     public abstract void initializeRooms();

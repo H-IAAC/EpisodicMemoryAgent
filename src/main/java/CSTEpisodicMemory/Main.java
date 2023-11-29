@@ -22,8 +22,8 @@ public class Main {
     static AgentMind a;
     public static void main(String[] args) {
         //new ExperimentA().run();
-        LinearEventCategory.threashold = 0.001;
-        ExperimentB.run();
+        LinearEventCategory.threashold = 0.01;
+        ExperimentF.run();
     }
 
     private static void test(){

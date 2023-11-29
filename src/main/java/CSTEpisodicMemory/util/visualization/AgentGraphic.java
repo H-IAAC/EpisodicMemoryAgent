@@ -4,6 +4,7 @@ import CSTEpisodicMemory.experiments.Environment;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.FlatteningPathIterator;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.util.List;
@@ -41,8 +42,11 @@ public class AgentGraphic{
         Line2D.Double head = new Line2D.Double(0,0,size*0.712,0);
 
         g.setColor(Color.BLACK);
-        g.translate(pos.get(1) * windowW/envW, pos.get(0) * windowH/envH);
-        String fPos = String.format("%.2f - %.2f", pos.get(0), pos.get(1));
+        float x,y;
+        x = Float.parseFloat(((Object) pos.get(0)).toString());
+        y = Float.parseFloat(((Object) pos.get(1)).toString());
+        g.translate(y * windowW/envW, x * windowH/envH);
+        String fPos = String.format("%.2f - %.2f", x,y);
         g.drawString(fPos, 20, 20);
 
         g.rotate(-pitch + Math.toRadians(90));

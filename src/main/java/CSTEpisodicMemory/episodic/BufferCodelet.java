@@ -80,6 +80,7 @@ public class BufferCodelet extends Codelet {
                 }
                 buffer.add(currTimestep);
             }
+            bufferMO.setI(buffer);
         }
     }
 

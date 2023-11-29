@@ -212,6 +212,7 @@ public class AgentMind extends Mind {
         insertCodelet(innerSenseCodelet, "Sensory");
 
         Codelet selfGridLocator = new GridLocatorCodelet("PROPRIOSENSOR", "INNER");
+        selfGridLocator.setIsMemoryObserver(true);
         selfGridLocator.addInput(propriosensorMO);
         selfGridLocator.addOutput(innerSenseMO);
         selfGridLocator.addInput(roomsMO);
@@ -230,9 +231,10 @@ public class AgentMind extends Mind {
 
         //Food Detector Codelet
         Codelet foodDetectorCodelet = new FoodDetector();
-        foodDetectorCodelet.addInput(visionMO);
         foodDetectorCodelet.addInput(knownFoodsMO);
         foodDetectorCodelet.addInput(roomsMO);
+        //foodDetectorCodelet.setIsMemoryObserver(true);
+        foodDetectorCodelet.addInput(visionMO);
         foodDetectorCodelet.addOutput(foodPerceptionMO);
         insertCodelet(foodDetectorCodelet, "Perception");
 
@@ -251,9 +253,10 @@ public class AgentMind extends Mind {
 
         //Agent Detector
         Codelet agentDetectorCodelet = new AgentDetector();
-        agentDetectorCodelet.addInput(visionMO);
         agentDetectorCodelet.addInput(roomsMO);
         agentDetectorCodelet.addInput(knownAgentsMO);
+        //agentDetectorCodelet.setIsMemoryObserver(true);
+        agentDetectorCodelet.addInput(visionMO);
         agentDetectorCodelet.addOutput(agentPerceptionMO);
         insertCodelet(agentDetectorCodelet, "Perception");
 
@@ -272,9 +275,10 @@ public class AgentMind extends Mind {
 
         //Jewel Detector Codelet
         Codelet jewelDetectorCodelet = new JewelDetector(debug);
-        jewelDetectorCodelet.addInput(visionMO);
         jewelDetectorCodelet.addInput(knownJewelsMO);
         jewelDetectorCodelet.addInput(roomsMO);
+        //jewelDetectorCodelet.setIsMemoryObserver(true);
+        jewelDetectorCodelet.addInput(visionMO);
         jewelDetectorCodelet.addOutput(jewelsPerceptionMO);
         jewelDetectorCodelet.addOutput(jewelsCounterMO);
         insertCodelet(jewelDetectorCodelet, "Perception");
@@ -295,9 +299,10 @@ public class AgentMind extends Mind {
 
         //Walls Detector Codelet
         Codelet wallsDetectorCodelet = new WallDetector(debug);
-        wallsDetectorCodelet.addInput(visionMO);
         wallsDetectorCodelet.addInput(roomsMO);
         wallsDetectorCodelet.addInput(knownWallsMO);
+        //wallsDetectorCodelet.setIsMemoryObserver(true);
+        wallsDetectorCodelet.addInput(visionMO);
         wallsDetectorCodelet.addOutput(wallsPerceptionMO);
         insertCodelet(wallsDetectorCodelet, "Perception");
 
@@ -316,6 +321,7 @@ public class AgentMind extends Mind {
 
         //RoomDetector Codelet
         Codelet roomDetectorCodelet = new RoomDetector();
+        //roomDetectorCodelet.setIsMemoryObserver(true);
         roomDetectorCodelet.addInput(propriosensorMO);
         roomDetectorCodelet.addInput(categoriesRoomMO);
         roomDetectorCodelet.addOutput(roomsMO);
@@ -326,6 +332,7 @@ public class AgentMind extends Mind {
         ///Idea moveEventCategory = constructEventCategory("Move", Arrays.asList("Self.Position.X", "Self.Position.Y"), "Linear");
         eventsCategoriesIdea.add(moveEventCategory);
         EventTracker moveEventTracker = new EventTracker(this, "PERCEPTUAL_BUFFER", "EVENTS", moveEventCategory, debug);
+        //moveEventTracker.setIsMemoryObserver(true);
         moveEventTracker.setBufferSize(2);
         moveEventTracker.setBufferStepSizeInMillis(150);
         moveEventTracker.addInput(perceptualBufferMO);
@@ -337,6 +344,7 @@ public class AgentMind extends Mind {
         Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Pitch"), "Linear");
         ///Idea rotateEventCategory = constructEventCategory("Rotate", Arrays.asList("Self.Pitch"), "Linear");
         EventTracker rotateEventTracker = new EventTracker(this, "PERCEPTUAL_BUFFER", "EVENTS", rotateEventCategory, debug);
+        //rotateEventTracker.setIsMemoryObserver(true);
         rotateEventTracker.setBufferSize(2);
         rotateEventTracker.setBufferStepSizeInMillis(150);
         rotateEventTracker.addInput(perceptualBufferMO);
@@ -346,6 +354,7 @@ public class AgentMind extends Mind {
 
         Idea shrinkEventCategory = constructEventCategory("Collected", Arrays.asList("Size.X", "Size.Y", "Size.Z"), "Linear");
         EventTracker shrinkEventTracker = new EventTracker(this, "PERCEPTUAL_BUFFER", "EVENTS", shrinkEventCategory, debug);
+        //shrinkEventTracker.setIsMemoryObserver(true);
         shrinkEventTracker.setBufferSize(2);
         shrinkEventTracker.setBufferStepSizeInMillis(50);
         shrinkEventTracker.addInput(perceptualBufferMO);
@@ -381,44 +390,53 @@ public class AgentMind extends Mind {
 
         //Impulses
         //Go to jewel
+        /*
         Codelet goToJewelImpulse = new GoToJewelImpulse();
+        //goToJewelImpulse.setIsMemoryObserver(true);
         goToJewelImpulse.addInput(innerSenseMO);
         goToJewelImpulse.addInput(knownJewelsMO);
         goToJewelImpulse.addInput(leafletsMO);
         goToJewelImpulse.addOutput(impulsesMO);
         insertCodelet(goToJewelImpulse, "Behavioral");
+         */
 
         //Go to Food
         Codelet goToFoodImpulse = new GoToFoodImpulse();
+        //goToFoodImpulse.setIsMemoryObserver(true);
         goToFoodImpulse.addInput(innerSenseMO);
         goToFoodImpulse.addInput(knownFoodsMO);
         goToFoodImpulse.addOutput(impulsesMO);
         insertCodelet(goToFoodImpulse, "Behavioral");
 
         //Collect Jewel
+        /*
         Codelet collectJewelImpulse = new CollectJewelImpulse();
+        //collectJewelImpulse.setIsMemoryObserver(true);
         collectJewelImpulse.addInput(innerSenseMO);
         collectJewelImpulse.addInput(knownJewelsMO);
         collectJewelImpulse.addOutput(impulsesMO);
         insertCodelet(collectJewelImpulse, "Behavioral");
+         */
 
         //Collect Food
         Codelet collectFoodImpulse = new EatFoodImpulse();
+        //collectFoodImpulse.setIsMemoryObserver(true);
         collectFoodImpulse.addInput(innerSenseMO);
         collectFoodImpulse.addInput(knownFoodsMO);
         collectFoodImpulse.addOutput(impulsesMO);
         insertCodelet(collectFoodImpulse, "Behavioral");
 
         Memory extra;
-        extra = createMemoryObject("extra");
+        extra = createMemoryObject("extra", new ArrayList<Idea>());
         //Explore
         if (!stop) {
             Codelet exploreImpulse = new ExploreImpulse();
-            exploreImpulse.addInput(knownJewelsMO);
-            exploreImpulse.addInput(innerSenseMO);
             exploreImpulse.addInput(roomsMO);
             exploreImpulse.addInput(locationsMO);
             exploreImpulse.addInput(EPLTMO);
+            exploreImpulse.addInput(knownJewelsMO);
+            //exploreImpulse.setIsMemoryObserver(true);
+            exploreImpulse.addInput(innerSenseMO);
             exploreImpulse.addInput(categoriesRoomMO);
             exploreImpulse.addOutput(impulsesMO);
             insertCodelet(exploreImpulse, "Behavioral");
@@ -426,28 +444,28 @@ public class AgentMind extends Mind {
 
         //Move Action/Behaviour
         Codelet moveActionCodelet = new Move();
-        moveActionCodelet.addInput(impulsesMO);
         moveActionCodelet.addInput(knownWallsMO);
-        moveActionCodelet.addOutput(legsMO);
-        moveActionCodelet.addInput(innerSenseMO);
         moveActionCodelet.addInput(locationsMO);
         moveActionCodelet.addInput(roomsMO);
         moveActionCodelet.addInput(EPLTMO);
+        moveActionCodelet.addInput(impulsesMO);
+        moveActionCodelet.addOutput(legsMO);
+        moveActionCodelet.addInput(innerSenseMO);
         moveActionCodelet.addOutput(extra);
         insertCodelet(moveActionCodelet, "Behavioral");
 
         //Collect Action/Behaviour
         Codelet collectActionCodelet = new Collect();
-        collectActionCodelet.addInput(impulsesMO);
         collectActionCodelet.addInput(knownJewelsMO);
+        collectActionCodelet.addInput(impulsesMO);
         collectActionCodelet.addOutput(handsMO);
         collectActionCodelet.addOutput(jewelsCounterMO);
         insertCodelet(collectActionCodelet, "Behavioral");
 
         //Eat Action
         Codelet eatAction = new Eat();
-        eatAction.addInput(impulsesMO);
         eatAction.addInput(knownFoodsMO);
+        eatAction.addInput(impulsesMO);
         eatAction.addOutput(handsMO);
         insertCodelet(eatAction, "Behavioral");
 
@@ -462,9 +480,10 @@ public class AgentMind extends Mind {
         insertCodelet(legsMotorCodelet, "Motor");
 
         Codelet episodeBindingCodelet = new EpisodeBinding();
-        episodeBindingCodelet.addInput(eventsMO);
         episodeBindingCodelet.addInput(contextBufferMO);
         episodeBindingCodelet.addInput(perceptualBufferMO);
+        //episodeBindingCodelet.setIsMemoryObserver(true);
+        episodeBindingCodelet.addInput(eventsMO);
         episodeBindingCodelet.addInput(episodeBoundariesMO);
         episodeBindingCodelet.addOutput(storyMO);
         insertCodelet(episodeBindingCodelet, "Behavioural");
@@ -482,6 +501,7 @@ public class AgentMind extends Mind {
         insertCodelet(contextBufferCodelet);
 
         Codelet episodeBoundaryCodelet = new EpisodeBoundaryDetection();
+        //episodeBoundaryCodelet.setIsMemoryObserver(true);
         episodeBoundaryCodelet.addInput(contextBufferMO);
         episodeBoundaryCodelet.addOutput(episodeBoundariesMO);
         insertCodelet(episodeBoundaryCodelet);
@@ -510,10 +530,11 @@ public class AgentMind extends Mind {
         Memory propertiesMO;
         propertiesMO = createMemoryObject("PROPERTIES", new ArrayList<Idea>());
         Codelet episodicGistCodelet = new EpisodicGistExtraction(locAdpatHabit, locGenHabit, propertiesLearningHabit);
-        episodicGistCodelet.addInput(storyMO);
         episodicGistCodelet.addInput(locationsMO);
-        episodicGistCodelet.addOutput(EPLTMO);
         episodicGistCodelet.addInput(propertiesMO);
+        //episodicGistCodelet.setIsMemoryObserver(true);
+        episodicGistCodelet.addInput(storyMO);
+        episodicGistCodelet.addOutput(EPLTMO);
         insertCodelet(episodicGistCodelet, "Behavioural");
 
         bList.add(wallsDetectorCodelet);
@@ -522,7 +543,7 @@ public class AgentMind extends Mind {
             c.setProfiling(true);
         }
 
-        perceptualBufferCodelet.setTimeStep(150);
+        //perceptualBufferCodelet.setTimeStep(150);
         contextBufferCodelet.setTimeStep(150);
 
         start();

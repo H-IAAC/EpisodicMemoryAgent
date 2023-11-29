@@ -113,6 +113,7 @@ public class EpisodicGistExtraction extends Codelet {
                     Idea startEvent = null;
                     Idea endEvent = null;
                     //Copy events and impulses to memory and add links
+                    System.out.println("New Events: " + story.getEventNodes().size());
                     for (Idea eventNode : story.getEventNodes()) {
                         Idea eventContent = getNodeContent(eventNode);
                         Idea eventCategory = (Idea) eventContent.getValue();
@@ -241,6 +242,16 @@ public class EpisodicGistExtraction extends Codelet {
                     prevLastEvent = endEvent;
 
                     stories.getL().remove(oldestEpisode);
+
+                    System.out.println("--Armazenamento--");
+                    System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
+                    System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
+                    long links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
+                    System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
+                    System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
+                    System.out.println("Links espaciais: " + links);
+                    System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
+                    System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
                 }
             }
             //synchronized (locationMO) {
@@ -322,10 +333,13 @@ public class EpisodicGistExtraction extends Codelet {
             }
         }
         if (bestObjCat != null){
+            System.out.println(">>>Best Mem: " + bestMem);
             if (bestMem >= 0.9){
-                ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();
-                cat.insertExamplar(objectContent);
-                bestObjCat.setValue(cat);
+                if (bestMem >=0.95) {
+                    ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();
+                    cat.insertExamplar(objectContent);
+                    bestObjCat.setValue(cat);
+                }
                 return epLTMGraph.getNodeFromContent(bestObjCat);
             }
         }

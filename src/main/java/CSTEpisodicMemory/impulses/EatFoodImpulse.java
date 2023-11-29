@@ -42,18 +42,20 @@ public class EatFoodImpulse extends Codelet {
     public void proc() {
         removeSatisfiedImpulses();
 
-        Idea foods = (Idea) foodMO.getI();
-        int numFoods = foods.getL().size();
-        if (numFoods > 0){
-            for (Idea food : foods.getL()){
-                double desirability = calculateDesirability(food);
-                if (desirability > -1.0){
-                    desirability = desirability * (maxDesire - minDesire) + minDesire;
-                    Idea impulse = createImpulse(food, desirability);
-                    addIfNotPresent(impulse);
-                } else {
-                    Idea impulse = createImpulse(food, -1);
-                    removeIfPresent(impulse);
+        synchronized (foodMO) {
+            Idea foods = (Idea) foodMO.getI();
+            int numFoods = foods.getL().size();
+            if (numFoods > 0) {
+                for (Idea food : foods.getL()) {
+                    double desirability = calculateDesirability(food);
+                    if (desirability > -1.0) {
+                        desirability = desirability * (maxDesire - minDesire) + minDesire;
+                        Idea impulse = createImpulse(food, desirability);
+                        addIfNotPresent(impulse);
+                    } else {
+                        Idea impulse = createImpulse(food, -1);
+                        removeIfPresent(impulse);
+                    }
                 }
             }
         }

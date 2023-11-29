@@ -24,6 +24,7 @@ public class LinearEventCategory extends EventCategory {
         }
         ArrayRealVector prevDirVector = propertiesVector.get(1).subtract(propertiesVector.get(0));
         ArrayRealVector currDirVector = propertiesVector.get(2).subtract(propertiesVector.get(1));
+        //System.out.println(propertiesVector.get(0) + " | " + propertiesVector.get(1) + " | " + propertiesVector.get(2));
         boolean check = prevDirVector.getNorm() > threashold && getAbsAngle(prevDirVector, currDirVector) < 0.02;
         return check;
     }

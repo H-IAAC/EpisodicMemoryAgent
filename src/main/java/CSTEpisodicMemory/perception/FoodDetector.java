@@ -70,7 +70,6 @@ public class FoodDetector extends Codelet {
         Idea posIdea = new Idea("Position", null, "Property", 1);
         posIdea.add(new Idea("X", t.getPos().get(0), "QualityDimension", 1));
         posIdea.add(new Idea("Y", t.getPos().get(1), "QualityDimension", 1));
-        foodIdea.add(posIdea);
         Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
         color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
         color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
@@ -91,8 +90,10 @@ public class FoodDetector extends Codelet {
                 Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
                 occupation.add(gridPlace);
                 foodIdea.add(occupation);
+                posIdea.setValue(room);
             }
         }
+        foodIdea.add(posIdea);
         synchronized (knownFoodMO){
             Idea outputIdea = (Idea) knownFoodMO.getI();
             List<Idea> known = Collections.synchronizedList(outputIdea.getL());
