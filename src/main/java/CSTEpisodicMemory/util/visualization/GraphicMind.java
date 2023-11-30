@@ -88,6 +88,18 @@ public class GraphicMind extends JFrame {
                 CategoriesPerEventView cc = new CategoriesPerEventView(m);
             }
         }));
+        popup.add(new JMenuItem(new AbstractAction("Locations") {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                Optional<Memory> selectedMem = m.getRawMemory().getAllMemoryObjects()
+                        .stream().filter(m->m.getName().equalsIgnoreCase("EPLTM"))
+                        .findFirst();
+                if (selectedMem.isPresent()) {
+                    GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
+                    ObjectLocationsVisualizer oo = new ObjectLocationsVisualizer(gg);
+                }
+            }
+        }));
         JButton button = new JButton("View");
         button.addMouseListener(new MouseAdapter() {
             @Override

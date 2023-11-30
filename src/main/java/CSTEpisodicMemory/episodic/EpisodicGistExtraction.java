@@ -252,6 +252,7 @@ public class EpisodicGistExtraction extends Codelet {
                     System.out.println("Links espaciais: " + links);
                     System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
                     System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
+
                 }
             }
             //synchronized (locationMO) {
@@ -296,9 +297,13 @@ public class EpisodicGistExtraction extends Codelet {
     private Idea makeSpatialLink(Idea objectContent, GraphIdea epLTMGraph) {
         Idea initialNode;
             Idea objOccupation = objectContent.get("Occupation");
+            if (objectContent.get("Position") != null)
+                objectContent.getL().remove(objectContent.get("Position"));
+            if (objectContent.get("TimeStamp") != null)
+                objectContent.getL().remove(objectContent.get("TimeStamp"));
+            if (objectContent.get("Novelty") != null)
+                objectContent.getL().remove(objectContent.get("Novelty"));
             if (objOccupation != null){
-                if (objectContent.get("Position") != null)
-                    objectContent.get("Position").setL(new ArrayList<>());
                 objectContent.getL().remove(objOccupation);
                 //Idea objNode = epLTMGraph.insertObjectNode(objectContent);
                 Idea objNode = assimilateObject(objectContent, epLTMGraph);
@@ -333,7 +338,6 @@ public class EpisodicGistExtraction extends Codelet {
             }
         }
         if (bestObjCat != null){
-            System.out.println(">>>Best Mem: " + bestMem);
             if (bestMem >= 0.9){
                 if (bestMem >=0.95) {
                     ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();

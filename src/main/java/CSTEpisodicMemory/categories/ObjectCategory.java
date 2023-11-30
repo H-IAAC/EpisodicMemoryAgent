@@ -85,4 +85,8 @@ public class ObjectCategory implements Category {
             }
         }
     }
+
+    public int exemplarsSize(){
+        return examplars.getNodes().size();
+    }
 }
