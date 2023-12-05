@@ -84,11 +84,11 @@ public class EatFoodImpulse extends Codelet {
         double maxDesire = -1.0;
         Idea inner = (Idea) innerSenseMO.getI();
         Vector2D selfPos = new Vector2D(
-                (float) inner.get("Position.X").getValue(),
-                (float) inner.get("Position.Y").getValue());
+                (double) inner.get("Position.X").getValue(),
+                (double) inner.get("Position.Y").getValue());
         Vector2D foodPos = new Vector2D(
-                (float) food.get("Position.X").getValue(),
-                (float) food.get("Position.Y").getValue());
+                (double) food.get("Position.X").getValue(),
+                (double) food.get("Position.Y").getValue());
         if (selfPos.sub(foodPos).magnitude() < 0.45)
             maxDesire = 1.0;
         return maxDesire;

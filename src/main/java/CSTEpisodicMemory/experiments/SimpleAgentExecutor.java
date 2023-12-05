@@ -1,6 +1,5 @@
 package CSTEpisodicMemory.experiments;
 
-import CSTEpisodicMemory.experiments.Environment;
 import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.model.Identifiable;
 import WS3DCoppelia.model.Thing;
@@ -16,7 +15,7 @@ public class SimpleAgentExecutor extends Thread{
 
     private Agent agent;
     private Environment env;
-    private List<Float[]> route = new ArrayList<>();
+    private List<Double[]> route = new ArrayList<>();
     private Random rnd = new Random();
     private boolean recursive = false;
     private int searchJewelStep;
@@ -52,10 +51,10 @@ public class SimpleAgentExecutor extends Thread{
         } else {
             if (exit == 15) {
                 start = 16;
-                route.add(new Float[]{11.5F, 0.5F});
+                route.add(new Double[]{11.5, 0.5});
             } else {
                 start = 0;
-                route.add(new Float[]{0.5F, 18.5F});
+                route.add(new Double[]{0.5, 18.5});
             }
         }
 
@@ -75,7 +74,7 @@ public class SimpleAgentExecutor extends Thread{
 
     public void run(){
         initializeRoute();
-        for (Float[] nextPos : route){
+        for (Double[] nextPos : route){
             if (route.indexOf(nextPos) == searchJewelStep) {
                 Thing objective = null;
                 List<Identifiable> vision = agent.getThingsInVision();
@@ -91,7 +90,7 @@ public class SimpleAgentExecutor extends Thread{
                 }
 
                 if (objective != null) {
-                    List<Float> pos = objective.getPos();
+                    List<Double> pos = objective.getPos();
                     agent.moveTo(pos.get(0), pos.get(1));
                     while (!agent.isInOccupancyArea(pos.get(0), pos.get(1))) {
                         try {
@@ -104,8 +103,8 @@ public class SimpleAgentExecutor extends Thread{
                 }
             }
 
-            float offX = rnd.nextFloat() * 0.5F - 0.25F;
-            float offY = rnd.nextFloat() * 0.5F - 0.25F;
+            double offX = rnd.nextDouble() * 0.5 - 0.25;
+            double offY = rnd.nextDouble() * 0.5 - 0.25;
             agent.moveTo(nextPos[0] + offX, nextPos[1] + offY);
             while (!agent.isInOccupancyArea(nextPos[0] + offX, nextPos[1] + offY)){
                 try {
@@ -124,7 +123,7 @@ public class SimpleAgentExecutor extends Thread{
         }
     }
 
-    public List<Float[]> calculateRoute(int start, int end){
+    public List<Double[]> calculateRoute(int start, int end){
         Graph g = new SingleGraph("Test");
 
         int count = 0;
@@ -211,9 +210,9 @@ public class SimpleAgentExecutor extends Thread{
         solver.setSource(String.valueOf(start));
         solver.compute();
 
-        List<Float[]> route = new LinkedList<>();
+        List<Double[]> route = new LinkedList<>();
         for (Node n :solver.getPathNodes(g.getNode(String.valueOf(end)))){
-            route.add(new Float[]{(Float) n.getAttribute("x"), (Float) n.getAttribute("y")});
+            route.add(new Double[]{(Double) n.getAttribute("x"), (Double) n.getAttribute("y")});
         }
         Collections.reverse(route);
         return route;
@@ -222,8 +221,8 @@ public class SimpleAgentExecutor extends Thread{
     private void addNode(Graph g, int count, double x, double y){
         Node n = g.addNode(String.valueOf(count));
         n.setAttribute("value", 1);
-        n.setAttribute("x", (float)x);
-        n.setAttribute("y", (float)y);
+        n.setAttribute("x", x);
+        n.setAttribute("y", y);
     }
 
     private void addEdge(Graph g, int a, int b){

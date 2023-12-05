@@ -66,8 +66,8 @@ public class MoveGraphic {
         }
 
         if (move !=null){
-            float px = (float) move.get("X").getValue() +0.1F;
-            float py = (float) move.get("Y").getValue();
+            double px = (double) move.get("X").getValue() +0.1F;
+            double py = (double) move.get("Y").getValue();
 
             Rectangle2D.Double goal = new Rectangle2D.Double(-5, -5, 10, 10);
 

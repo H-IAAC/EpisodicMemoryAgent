@@ -28,8 +28,8 @@ public class AgentGraphic{
     }
 
     protected void draw(Graphics2D g){
-        List<Float> pos = env.creature.getPosition();
-        float pitch = env.creature.getPitch();
+        List<Double> pos = env.creature.getPosition();
+        double pitch = env.creature.getPitch();
 
         AffineTransform reset = g.getTransform();
 
@@ -42,11 +42,11 @@ public class AgentGraphic{
         Line2D.Double head = new Line2D.Double(0,0,size*0.712,0);
 
         g.setColor(Color.BLACK);
-        float x,y;
-        x = Float.parseFloat(((Object) pos.get(0)).toString());
-        y = Float.parseFloat(((Object) pos.get(1)).toString());
-        g.translate(y * windowW/envW, x * windowH/envH);
-        String fPos = String.format("%.2f - %.2f", x,y);
+        //float x,y;
+        //x = Float.parseFloat(((Object) pos.get(0)).toString());
+        //y = Float.parseFloat(((Object) pos.get(1)).toString());
+        g.translate(pos.get(1) * windowW/envW, pos.get(0) * windowH/envH);
+        String fPos = String.format("%.2f - %.2f", pos.get(0),pos.get(1));
         g.drawString(fPos, 20, 20);
 
         g.rotate(-pitch + Math.toRadians(90));

@@ -39,8 +39,8 @@ public class GoalGraphic {
 
         if (impulse !=null){
             if (impulse.get("State.Self.Position") != null) {
-                float px = (float) impulse.get("State.Self.Position.X").getValue();
-                float py = (float) impulse.get("State.Self.Position.Y").getValue();
+                double px = (double) impulse.get("State.Self.Position.X").getValue();
+                double py = (double) impulse.get("State.Self.Position.Y").getValue();
 
                 Rectangle2D.Double goal = new Rectangle2D.Double(-5, -5, 10, 10);
 

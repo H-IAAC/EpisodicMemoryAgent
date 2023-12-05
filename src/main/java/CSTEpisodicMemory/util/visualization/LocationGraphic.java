@@ -39,8 +39,8 @@ public class LocationGraphic {
 
         for (Idea loc : locations){
             if (loc.isCategory()) {
-                float cx = (float) loc.get("centerX").getValue();
-                float cy = (float) loc.get("centerY").getValue();
+                double cx = (double) loc.get("centerX").getValue();
+                double cy = (double) loc.get("centerY").getValue();
                 double r = (double) loc.get("radius").getValue();
 
                 Ellipse2D.Double draw = new Ellipse2D.Double((cy - r / 2) * windowW / envW,

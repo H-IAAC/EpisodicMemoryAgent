@@ -98,8 +98,8 @@ public class GridLocatorCodelet extends Codelet {
             Idea gridPlace = locator.locateHCCIdea(px, py);
             occupation.add(gridPlace);
         } else {
-            float width = (float) size.get("Width").getValue();
-            float depth = (float) size.get("Depth").getValue();
+            double width = (double) size.get("Width").getValue();
+            double depth = (double) size.get("Depth").getValue();
             int[] minCorner = locator.locateHCC(px - width / 2, py - depth / 2);
             int[] maxCorner = locator.locateHCC(px + width / 2, py + depth / 2);
             for (int i = minCorner[0]; i <= maxCorner[0]; i++) {

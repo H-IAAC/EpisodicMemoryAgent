@@ -56,11 +56,11 @@ public class ExploreImpulse extends Codelet {
                 Idea impulse = (Idea) impulsesMO.getI(this.impulseCat);
                 if (impulse != null && inner != null) {
                     Vector2D dest = new Vector2D(
-                            (float) impulse.get("State.Self.Position.X").getValue(),
-                            (float) impulse.get("State.Self.Position.Y").getValue());
+                            (double) impulse.get("State.Self.Position.X").getValue(),
+                            (double) impulse.get("State.Self.Position.Y").getValue());
                     Vector2D curr = new Vector2D(
-                            (float) inner.get("Position.X").getValue(),
-                            (float) inner.get("Position.Y").getValue());
+                            (double) inner.get("Position.X").getValue(),
+                            (double) inner.get("Position.Y").getValue());
                     if (dest.sub(curr).magnitude() < 0.40) {
                         //removeSatisfiedImpulses();
                         Idea newDest = chooseLocation();

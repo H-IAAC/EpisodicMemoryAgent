@@ -39,8 +39,8 @@ public class LegsActuatorCodelet extends Codelet {
             if (command != null) {
                 if (avaiableActions.contains(command)) {
                     if (command.equals("Move")) {
-                        float px = (float) action.get("X").getValue();
-                        float py = (float) action.get("Y").getValue();
+                        double px = (double) action.get("X").getValue();
+                        double py = (double) action.get("Y").getValue();
                         creature.moveTo(px, py);
                     } else if (command.equals("Rotate")) {
                         creature.rotate();

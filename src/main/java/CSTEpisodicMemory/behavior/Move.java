@@ -83,8 +83,8 @@ public class Move extends Codelet {
                         lastImpulse = impulse;
                     }
                     Idea action = nextPlanAction();
-                    //float px = (float) impulse.get("State.Self.Position.X").getValue();
-                    //float py = (float) impulse.get("State.Self.Position.Y").getValue();
+                    //double px = (double) impulse.get("State.Self.Position.X").getValue();
+                    //double py = (double) impulse.get("State.Self.Position.Y").getValue();
                     //Idea action = new Idea("Action", "Move", "Episode", 0);
                     //action.add(new Idea("X", px));
                     //action.add(new Idea("Y", py));
@@ -233,8 +233,8 @@ public class Move extends Codelet {
                 destPos[1] += (double) room.get("center.y").getValue();
 
                 Idea action = new Idea("Action", "Move", "Action", 1);
-                action.add(new Idea("X", (float) destPos[0]));
-                action.add(new Idea("Y", (float) destPos[1]));
+                action.add(new Idea("X", (double) destPos[0]));
+                action.add(new Idea("Y", (double) destPos[1]));
                 return action;
 
             } else {
@@ -301,15 +301,15 @@ public class Move extends Codelet {
                     //destPos[1] += (double) room.get("center.y").getValue();
 
                     //Idea action = new Idea("Action", "Move", "Action", 1);
-                    //action.add(new Idea("X", (float) destPos[0]));
-                    //action.add(new Idea("Y", (float) destPos[1]));
+                    //action.add(new Idea("X", (double) destPos[0]));
+                    //action.add(new Idea("Y", (double) destPos[1]));
                     //return action;
                 //}
             }
         }
 
-        float px = (float) impulse.get("State.Self.Position.X").getValue();
-        float py = (float) impulse.get("State.Self.Position.Y").getValue();
+        double px = (double) impulse.get("State.Self.Position.X").getValue();
+        double py = (double) impulse.get("State.Self.Position.Y").getValue();
         Idea action = new Idea("Action", "Move", "Action", 1);
         action.add(new Idea("X", px));
         action.add(new Idea("Y", py));

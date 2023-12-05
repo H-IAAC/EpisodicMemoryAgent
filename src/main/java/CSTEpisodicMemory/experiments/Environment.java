@@ -20,7 +20,7 @@ public abstract class Environment {
     public Environment(){
         this(10,10);
     }
-    public Environment(float width, float heigth){
+    public Environment(double width, double heigth){
         world = new WS3DCoppelia(width, heigth);
 
         try {
@@ -48,7 +48,7 @@ public abstract class Environment {
 
     protected abstract void createCreature();
 
-    protected void insertWall(Constants.BrickTypes color, float x1, float y1, float x2, float y2){
+    protected void insertWall(Constants.BrickTypes color, double x1, double y1, double x2, double y2){
         float wallWidth = 0.05f;
         world.createBrick(color, x1 - wallWidth, y1 - wallWidth, x2, y2);
     }

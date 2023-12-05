@@ -36,7 +36,7 @@ dependencies {
     implementation 'com.github.CST-Group:cst:8a5ef50'
     implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
     //implementation 'com.github.CST-Group:cst-desktop:1.0.5'
-    implementation 'com.github.CST-Group:WS3D-Coppelia:dev-SNAPSHOT'
+    implementation 'com.github.CST-Group:WS3D-Coppelia:main-SNAPSHOT'
     implementation 'org.json:json:20180813'
     implementation 'org.graphstream:gs-core:2.0'
     implementation 'org.graphstream:gs-algo:2.0'
@@ -65,6 +65,10 @@ jar {
         configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
+tasks.withType(JavaCompile) {
+    options.release = 17
 }
 
 jacoco {

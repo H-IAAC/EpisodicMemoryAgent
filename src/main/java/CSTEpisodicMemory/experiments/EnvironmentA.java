@@ -7,7 +7,7 @@ public class EnvironmentA extends Environment{
 
     public EnvironmentA(){ super(); }
 
-    public EnvironmentA(float width, float heigth){
+    public EnvironmentA(double width, double heigth){
         super(width, heigth);
     }
 

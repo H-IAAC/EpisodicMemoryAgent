@@ -83,11 +83,11 @@ public class CollectJewelImpulse extends Codelet {
     private double calculateDesirability(Idea jewel) {
         double maxDesire = -1.0;
         Vector2D selfPos = new Vector2D(
-                (float) inner.get("Position.X").getValue(),
-                (float) inner.get("Position.Y").getValue());
+                (double) inner.get("Position.X").getValue(),
+                (double) inner.get("Position.Y").getValue());
         Vector2D jewelPos = new Vector2D(
-                (float) jewel.get("Position.X").getValue(),
-                (float) jewel.get("Position.Y").getValue());
+                (double) jewel.get("Position.X").getValue(),
+                (double) jewel.get("Position.Y").getValue());
         if (selfPos.sub(jewelPos).magnitude() < 0.45)
             maxDesire = 1.0;
         return maxDesire;

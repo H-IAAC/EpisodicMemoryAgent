@@ -28,7 +28,7 @@ public class RoomCategoryIdeaFunctions implements Category {
     public double membership(Idea idea) {
         Idea position = IdeaHelper.searchIdea(idea, "Position");
         if (position != null) {
-            Vector2D pos = new Vector2D((float) position.get("X").getValue(), (float) position.get("Y").getValue());
+            Vector2D pos = new Vector2D((double) position.get("X").getValue(), (double) position.get("Y").getValue());
             pos = pos.sub(cornerB);
             Vector2D diag = cornerA.sub(cornerB);
             if (abs(pos.getX()) <= abs(diag.getX()) && (abs(pos.getY()) <= abs(diag.getY())) && pos.isSameQuadrant(diag))
@@ -71,13 +71,13 @@ public class RoomCategoryIdeaFunctions implements Category {
         Vector2D diag = cornerA.sub(cornerB);
 
         Random rnd = new Random();
-        Vector2D rand = new Vector2D(rnd.nextFloat()*diag.getX(),
-                rnd.nextFloat()*diag.getY());
+        Vector2D rand = new Vector2D(rnd.nextDouble()*diag.getX(),
+                rnd.nextDouble()*diag.getY());
         rand = rand.add(cornerB);
 
         Idea loc = new Idea("Position", owner, "Property", 0);
-        loc.add(new Idea("X", (float) rand.getX(), "QualityDimension", 0));
-        loc.add(new Idea("Y", (float) rand.getY(), "QualityDimension", 0));
+        loc.add(new Idea("X", (double) rand.getX(), "QualityDimension", 0));
+        loc.add(new Idea("Y", (double) rand.getY(), "QualityDimension", 0));
 
         return loc;
     }
