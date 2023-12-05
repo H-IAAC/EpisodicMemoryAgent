@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.episodic;
 
+import CSTEpisodicMemory.categories.ObjectCategory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.habits.AssimilatePropertyCategory;
@@ -176,6 +177,7 @@ public class EpisodeRetrievalTest {
     }
 
     private void setMemories(){
+        Random rnd = new Random();
         Idea epltmIdea = new Idea("EPLTM", null, "Episode", 1);
         GraphIdea epltm = new GraphIdea(epltmIdea);
 
@@ -210,11 +212,11 @@ public class EpisodeRetrievalTest {
         for (int i=0; i<30; i++){
             Idea spatialLink = new Idea("SpatialLink" + i, null, "Link", 1);
             Idea spatialNode = epltm.insertContextNode(spatialLink);
-            Idea obj = new Idea("Object", "ObjCat" + i/3, "AbstractObject", 1);
-            obj.add(new Idea("p1", i % 16, "Property", 1));
-            obj.add(new Idea("p2", i % 16, "Property", 1));
-            obj.add(new Idea("ID", i % 5, "Property", 1));
-            Idea objNode = epltm.insertObjectNode(obj);
+            Idea obj = new Idea("Object", "ObjCat" + i % 3, "AbstractObject", 1);
+            obj.add(new Idea("p1",i % 10 , "Property", 1));
+            obj.add(new Idea("p2", i % 10 , "Property", 1));
+            obj.add(new Idea("ID", i % 6, "Property", 1));
+            Idea objNode = assimilateObject(obj, epltm);
             Idea gridPlace = GridLocation.getInstance().locateHCCIdea(new Random().nextFloat() * 10, new Random().nextFloat() * 10);
             //Idea gridNode = epltm.insertLocationNode(gridPlace);
             Idea gridNode = locCat.get(i+5);
@@ -222,6 +224,8 @@ public class EpisodeRetrievalTest {
             epltm.insertLink(spatialNode, gridNode, "GridPlace");
             objects.add(spatialNode);
         }
+
+        System.out.println("Object Categories: " + epltm.getObjectNodes().size());
 
         //Episodic Memory example
         Idea ep1 = epltm.insertEpisodeNode(new Idea("Episode1", null, "Episode", 1));
@@ -332,6 +336,32 @@ public class EpisodeRetrievalTest {
         eplMO.setI(epltm);
     }
 
+    private Idea assimilateObject(Idea objectContent, GraphIdea epLTMGraph) {
+        double bestMem = 0;
+        Idea bestObjCat = null;
+        for (Idea objNode : epLTMGraph.getObjectNodes()){
+            Idea objCat = getNodeContent(objNode);
+            double mem = objCat.membership(objectContent);
+            if (mem > bestMem) {
+                bestMem = mem;
+                bestObjCat = objCat;
+            }
+        }
+        if (bestObjCat != null){
+            if (bestMem >= 0.9){
+                if (bestMem >=0.95) {
+                    ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();
+                    cat.insertExamplar(objectContent);
+                    bestObjCat.setValue(cat);
+                }
+                return epLTMGraph.getNodeFromContent(bestObjCat);
+            }
+        }
+        ObjectCategory newObjCatFunc = new ObjectCategory(objectContent);
+        Idea newObjCat = new Idea(objectContent.getName(), newObjCatFunc, "AbstractObject", 2);
+        return epLTMGraph.insertObjectNode(newObjCat);
+    }
+
     @Test
     public void eventRetrieveTest(){
         createMind();
@@ -341,7 +371,7 @@ public class EpisodeRetrievalTest {
         Idea cue = new Idea("EventTest", eventCategories.get(1), "Episode", 1);
         Idea step1 = new Idea("", 1, "TimeStep", 1);
         Idea step2 = new Idea("", 2, "TimeStep", 1);
-        Idea obj = new Idea("Object", null, "AbstractObject", 1);
+        Idea obj = new Idea("Object", "ObjCat2", "AbstractObject", 1);
         obj.add(new Idea("p1", 2, "QualityDimension", 1));
         obj.add(new Idea("p2", 2, "QualityDimension", 1));
         Idea obj2 = obj.clone();
@@ -363,7 +393,7 @@ public class EpisodeRetrievalTest {
         GraphIdea storyRecall = (GraphIdea) recallMO.getI();
 
         //Check number of items
-        Assertions.assertEquals(17, storyRecall.getNodes().size());
+        Assertions.assertEquals(21, storyRecall.getNodes().size());
 
         //Check if is correct episode
         List<Idea> ep = storyRecall.getEpisodeNodes();
@@ -624,7 +654,7 @@ public class EpisodeRetrievalTest {
         setMemories();
 
         //create a Cue
-        Idea object = new Idea("Object", null, "AbstractObject", 1);
+        Idea object = new Idea("Object", "ObjCat0", "AbstractObject", 1);
         object.add(new Idea("ID", 0, "Property", 1));
 
         GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));

@@ -466,9 +466,19 @@ public class GraphIdea {
     }
 
     public List<Idea> getAllNodesWithSimilarContent(Idea content, double threshold) {
-        List<Idea> foundNodes = graph.getL().stream()
-                .filter(e -> IdeaHelper.scoreSimilarity(content, getNodeContent(e)) > threshold)
-                .collect(Collectors.toList());
+        List<Idea> foundNodes = new ArrayList<>();
+        for (Idea graphNode : graph.getL()){
+            Idea graphNodeContent = getNodeContent(graphNode);
+            if (graphNodeContent.isCategory()){
+                if (graphNodeContent.membership(content) > threshold){
+                    foundNodes.add(graphNode);
+                }
+            } else {
+                if (IdeaHelper.scoreSimilarity(content, graphNodeContent) > threshold){
+                    foundNodes.add(graphNode);
+                }
+            }
+        }
         return foundNodes;
     }
 

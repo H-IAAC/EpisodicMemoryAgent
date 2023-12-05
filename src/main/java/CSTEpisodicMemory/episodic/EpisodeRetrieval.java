@@ -57,7 +57,7 @@ public class EpisodeRetrieval extends Codelet {
             //Filter by desired context
             List<Idea> cueContext = cue.getObjectNodes();
             for (Idea context : cueContext) {
-                List<Idea> similarObjectsMemory = epGraph.getAllNodesWithSimilarContent(getNodeContent(context), 0.7);
+                List<Idea> similarObjectsMemory = epGraph.getAllNodesWithSimilarContent(getNodeContent(context), 0.9);
 
                 for (Idea similarObject : similarObjectsMemory) {
                     for (Idea spatialLink : epGraph.getPredecessors(similarObject).getOrDefault("Object", new ArrayList<>())) {
@@ -361,7 +361,7 @@ public class EpisodeRetrieval extends Codelet {
         for (Idea event : recalledEpisode.getEventNodes()) {
             for (Idea spatialLink : recalledEpisode.getChildrenWithLink(event, "ObjectContext")) {
                 Idea objectNode = recalledEpisode.getChildrenWithLink(spatialLink, "Object").get(0);
-                Idea copyObject = IdeaHelper.cloneIdea(getNodeContent(objectNode));
+                Idea copyObject = getNodeContent(objectNode).getInstance();
                 Idea objectOccupation = new Idea("Occupation", null, "Aggregate", 1);
                 List<Idea> occupationCells = recalledEpisode.getChildrenWithLink(spatialLink, "GridPlace");
                 for (Idea gridCell : occupationCells){
@@ -396,7 +396,7 @@ public class EpisodeRetrieval extends Codelet {
         Idea objOccupation = initialObjectState.get("Occupation");
         if (objOccupation != null) {
             initialObjectState.getL().remove(objOccupation);
-            List<Idea> objNodes = epGraph.getAllNodesWithSimilarContent(initialObjectState);
+            List<Idea> objNodes = epGraph.getAllNodesWithSimilarContent(initialObjectState, 0.9);
             List<Idea> posNodes = new ArrayList<>();
             for (Idea objGrid : objOccupation.getL()) {
                 posNodes.add(epGraph.getNodeFromContent(objGrid));
