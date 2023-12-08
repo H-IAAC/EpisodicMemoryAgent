@@ -23,11 +23,11 @@ public abstract class Environment {
     public Environment(double width, double heigth){
         world = new WS3DCoppelia(width, heigth);
 
-        try {
-            world.stopSimulation();
-        } catch (CborException e) {
-            Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, e);
-        }
+        //try {
+        //    world.stopSimulation();
+        //} catch (CborException e) {
+        //    Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, e);
+        //}
 
         try {
             Thread.sleep(1000);

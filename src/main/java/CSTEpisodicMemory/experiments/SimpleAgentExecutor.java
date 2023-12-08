@@ -78,7 +78,6 @@ public class SimpleAgentExecutor extends Thread{
             if (route.indexOf(nextPos) == searchJewelStep) {
                 Thing objective = null;
                 List<Identifiable> vision = agent.getThingsInVision();
-                System.out.println(vision.size());
                 for (Identifiable object : vision) {
                     if (object instanceof Thing) {
                         Thing thing = (Thing) object;

@@ -14,6 +14,7 @@ import CSTEpisodicMemory.core.codelets.EpisodeBoundaryDetection;
 import CSTEpisodicMemory.core.codelets.EventTracker;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
+import CSTEpisodicMemory.episodic.EpisodeRetrieval;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.episodic.BufferCodelet;
 import CSTEpisodicMemory.experiments.Environment;
@@ -43,6 +44,8 @@ public class AgentMind extends Mind {
     private boolean debug = false;
     private boolean stop = false;
     public List<Codelet> bList = new ArrayList<>();
+    public Memory cueMO;
+    public Memory recallMO;
 
     public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug, boolean stop) {
         super();
@@ -174,6 +177,9 @@ public class AgentMind extends Mind {
         Idea epLTM = new Idea("epLTM", null, "Configuration", 1);
         GraphIdea epLTMGraph = new GraphIdea(epLTM);
         EPLTMO = createMemoryObject("EPLTM", epLTMGraph);
+
+        cueMO = createMemoryObject("CUE", new GraphIdea(new Idea("Graph")));
+        recallMO = createMemoryObject("RECALL");
         //----Categories----
         //Rooms
         categoriesRoomMO = createMemoryObject("ROOM_CATEGORIES", roomsCategoriesIdea);
@@ -505,6 +511,13 @@ public class AgentMind extends Mind {
         episodeBoundaryCodelet.addInput(contextBufferMO);
         episodeBoundaryCodelet.addOutput(episodeBoundariesMO);
         insertCodelet(episodeBoundaryCodelet);
+
+        Codelet episodeRetrievalCodelet = new EpisodeRetrieval();
+        episodeRetrievalCodelet.addInput(EPLTMO);
+        episodeRetrievalCodelet.setIsMemoryObserver(true);
+        episodeRetrievalCodelet.addInput(cueMO);
+        episodeRetrievalCodelet.addOutput(recallMO);
+        insertCodelet(episodeRetrievalCodelet);
 
         Idea locAdpatHabit = new Idea("LocationAdaptHabit", null);
         locAdpatHabit.setValue(new LocationCategoryModification(locAdpatHabit));

@@ -57,7 +57,7 @@ public class EpisodeRetrieval extends Codelet {
             //Filter by desired context
             List<Idea> cueContext = cue.getObjectNodes();
             for (Idea context : cueContext) {
-                List<Idea> similarObjectsMemory = epGraph.getAllNodesWithSimilarContent(getNodeContent(context), 0.9);
+                List<Idea> similarObjectsMemory = epGraph.getAllNodesWithSimilarContent(getNodeContent(context), 0.68);
 
                 for (Idea similarObject : similarObjectsMemory) {
                     for (Idea spatialLink : epGraph.getPredecessors(similarObject).getOrDefault("Object", new ArrayList<>())) {

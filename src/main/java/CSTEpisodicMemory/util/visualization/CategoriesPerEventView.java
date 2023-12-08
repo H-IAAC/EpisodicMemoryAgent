@@ -45,7 +45,6 @@ public class CategoriesPerEventView {
 
                 for (Idea context : gg.getChildrenWithLink(event, "ObjectContext")){
                     String nameC = GraphIdea.getNodeContent(context).getName();
-                    System.out.println(nameC);
                     nameC = nameC.replaceAll("[^0-9]", "");
                     if (nameC != "") {
                         double posC = Double.parseDouble(nameC);

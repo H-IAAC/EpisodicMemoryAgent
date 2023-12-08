@@ -18,6 +18,10 @@ public class EpisodeBoundaryDetection extends Codelet {
 
     private long lastCheckedTimeStamp = -1L;
 
+    public EpisodeBoundaryDetection(){
+        System.out.println("Created");
+        this.name = "Episode_Boundary";
+    }
     @Override
     public void accessMemoryObjects() {
         contextBufferMO = (MemoryObject) getInput("CONTEXT_BUFFER");

@@ -1,16 +1,21 @@
 package CSTEpisodicMemory.experiments;
 
 import CSTEpisodicMemory.AgentMind;
+import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.util.Vector2D;
+import CSTEpisodicMemory.util.visualization.CategoriesPerEventView;
 import CSTEpisodicMemory.util.visualization.GraphicMind;
 import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
+import CSTEpisodicMemory.util.visualization.ObjectLocationsVisualizer;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.util.viewer.MindViewer;
+import co.nstant.in.cbor.CborException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -40,6 +45,47 @@ public class ExperimentF {
                 Logger.getLogger(ExperimentF.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        while (env.creature.getFuel() > 10){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.printf("Skip sleep");
+            }
+        }
+
+        CategoriesPerEventView cc = new CategoriesPerEventView(mind);
+        Optional<Memory> selectedMem = mind.getRawMemory().getAllMemoryObjects()
+                .stream().filter(m->m.getName().equalsIgnoreCase("EPLTM"))
+                .findFirst();
+        if (selectedMem.isPresent()) {
+            GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
+            ObjectLocationsVisualizer oo = new ObjectLocationsVisualizer(gg);
+        }
+        testMemoryRetrieval(mind);
+    }
+
+    private static void testMemoryRetrieval(AgentMind mind) {
+        Idea object = new Idea("Agent102", "AGENT", "AbstractObject", 1);
+        object.add(new Idea("ID", 102, "Property", 1));
+
+        GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
+        cueGraph.insertObjectNode(object);
+        mind.cueMO.setI(cueGraph);
+
+        while(mind.recallMO.getI() == null){
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        GraphIdea storyRecall = (GraphIdea) mind.recallMO.getI();
+
+        System.out.println("---Recovered Episodes for Agent 21----");
+        System.out.printf("Episodes: " + storyRecall.getEpisodeNodes().size());
+        System.out.printf("Events: " + storyRecall.getEventNodes().size());
     }
 
     private static List<Idea> createRoomsCategories(){

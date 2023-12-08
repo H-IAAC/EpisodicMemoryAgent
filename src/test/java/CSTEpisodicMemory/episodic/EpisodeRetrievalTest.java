@@ -435,12 +435,12 @@ public class EpisodeRetrievalTest {
         Idea cue = new Idea("EventTest", eventCategories.get(3), "Episode", 1);
         Idea step1 = new Idea("", 1, "TimeStep", 1);
         Idea step2 = new Idea("", 2, "TimeStep", 1);
-        Idea obj = new Idea("object", null, "AbstractObject", 1);
+        Idea obj = new Idea("object", "ObjCat2", "AbstractObject", 1);
         obj.add(new Idea("p1", -3, "QualityDimension", 1));
         obj.add(new Idea("p2", -3, "QualityDimension", 1));
         Idea obj2 = obj.clone();
-        obj2.get("p1").setValue(-3);
-        obj2.get("p2").setValue(-3);
+        obj2.get("p1").setValue(-4);
+        obj2.get("p2").setValue(-4);
         step1.add(obj);
         step2.add(obj2);
         cue.add(step1);
@@ -670,8 +670,10 @@ public class EpisodeRetrievalTest {
 
         //Check if is correct episode
         List<Idea> ep = storyRecall.getEpisodeNodes();
-        Assertions.assertEquals(ep.size(), 1);
+        Assertions.assertEquals(2, ep.size());
         Idea epContent = getNodeContent(ep.get(0));
         Assertions.assertEquals(epContent.getName(), "Episode1");
+        epContent = getNodeContent(ep.get(1));
+        Assertions.assertEquals(epContent.getName(), "Episode4");
     }
 }

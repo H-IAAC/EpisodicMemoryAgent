@@ -2,13 +2,15 @@ package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.categories.ObjectCategory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 import br.unicamp.cst.util.viewer.representation.idea.IdeaPanel;
 import com.google.gson.Gson;
+import org.graphstream.algorithm.Toolkit;
+import org.graphstream.graph.IdAlreadyInUseException;
+import org.graphstream.graph.implementations.SingleGraph;
 
 import javax.swing.*;
 import java.util.*;
@@ -28,6 +30,8 @@ public class EpisodicGistExtraction extends Codelet {
     private Idea prevLastEvent = null;
     private final Idea trackedPropertiesAssimilateAccommodateHabit;
     private int spatialLinkCount = 0;
+    private boolean debug = true;
+    private long processingStart;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
         this.name = "GistExtraction";
@@ -64,6 +68,8 @@ public class EpisodicGistExtraction extends Codelet {
 
                 //If there is a segmented episode
                 if (stories.getL().size() > 1) {
+                    System.out.println("Star Gist Extraction");
+                    processingStart = System.currentTimeMillis();
                     Idea oldestEpisode = stories.getL().get(0);
                     for (Idea ep : stories.getL()) {
                         if ((int) ep.getValue() < (int) oldestEpisode.getValue())
@@ -243,15 +249,9 @@ public class EpisodicGistExtraction extends Codelet {
 
                     stories.getL().remove(oldestEpisode);
 
-                    System.out.println("--Armazenamento--");
-                    System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
-                    System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
-                    long links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
-                    System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
-                    System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
-                    System.out.println("Links espaciais: " + links);
-                    System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
-                    System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
+                    if (debug){
+                        evaluateMemory(epLTMGraph);
+                    }
 
                 }
             }
@@ -350,5 +350,44 @@ public class EpisodicGistExtraction extends Codelet {
         ObjectCategory newObjCatFunc = new ObjectCategory(objectContent);
         Idea newObjCat = new Idea(objectContent.getName(), newObjCatFunc, "AbstractObject", 2);
         return epLTMGraph.insertObjectNode(newObjCat);
+    }
+
+    private void evaluateMemory(GraphIdea epLTMGraph) {
+        System.out.println("--Armazenamento--");
+        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
+        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
+        long links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
+        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
+        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
+        System.out.println("Links espaciais: " + links);
+        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
+        System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
+
+        SingleGraph measureGraph = new SingleGraph("Measure");
+        long start = System.currentTimeMillis();
+        for (Idea node : epLTMGraph.getNodes()){
+            measureGraph.addNode(node.getName()+node.getValue());
+        }
+        for (Idea node : epLTMGraph.getNodes()){
+            String nodeName = node.getName()+node.getValue();
+            for (Map.Entry<String,List<Idea>> link : epLTMGraph.getSuccesors(node).entrySet()){
+                for (Idea dest : link.getValue()){
+                    String destName = dest.getName()+dest.getValue();
+                    try {
+                        measureGraph.addEdge(nodeName + "_" + destName, nodeName, destName, true);
+                    } catch (IdAlreadyInUseException ignored){
+                    }
+                }
+            }
+        }
+
+        System.out.println("--Graph Measure---");
+        System.out.println("Tempo de Processamento: " + (start-processingStart));
+        System.out.println("Tempo de Avaliação: " + (System.currentTimeMillis()-start));
+        System.out.println("EPLTM grau: " + Toolkit.averageDegree(measureGraph));
+        System.out.println("EPLTM densidade: " + Toolkit.density(measureGraph));
+        System.out.println("EPLTM diâmetro: " + Toolkit.diameter(measureGraph));
+        System.out.println("EPLTM clustering: " + Toolkit.averageClusteringCoefficient(measureGraph));
+        System.out.println("------------------");
     }
 }

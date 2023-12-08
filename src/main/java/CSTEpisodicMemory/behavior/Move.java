@@ -52,10 +52,6 @@ public class Move extends Codelet {
                 }
             }
         }
-        if (this.impulse != null && this.impulse.getId() != lastId){
-            lastId = this.impulse.getId();
-            System.out.println("Curr impulse: "+ lastId);
-        }
         this.legsMO = (MemoryContainer) getOutput("LEGS");
         this.epltMO = (MemoryObject) getInput("EPLTM");
         this.innerMO = (MemoryObject) getInput("INNER");

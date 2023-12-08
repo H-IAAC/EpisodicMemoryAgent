@@ -89,8 +89,10 @@ public class ObjectLocationsVisualizer extends JFrame {
                 } else {
                     g2d.setColor(new Color(0x3F2DC011, true));
                     for (List<Ellipse2D.Double> ellips : positions){
-                        for (Ellipse2D.Double ellip : ellips.subList(0,ellips.size()-1)){
-                            g2d.fill(ellip);
+                        if (!ellips.isEmpty()) {
+                            for (Ellipse2D.Double ellip : ellips.subList(0, ellips.size() - 1)) {
+                                g2d.fill(ellip);
+                            }
                         }
                     }
                 }
@@ -219,7 +221,7 @@ public class ObjectLocationsVisualizer extends JFrame {
                         }
                     }
                 }
-                List<Idea> finalObjNode = graphIdea.getChildrenWithLink(eventNode,"Initial");
+                List<Idea> finalObjNode = graphIdea.getChildrenWithLink(eventNode,"Final");
                 if (!finalObjNode.isEmpty()){
                     List<Idea> objs = graphIdea.getChildrenWithLink(finalObjNode.get(0), "Object");
                     if (!getNodeContent(objs.get(0)).getName().equals("Self")) {

@@ -213,9 +213,6 @@ public class ExploreImpulse extends Codelet {
 
             extra.setI(epltmGraph.getLocationNodes());
 
-            for (Idea ll : locationNodes){
-                System.out.println((double)ll.get("Activation").getValue());
-            }
         }
 
     }
