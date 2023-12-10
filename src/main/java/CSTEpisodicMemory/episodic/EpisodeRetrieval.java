@@ -93,7 +93,6 @@ public class EpisodeRetrieval extends Codelet {
                     }
                 } else {
                     epGraph.resetActivations();
-                    String observedObject = (String) eventCategory.get("ObservedObject").getValue();
 
                     Idea initialObjectState = eventContent.getL().get(0).getL().stream()
                             .filter(o -> !o.getName().equals("TimeStamp"))
@@ -181,6 +180,19 @@ public class EpisodeRetrieval extends Codelet {
                     epGraph.propagateActivations(bestMemEvents.get(0), Arrays.asList("Before", "Meet", "Overlap", "Start", "During", "Finish", "Equal"), Arrays.asList("Begin", "End"));
                     Idea activatedEpisode = epGraph.getEpisodeNodes().stream().max(Comparator.comparingDouble(epGraph::getNodeActivation)).get();
                     recalledEpisode = epGraph.getEpisodeSubGraph(activatedEpisode);
+                } else {
+                    epGraph.resetActivations();
+                    for (Idea event : bestMemEvents){
+                        epGraph.setNodeActivation(event, 1.0);
+                        epGraph.propagateActivations(event, Arrays.asList("Before", "Meet", "Overlap", "Start", "During", "Finish", "Equal"), Arrays.asList("Begin", "End"));
+                    }
+                    List<Idea> activatedEpisodes = epGraph.getEpisodeNodes().stream().filter(a->epGraph.getNodeActivation(a)>0).toList();
+                    GraphIdea recall = new GraphIdea(new Idea("Recall"));
+                    for (Idea ep : activatedEpisodes) {
+                        GraphIdea episodeGraph = epGraph.getEpisodeSubGraph(ep);
+                        recall.addAll(episodeGraph);
+                    }
+                    recalledEpisode = recall;
                 }
             } else if (bestMatches.size() > 1) {
                 LinkedList<Idea> events = new LinkedList<>(bestMatches.keySet());

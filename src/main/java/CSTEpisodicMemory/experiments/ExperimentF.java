@@ -66,11 +66,21 @@ public class ExperimentF {
     }
 
     private static void testMemoryRetrieval(AgentMind mind) {
-        Idea object = new Idea("Agent102", "AGENT", "AbstractObject", 1);
-        object.add(new Idea("ID", 102, "Property", 1));
+        Idea cue = new Idea("EventTest", null, "Episode", 1);
+        Idea step1 = new Idea("", 1, "TimeStep", 1);
+        Idea step2 = new Idea("", 2, "TimeStep", 1);
+        Idea knownAgents = (Idea) mind.knownAgentsMO.getI();
+        String agentName = knownAgents.getL().get(0).getName();
+        int agentId = (int) knownAgents.getL().get(0).get("ID").getValue();
+        Idea object = new Idea(agentName, "AGENT", "AbstractObject", 1);
+        object.add(new Idea("ID", agentId, "Property", 1));
+        step1.add(object);
+        step2.add(object);
+        cue.add(step1);
+        cue.add(step2);
 
         GraphIdea cueGraph = new GraphIdea(new Idea("Cue"));
-        cueGraph.insertObjectNode(object);
+        cueGraph.insertEventNode(cue);
         mind.cueMO.setI(cueGraph);
 
         while(mind.recallMO.getI() == null){

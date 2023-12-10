@@ -46,6 +46,7 @@ public class AgentMind extends Mind {
     public List<Codelet> bList = new ArrayList<>();
     public Memory cueMO;
     public Memory recallMO;
+    public Memory knownAgentsMO;
 
     public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug, boolean stop) {
         super();
@@ -76,7 +77,6 @@ public class AgentMind extends Mind {
         Memory jewelsPerceptionMO;
         Memory knownJewelsMO;
         Memory agentPerceptionMO;
-        Memory knownAgentsMO;
         Memory jewelsCounterMO;
         Memory foodPerceptionMO;
         Memory knownFoodsMO;

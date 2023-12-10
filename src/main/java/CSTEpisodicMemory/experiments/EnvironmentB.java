@@ -26,13 +26,13 @@ public class EnvironmentB extends Environment{
         insertWall(BLUE_BRICK, 0, 6, 2, 6);
 
         insertFood(3.4F, 2.6F);
-        insertFood(3.8F, 2.6F);
-        insertFood(3.4F, 2.2F);
-        insertFood(3.8F, 2.2F);
+        //insertFood(3.8F, 2.6F);
+        //insertFood(3.4F, 2.2F);
+        //insertFood(3.8F, 2.2F);
         insertFood(0.2F, 2.2F);
-        insertFood(0.6F, 2.2F);
-        insertFood(0.2F, 2.6F);
-        insertFood(0.6F, 2.6F);
+        //insertFood(0.6F, 2.2F);
+        //insertFood(0.2F, 2.6F);
+        //insertFood(0.6F, 2.6F);
 
         insertWall(RED_BRICK, 5,0,5,6);
         insertWall(RED_BRICK, 5,0,9,0);
@@ -107,13 +107,13 @@ public class EnvironmentB extends Environment{
         insertWall(BROWN_BRICK, 11,20,15,20);
 
         insertFood(9.2F, 23.8F);
-        insertFood(9.6F, 23.8F);
-        insertFood(9.2F, 23.4F);
-        insertFood(9.6F, 23.4F);
+        //insertFood(9.6F, 23.8F);
+        //insertFood(9.2F, 23.4F);
+        //insertFood(9.6F, 23.4F);
         insertFood(14.4F, 23.4F);
-        insertFood(14.8F, 23.4F);
-        insertFood(14.4F, 23.8F);
-        insertFood(14.8F, 23.8F);
+        //insertFood(14.8F, 23.4F);
+        //insertFood(14.4F, 23.8F);
+        //insertFood(14.8F, 23.8F);
 
         insertWall(YELLOW_BRICK, 4,18,6,18);
         insertWall(YELLOW_BRICK, 7,18,10,18);
