@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class GridLocation {
 
-    public final static double SCALE = 0.15;
+    public static double SCALE = 0.15;
     private final static double SQRT_3 = Math.sqrt(3);
     private final static int GRID_SIZE = 120;
     private static Idea[][] adjencyMap = new Idea[GRID_SIZE][GRID_SIZE];

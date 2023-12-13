@@ -32,6 +32,7 @@ public class EpisodicGistExtraction extends Codelet {
     private int spatialLinkCount = 0;
     private boolean debug = true;
     private long processingStart;
+    public static double objectCategoryThreashold = 0.9;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
         this.name = "GistExtraction";
@@ -338,7 +339,7 @@ public class EpisodicGistExtraction extends Codelet {
             }
         }
         if (bestObjCat != null){
-            if (bestMem >= 0.9){
+            if (bestMem >= objectCategoryThreashold){
                 if (bestMem >=0.95) {
                     ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();
                     cat.insertExamplar(objectContent);

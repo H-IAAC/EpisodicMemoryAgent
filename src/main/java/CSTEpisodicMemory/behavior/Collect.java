@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.behavior;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class Collect extends Codelet {
 
-    private MemoryContainer impulseMO;
+    private ImpulseMemory impulseMO;
     private Memory jewelsMO;
     private MemoryContainer handsMO;
     private Memory jewelsCountersMO;
@@ -26,7 +27,7 @@ public class Collect extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        this.impulseMO = (MemoryContainer) getInput("IMPULSES");
+        this.impulseMO = (ImpulseMemory) getInput("IMPULSES");
         this.impulse = (Idea) impulseMO.getI();
         this.handsMO = (MemoryContainer) getOutput("HANDS");
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");

@@ -12,6 +12,7 @@ import CSTEpisodicMemory.categories.RoomCategoryIdeaFunctions;
 import CSTEpisodicMemory.categories.StepEventCategory;
 import CSTEpisodicMemory.core.codelets.EpisodeBoundaryDetection;
 import CSTEpisodicMemory.core.codelets.EventTracker;
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.episodic.EpisodeBinding;
 import CSTEpisodicMemory.episodic.EpisodeRetrieval;
@@ -93,7 +94,7 @@ public class AgentMind extends Mind {
         Memory roomsMO;
         Memory leafletsMO;
         Memory episodeBoundariesMO;
-        MemoryContainer impulsesMO;
+        ImpulseMemory impulsesMO;
         MemoryContainer handsMO;
         MemoryContainer legsMO;
 
@@ -201,7 +202,7 @@ public class AgentMind extends Mind {
         //registerMemory(leafletsMO, "Perceptual");
         //Impulses
         //Idea impulsesIdea = new Idea("Impulses", null, 0);
-        impulsesMO = createMemoryContainer("IMPULSES");
+        impulsesMO = new ImpulseMemory(createMemoryContainer("IMPULSES"));
         registerMemory(impulsesMO, "Context");
 
         episodeBoundariesMO = createMemoryObject("BOUNDARIES", new Idea("Boundaries"));

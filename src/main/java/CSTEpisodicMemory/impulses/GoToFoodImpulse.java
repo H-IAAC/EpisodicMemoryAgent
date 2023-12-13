@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -14,7 +15,7 @@ public class GoToFoodImpulse extends Codelet {
 
     private Memory innerSenseMO;
     private Memory foodMO;
-    private MemoryContainer impulsesMO;
+    private ImpulseMemory impulsesMO;
 
     private final double minDesire = 0;
     private final double maxDesire = 1;
@@ -28,7 +29,7 @@ public class GoToFoodImpulse extends Codelet {
     public void accessMemoryObjects() {
         this.foodMO = (MemoryObject) getInput("KNOWN_FOODS");
         this.innerSenseMO = (MemoryObject) getInput("INNER");
-        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
+        this.impulsesMO = (ImpulseMemory) getOutput("IMPULSES");
     }
 
     @Override

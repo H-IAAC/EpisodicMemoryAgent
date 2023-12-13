@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryContainer;
@@ -15,7 +16,7 @@ public class GoToJewelImpulse extends Codelet {
     private Memory innerSenseMO;
     private Memory leafletMO;
     private Memory jewelsMO;
-    private MemoryContainer impulsesMO;
+    private ImpulseMemory impulsesMO;
     private Idea inner;
     private Idea leaflets;
     private Idea known_jewels;
@@ -36,7 +37,7 @@ public class GoToJewelImpulse extends Codelet {
         this.leaflets = (Idea) leafletMO.getI();
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.known_jewels = (Idea) jewelsMO.getI();
-        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
+        this.impulsesMO = (ImpulseMemory) getOutput("IMPULSES");
     }
 
     @Override

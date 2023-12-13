@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.behavior;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.util.IdeaHelper;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 public class Move extends Codelet {
 
     private MemoryContainer legsMO;
-    private MemoryContainer impulseMO;
+    private ImpulseMemory impulseMO;
     private Memory wallsMO;
     private Memory epltMO;
     private Memory innerMO;
@@ -38,7 +39,7 @@ public class Move extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        this.impulseMO = (MemoryContainer) getInput("IMPULSES");
+        this.impulseMO = (ImpulseMemory) getInput("IMPULSES");
         synchronized (impulseMO) {
             Idea impulse_ = (Idea) impulseMO.getI();
             if (impulse_ != null) {

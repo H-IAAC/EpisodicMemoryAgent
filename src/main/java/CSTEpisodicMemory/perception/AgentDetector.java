@@ -69,16 +69,18 @@ public class AgentDetector extends Codelet {
         color.add(new Idea("G", agent.getColor().get(1), "QualityDimension", 1));
         color.add(new Idea("B", agent.getColor().get(2), "QualityDimension", 1));
         agentIdea.add(color);
-        if (detectedRoom != null) {
-            if (detectedRoom.get("Location") != null) {
-                Idea room = (Idea) detectedRoom.get("Location").getValue();
-                double px = agent.getPosition().get(0) - (double) room.get("center.x").getValue();
-                double py = agent.getPosition().get(1) - (double) room.get("center.y").getValue();
-                Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
-                Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
-                occupation.add(gridPlace);
-                agentIdea.add(occupation);
-                posIdea.setValue(room);
+        synchronized (detectedRoom) {
+            if (detectedRoom != null) {
+                if (detectedRoom.get("Location") != null) {
+                    Idea room = (Idea) detectedRoom.get("Location").getValue();
+                    double px = agent.getPosition().get(0) - (double) room.get("center.x").getValue();
+                    double py = agent.getPosition().get(1) - (double) room.get("center.y").getValue();
+                    Idea occupation = new Idea("Occupation", null, "Aggregate", 1);
+                    Idea gridPlace = GridLocation.getInstance().locateHCCIdea(px, py);
+                    occupation.add(gridPlace);
+                    agentIdea.add(occupation);
+                    posIdea.setValue(room);
+                }
             }
         }
         agentIdea.add(posIdea);

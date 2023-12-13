@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -15,7 +16,7 @@ public class CollectJewelImpulse extends Codelet {
 
     private Memory innerSenseMO;
     private Memory jewelsMO;
-    private MemoryContainer impulsesMO;
+    private ImpulseMemory impulsesMO;
     private Idea inner;
     private Idea jewels;
 
@@ -33,7 +34,7 @@ public class CollectJewelImpulse extends Codelet {
         this.inner = (Idea) innerSenseMO.getI();
         this.jewelsMO = (MemoryObject) getInput("KNOWN_JEWELS");
         this.jewels = (Idea) jewelsMO.getI();
-        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
+        this.impulsesMO = (ImpulseMemory) getOutput("IMPULSES");
     }
 
     @Override

@@ -85,7 +85,9 @@ public class GraphicMind extends JFrame {
         popup.add(new JMenuItem(new AbstractAction("View Plot") {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                CategoriesPerEventView cc = new CategoriesPerEventView(m);
+                SpatialLinkPerEventView cc = new SpatialLinkPerEventView(m);
+                ObjectCategoryPerEventView oo = new ObjectCategoryPerEventView(m);
+                GridPerEventView gg = new GridPerEventView(m);
             }
         }));
         popup.add(new JMenuItem(new AbstractAction("Locations") {

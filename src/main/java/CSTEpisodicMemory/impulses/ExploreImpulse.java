@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import CSTEpisodicMemory.util.Vector2D;
@@ -17,7 +18,7 @@ public class ExploreImpulse extends Codelet {
     private Memory innerMO;
     private Memory roomMO;
     private Memory roomsCategoriesMO;
-    private MemoryContainer impulsesMO;
+    private ImpulseMemory impulsesMO;
     private Memory locationsMO;
     private Memory epltMO;
     private Memory extra;
@@ -34,7 +35,7 @@ public class ExploreImpulse extends Codelet {
         this.innerMO = (MemoryObject) getInput("INNER");
         this.roomMO = (MemoryObject) getInput("ROOM");
         this.roomsCategoriesMO = (MemoryObject) getInput("ROOM_CATEGORIES");
-        this.impulsesMO = (MemoryContainer) getOutput("IMPULSES");
+        this.impulsesMO = (ImpulseMemory) getOutput("IMPULSES");
         this.locationsMO = (MemoryObject) getInput("LOCATION");
         this.epltMO = (MemoryObject) getInput("EPLTM");
         this.extra = (Memory) getOutput("extra");

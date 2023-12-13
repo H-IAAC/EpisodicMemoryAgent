@@ -4,6 +4,8 @@
 package CSTEpisodicMemory;
 
 import CSTEpisodicMemory.categories.LinearEventCategory;
+import CSTEpisodicMemory.core.representation.GridLocation;
+import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.experiments.*;
 import CSTEpisodicMemory.util.visualization.*;
 import WS3DCoppelia.util.Constants;
@@ -22,7 +24,9 @@ public class Main {
     static AgentMind a;
     public static void main(String[] args) {
         //new ExperimentA().run();
-        LinearEventCategory.threashold = 0.01;
+        LinearEventCategory.threashold = 0.0001;
+        EpisodicGistExtraction.objectCategoryThreashold = 0.7;
+        GridLocation.SCALE = 0.15;
         ExperimentF.run();
     }
 

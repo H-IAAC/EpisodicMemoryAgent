@@ -44,6 +44,9 @@ public class EnvironmentB extends Environment{
         insertJewel(7.5F,4.5F);
         insertJewel(6.5F,4.5F);
 
+        insertFood(5.4F, 0.6F);
+        insertFood(8.4F, 0.6F);
+
         insertWall(GREEN_BRICK, 3,8,3,12);
         insertWall(GREEN_BRICK, 3,12,7,12);
         insertWall(GREEN_BRICK, 3,8,4,8);
@@ -53,6 +56,9 @@ public class EnvironmentB extends Environment{
         insertJewel(4.5F, 9.5F);
         insertJewel(5,9.5F);
         insertJewel(4,9.5F);
+
+        insertFood(3.4F, 8.6F);
+        insertFood(4.4F, 8.6F);
 
         insertWall(WHITE_BRICK, 2,6,2,7.98F);
         insertWall(WHITE_BRICK, 3,6.02F,6,6.02F);
@@ -80,6 +86,9 @@ public class EnvironmentB extends Environment{
         insertJewel(13.5F, 7);
         insertJewel(13.5F, 8);
 
+        insertFood(12.4F, 5.6F);
+        insertFood(15.4F, 10.6F);
+
         insertWall(ORANGE_BRICK, 7.02F,8,7.02F,14);
         insertWall(ORANGE_BRICK, 7,8,10,8);
         insertWall(ORANGE_BRICK, 10,8,10,10);
@@ -90,6 +99,9 @@ public class EnvironmentB extends Environment{
         insertJewel(8, 11);
         insertJewel(8, 10);
 
+        insertFood(7.4F, 8.6F);
+        insertFood(9.4F, 13.6F);
+
         insertWall(GREY_BRICK, 12,12,12,14);
         insertWall(GREY_BRICK, 12,15,12,16);
         insertWall(GREY_BRICK, 12,12,16,12);
@@ -99,6 +111,9 @@ public class EnvironmentB extends Environment{
         insertJewel(13.5F,14);
         insertJewel(13.5F,14.5F);
         insertJewel(13.5F,15);
+
+        insertFood(12.4F, 12.6F);
+        insertFood(15.4F, 14.6F);
 
         insertWall(BROWN_BRICK, 9,20,10, 20);
         insertWall(BROWN_BRICK, 9,20,9,  24);
@@ -124,5 +139,8 @@ public class EnvironmentB extends Environment{
         insertJewel(6,16.5F);
         insertJewel(6.5F,16.5F);
         insertJewel(7,16.5F);
+
+        insertFood(4.4F, 14.6F);
+        insertFood(9.4F, 17.6F);
     }
 }

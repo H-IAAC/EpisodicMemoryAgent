@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.episodic;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;

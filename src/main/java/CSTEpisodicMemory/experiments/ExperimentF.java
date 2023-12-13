@@ -4,14 +4,12 @@ import CSTEpisodicMemory.AgentMind;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.util.Vector2D;
-import CSTEpisodicMemory.util.visualization.CategoriesPerEventView;
+import CSTEpisodicMemory.util.visualization.SpatialLinkPerEventView;
 import CSTEpisodicMemory.util.visualization.GraphicMind;
 import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
 import CSTEpisodicMemory.util.visualization.ObjectLocationsVisualizer;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
-import br.unicamp.cst.util.viewer.MindViewer;
-import co.nstant.in.cbor.CborException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +52,7 @@ public class ExperimentF {
             }
         }
 
-        CategoriesPerEventView cc = new CategoriesPerEventView(mind);
+        SpatialLinkPerEventView cc = new SpatialLinkPerEventView(mind);
         Optional<Memory> selectedMem = mind.getRawMemory().getAllMemoryObjects()
                 .stream().filter(m->m.getName().equalsIgnoreCase("EPLTM"))
                 .findFirst();

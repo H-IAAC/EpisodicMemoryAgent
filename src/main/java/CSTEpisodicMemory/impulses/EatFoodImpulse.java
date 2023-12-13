@@ -1,5 +1,6 @@
 package CSTEpisodicMemory.impulses;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.util.Vector2D;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
@@ -15,7 +16,7 @@ public class EatFoodImpulse extends Codelet {
 
     private Memory foodMO;
     private Memory innerSenseMO;
-    private MemoryContainer impulseMO;
+    private ImpulseMemory impulseMO;
 
     private final double minDesire = 0.9;
     private final double maxDesire = 1.0;
@@ -29,7 +30,7 @@ public class EatFoodImpulse extends Codelet {
     public void accessMemoryObjects() {
         this.innerSenseMO = (MemoryObject) getInput("INNER");
         this.foodMO = (MemoryObject) getInput("KNOWN_FOODS");
-        this.impulseMO = (MemoryContainer) getOutput("IMPULSES");
+        this.impulseMO = (ImpulseMemory) getOutput("IMPULSES");
 
     }
 
@@ -76,6 +77,8 @@ public class EatFoodImpulse extends Codelet {
                     }
                 }
             }
+            if(!toRemove.isEmpty())
+                System.out.println("REMOVING FOOD IMPULSE");
             impulsesMemories.removeAll(toRemove);
         }
     }

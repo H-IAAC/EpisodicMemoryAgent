@@ -4,6 +4,7 @@
  */
 package CSTEpisodicMemory.util.visualization;
 
+import CSTEpisodicMemory.core.codelets.ImpulseMemory;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Memory;
@@ -121,7 +122,7 @@ public class IdeaVisualizer extends javax.swing.JFrame {
                 .findFirst();
         if (selectedMem.isPresent()) {
             Object content = selectedMem.get().getI();
-            if (selectedMem.get() instanceof MemoryContainer){
+            if (selectedMem.get() instanceof MemoryContainer || selectedMem.get() instanceof ImpulseMemory){
                 List<Memory> memorieList = ((MemoryContainer) selectedMem.get()).getAllMemories();
                 Idea allContent = new Idea(memoryName);
                 for (Memory mem : memorieList){
