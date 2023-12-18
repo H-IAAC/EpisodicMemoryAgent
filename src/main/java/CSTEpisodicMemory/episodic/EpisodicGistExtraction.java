@@ -125,7 +125,7 @@ public class EpisodicGistExtraction extends Codelet {
                         Idea eventContent = getNodeContent(eventNode);
                         Idea eventCategory = (Idea) eventContent.getValue();
                         Idea LTEventContent = new Idea(eventContent.getName(),
-                                eventCategory.getName(),
+                                eventCategory,
                                 "Episode", 1);
                         LTEventContent.add(new Idea("Start",
                                 eventContent.getL().get(0).get("TimeStamp").getValue(),

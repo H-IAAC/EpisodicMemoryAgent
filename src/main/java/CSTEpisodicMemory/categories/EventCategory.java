@@ -29,8 +29,10 @@ public abstract class EventCategory implements Category {
     @Override
     public double membership(Idea idea) {
         List<ArrayRealVector> propertiesVector = new ArrayList<>();
-        for (Idea step : idea.getL())
-            propertiesVector.add(extractProperties(step));
+        for (Idea step : idea.getL()) {
+            if (!step.getL().isEmpty())
+                propertiesVector.add(extractProperties(step));
+        }
 
         for (ArrayRealVector arr : propertiesVector){
             if (arr.isNaN())

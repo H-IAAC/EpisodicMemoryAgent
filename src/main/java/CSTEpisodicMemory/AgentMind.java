@@ -47,6 +47,7 @@ public class AgentMind extends Mind {
     public List<Codelet> bList = new ArrayList<>();
     public Memory cueMO;
     public Memory recallMO;
+    public Memory storyMO;
     public Memory knownAgentsMO;
 
     public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug, boolean stop) {
@@ -85,7 +86,6 @@ public class AgentMind extends Mind {
         Memory knownWallsMO;
         Memory eventsMO;
         Memory goalsMO;
-        Memory storyMO;
         Memory perceptualBufferMO;
         Memory contextBufferMO;
         Memory EPLTMO;
