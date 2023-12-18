@@ -1,11 +1,13 @@
 package CSTEpisodicMemory.episodic;
 
 import CSTEpisodicMemory.core.representation.GraphIdea;
-import CSTEpisodicMemory.util.IdeaHelper;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
+import org.apache.commons.math3.util.Pair;
+import org.jetbrains.annotations.NotNull;
+import scala.Int;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,6 +21,8 @@ public class EpisodeRetrieval extends Codelet {
     private Memory epltm;
     //private Memory propertiesMO;
     private Memory recallMO;
+    private long searchCount = 0;
+    private long rejectCount = 0;
 
     @Override
     public void accessMemoryObjects() {
@@ -195,33 +199,46 @@ public class EpisodeRetrieval extends Codelet {
                     recalledEpisode = recall;
                 }
             } else if (bestMatches.size() > 1) {
-                LinkedList<Idea> events = new LinkedList<>(bestMatches.keySet());
-                ///int[] p = new int[bestMatches.size()];
-                ///Arrays.fill(p, 0);
-                Map<Idea, Integer> currCheckPos = bestMatches.keySet().stream().collect(Collectors.toMap(e -> e, e -> 0));
+                System.out.println("-----");
+                long totalCombinations = bestMatches.values().stream()
+                        .mapToLong(List::size)
+                        .reduce((a, b) -> a * b)
+                        .getAsLong();
+                System.out.println("Greedy: " + totalCombinations);
+                LinkedList<HashMap<String, List<Integer>>> eventsRelations = getEventsRelations(bestMatches, cue);
+                List<List<Idea>> validRecalls = search(bestMatches, eventsRelations);
+                System.out.println("Optimized: " + searchCount);
+                searchCount = 0;
+                rejectCount = 0;
                 Map<List<Idea>, Double> validSequenceTimeInterval = new HashMap<>();
+                //HashMap<Idea, List<Idea>> filteredMatches = filterMatchedEventsByRelations(bestMatches, eventsRelations);
+                /*
+                Map<Idea, Integer> currCheckPos = bestMatches.keySet().stream().collect(Collectors.toMap(e -> e, e -> 0));
                 boolean valid;
-                int totalCombinations = bestMatches.values().stream().map(List::size).reduce((a, b) -> a * b).get();
-                for (int c = 0; c < totalCombinations; c++) {
-                    int k = c;
+                for (long c = 0; c < totalCombinations; c++) {
+                    if ((c+1)%500_000 == 0){
+                        System.out.printf("%10s / %d\n",
+                                Long.toString(c+1),
+                                totalCombinations);
+                    }
+                //for (int c = 0; c < Math.max(totalCombinations,500000); c++) {
+                    long k = c;
                     for (Idea event : currCheckPos.keySet()) {
                         int totalInPosI = bestMatches.get(event).size();
-                        currCheckPos.put(event, k % totalInPosI);
+                        currCheckPos.put(event, (int) (k % totalInPosI));
                         k = k / totalInPosI;
                     }
-                    /// for (int i = p.length - 1; i >= 0; i--) {
-                    ///     int totalInPosI = bestMatches.get(events.get(i)).size();
-                    ///     p[i] = k % totalInPosI;
-                    ///     k = k / totalInPosI;
-                    /// }
 
                     LinkedList<Idea> recalls = new LinkedList<>();
+                    //Idea prevEvent = null;
                     for (Idea event : currCheckPos.keySet()) {
-                        recalls.add(bestMatches.get(event).get(currCheckPos.get(event)));
+                        Idea currIdeaPos = bestMatches.get(event).get(currCheckPos.get(event));
+                        //if (prevEvent != null){
+                        //    long prevStart = (long) getNodeContent(prevEvent).get("Start").getValue();
+                        //    long currStart = (long) getNodeContent(currIdeaPos).get("Start").getValue();
+                        //}
+                        recalls.add(currIdeaPos);
                     }
-                    ///for (int i = 0; i < events.size(); i++) {
-                    ///    recalls.add(bestMatches.get(events.get(i)).get(p[i]));
-                    ///}
                     valid = true;
                     //Check episodes
                     for (Idea ep : cue.getEpisodeNodes()) {
@@ -243,69 +260,26 @@ public class EpisodeRetrieval extends Codelet {
                         }
                     }
 
-                    //Check context
-                    //for (Idea context : cueContext){
-                    //    Map<String, List<Idea>> links = cue.getPredecessors(context);
-                    //    for (Map.Entry link : links.entrySet()){
-                    //        for (Idea parent : (List<Idea>) link.getValue()){
-                    //            List<Idea> memsContext = epGraph.getChildrenWithLink(bestMatches.get(parent).get(currCheckPos.get(parent)), (String) link.getKey());
-                    //            if (memsContext.isEmpty()){
-                    //                valid = false;
-                    //                break;
-                    //            } else {
-                    //                Idea memContext = GraphIdea.getNodeContent(memsContext.get(0));
-                    //                if (memContext.isCategory()){
-                    //                    if (!memContext.getName().equals(context.getValue())){
-                    //                        valid = false;
-                    //                        break;
-                    //                    }
-                    //                } else {
-                    //                    if (!memContext.getValue().equals(context.getValue())){
-                    //                        valid = false;
-                    //                        break;
-                    //                    }
-                    //                }
-                    //            }
-                    //        }
-                    //    }
-                    //}
-
                     if (valid) {
-                        for (int i = 0; i < events.size(); i++) {
-                            Map<String, List<Idea>> links = cue.getSuccesors(events.get(i));
-                            Idea recallA = getNodeContent(recalls.get(i));
-                            long startRecallA = getStartTime(recallA);
-                            long endRecallA = getEndTime(recallA);
-                            for (int j = 0; j < events.size(); j++) {
-                                Idea eventB = events.get(j);
-                                String cueRelation = links.entrySet().stream()
-                                        .filter(e -> e.getValue().contains(eventB))
-                                        .map(Map.Entry::getKey)
-                                        .findFirst()
-                                        .orElse("");
-                                Idea recallB = getNodeContent(recalls.get(j));
-                                long startRecallB = getStartTime(recallB);
-                                long endRecallB = getEndTime(recallB);
-                                if (!cueRelation.isEmpty() && !cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
-                                    valid = false;
-                                    break;
-                                }
-                            }
-                        }
+                        valid = isValidRelations(eventsRelations, recalls);
                     }
 
                     if (valid) {
-                        double firstTime = Double.POSITIVE_INFINITY;
-                        double lastTime = 0;
-                        for (Idea recall : recalls) {
-                            double start = getStartTime(getNodeContent(recall));
-                            double end = getEndTime(getNodeContent(recall));
-                            if (start < firstTime) firstTime = start;
-                            if (end > lastTime) lastTime = end;
-                        }
-                        validSequenceTimeInterval.put(recalls, lastTime - firstTime);
+
+                 */
+                for (List<Idea> recalls : validRecalls) {
+                    double firstTime = Double.POSITIVE_INFINITY;
+                    double lastTime = 0;
+                    for (Idea recall : recalls) {
+                        double start = getStartTime(getNodeContent(recall));
+                        double end = getEndTime(getNodeContent(recall));
+                        if (start < firstTime) firstTime = start;
+                        if (end > lastTime) lastTime = end;
                     }
+                    validSequenceTimeInterval.put(recalls, lastTime - firstTime);
                 }
+                    //}
+                //}
 
                 if (!validSequenceTimeInterval.isEmpty()) {
                     List<Idea> recalledEvents = validSequenceTimeInterval.entrySet().stream()
@@ -400,6 +374,198 @@ public class EpisodeRetrieval extends Codelet {
         synchronized (recallMO) {
             recallMO.setI(recalledEpisode);
         }
+    }
+
+    private HashMap<Idea, List<Idea>> filterMatchedEventsByRelations(Map<Idea, List<Idea>> bestMatches, LinkedList<HashMap<String, List<Integer>>> eventsRelations) {
+        LinkedList<HashMap<String, List<Pair<Integer, Integer>>>> filtered = new LinkedList<>();
+        List<int[]> test = new ArrayList<>();
+        LinkedList<Idea> events = new LinkedList<>(bestMatches.keySet());
+        for (int i = 0; i<events.size(); i++){
+            List<Idea> matchesA = bestMatches.get(events.get(i));
+            HashMap<String, List<Integer>> relations = eventsRelations.get(i);
+            for (String cueRelation : relations.keySet()) {
+                for (int j : relations.get(cueRelation)) {
+                    List<Idea> matchesB = bestMatches.get(events.get(j));
+                    for (int k=0; k<matchesA.size(); k++){
+                        long startRecallA = getStartTime(matchesA.get(k));
+                        long endRecallA = getEndTime(matchesA.get(k));
+                        for (int l=0; l<matchesB.size(); l++){
+                            long startRecallB = getStartTime(matchesB.get(l));
+                            long endRecallB = getEndTime(matchesB.get(l));
+                            if (cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
+                                if (test.isEmpty()){
+                                    int[] firstTest = new int[events.size()];
+                                    Arrays.fill(firstTest, -1);
+                                    firstTest[i] = k;
+                                    firstTest[j] = l;
+                                    test.add(firstTest);
+                                } else {
+                                    
+                                }
+                                Pair<Integer, Integer> opt = new Pair<>(k,l);
+                                List<Pair<Integer,Integer>> opts = filtered.get(i).getOrDefault(cueRelation, new ArrayList<>());
+                                opts.add(opt);
+                                filtered.get(i).put(cueRelation, opts);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<List<Idea>> search(Map<Idea, List<Idea>> bestMatches, LinkedList<HashMap<String, List<Integer>>> eventsRelations){
+        List<List<Idea>> validRecalls = new ArrayList<>();
+        List<List<List<Integer>>> searchGraph = createSearchGraphMatrix(bestMatches);
+        List<Idea> events = bestMatches.keySet().stream().toList();
+        List<Integer> level1Nodes = searchGraph.get(0).get(0);
+        for (int i = level1Nodes.size()-1; i >= 0; i--){
+            int level1Node = level1Nodes.get(i);
+            List<Integer> currSequence = new ArrayList<>();
+            currSequence.add(level1Node);
+            LinkedList<Idea> currNodesSequence = new LinkedList<>();
+            currNodesSequence.add(bestMatches.get(events.get(0)).get(level1Node));
+            recursiveSearch(searchGraph, bestMatches, eventsRelations, currSequence, currNodesSequence, validRecalls);
+        }
+        return validRecalls;
+    }
+
+    private int recursiveSearch(List<List<List<Integer>>> searchGraph, Map<Idea, List<Idea>> bestMatches, LinkedList<HashMap<String, List<Integer>>> eventsRelations, List<Integer> currSequence, LinkedList<Idea> currNodesSequence, List<List<Idea>> validRecalls){
+        int level = currSequence.size();
+        int exploreNode = currSequence.get(level-1);
+        if (level == searchGraph.size()){
+            searchCount++;
+            if ((searchCount+1) % 500_000==0)
+                System.out.println((searchCount+1) + " | " + rejectCount);
+            //System.out.println(currSequence);
+            int[] reject = new int[2];
+            if (isValidRelations(eventsRelations, currNodesSequence, reject)){
+                validRecalls.add(new ArrayList<>(currNodesSequence));
+                System.out.println("Valid");
+            } else {
+                int rejectLevelSource = Math.min(reject[0], reject[1]);
+                int rejectNodeSource = currSequence.get(rejectLevelSource);
+                int rejectLevelDest = Math.max(reject[0], reject[1]);
+                int rejectNodeDest = currSequence.get(rejectLevelDest);
+                //System.out.println(Arrays.toString(reject) + " - " + rejectNodeSource + "|" + rejectNodeDest);
+                if (Math.abs(reject[0] - reject[1]) == 1){
+                    searchGraph.get(rejectLevelSource+1).get(rejectNodeSource).remove((Object) rejectNodeDest);
+                    //System.out.println(searchGraph);
+                    rejectCount++;
+                    return rejectLevelDest + 1;
+                }
+            }
+            return level;
+        }
+        List<Idea> events = bestMatches.keySet().stream().toList();
+        List<Integer> levelNodes = searchGraph.get(level).get(exploreNode);
+        for (int i = levelNodes.size()-1; i >= 0; i--){
+            int nextLevelNode = levelNodes.get(i);
+            currSequence.add(nextLevelNode);
+            currNodesSequence.add(bestMatches.get(events.get(level)).get(nextLevelNode));
+            int returnLevel = recursiveSearch(searchGraph, bestMatches, eventsRelations, currSequence, currNodesSequence, validRecalls);
+            currSequence.remove(level);
+            currNodesSequence.remove(level);
+            if (returnLevel <= level)
+                return returnLevel;
+        }
+        return level;
+    }
+
+    private static List<List<List<Integer>>> createSearchGraphMatrix(Map<Idea, List<Idea>> bestMatches){
+        List<Idea> events = bestMatches.keySet().stream().toList();
+        List<List<List<Integer>>> searchGraph = new ArrayList<>();
+
+        List<List<Integer>> level0Connections = new ArrayList<>();
+        List<Integer> rootNodeConnections = new ArrayList<>();
+        for (int k = 0; k < bestMatches.get(events.get(0)).size(); k++)
+            rootNodeConnections.add(k);
+        level0Connections.add(rootNodeConnections);
+        searchGraph.add(level0Connections);
+
+        for (int i = 0; i < bestMatches.size()-1; i++){
+            List<List<Integer>> levelConnections = new ArrayList<>();
+            for (int j=0; j < bestMatches.get(events.get(i)).size(); j++){
+                List<Integer> nodeConnections = new ArrayList<>();
+                for (int k = 0; k < bestMatches.get(events.get(i+1)).size(); k++)
+                    nodeConnections.add(k);
+                levelConnections.add(nodeConnections);
+            }
+            searchGraph.add(levelConnections);
+        }
+        return searchGraph;
+    }
+
+    @NotNull
+    private static LinkedList<HashMap<String, List<Integer>>> getEventsRelations(Map<Idea, List<Idea>> bestMatches, GraphIdea cue) {
+        LinkedList<Idea> events = new LinkedList<>(bestMatches.keySet());
+        LinkedList<HashMap<String, List<Integer>>> eventsRelations = new LinkedList<>();
+        for (int i = 0; i < events.size(); i++) {
+            Map<String, List<Idea>> links = cue.getSuccesors(events.get(i));
+            HashMap<String, List<Integer>> eventRelations = new HashMap<>();
+            for (int j = 0; j < events.size(); j++) {
+                Idea eventB = events.get(j);
+                String cueRelation = links.entrySet().stream()
+                        .filter(e -> e.getValue().contains(eventB))
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse("");
+                if (!cueRelation.isEmpty()) {
+                    List<Integer> relatedEvents = eventRelations.getOrDefault(cueRelation, new ArrayList<>());
+                    relatedEvents.add(j);
+                    eventRelations.put(cueRelation, relatedEvents);
+                }
+            }
+            eventsRelations.add(eventRelations);
+        }
+        return eventsRelations;
+    }
+
+    private static boolean isValidRelations(LinkedList<HashMap<String, List<Integer>>> eventsRelations, LinkedList<Idea> recalls, int[] reject) {
+        for (int i = 0; i < eventsRelations.size(); i++) {
+            HashMap<String, List<Integer>> relations = eventsRelations.get(i);
+            if (!relations.isEmpty()) {
+                Idea recallA = getNodeContent(recalls.get(i));
+                long startRecallA = getStartTime(recallA);
+                long endRecallA = getEndTime(recallA);
+                for (String cueRelation : relations.keySet()) {
+                    for (int j : relations.get(cueRelation)) {
+                        Idea recallB = getNodeContent(recalls.get(j));
+                        long startRecallB = getStartTime(recallB);
+                        long endRecallB = getEndTime(recallB);
+                        if (!cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
+                            reject[0] = i;
+                            reject[1] = j;
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean isValidRelations(LinkedList<HashMap<String, List<Integer>>> eventsRelations, LinkedList<Idea> recalls) {
+        for (int i = 0; i < eventsRelations.size(); i++) {
+            HashMap<String, List<Integer>> relations = eventsRelations.get(i);
+            if (!relations.isEmpty()) {
+                Idea recallA = getNodeContent(recalls.get(i));
+                long startRecallA = getStartTime(recallA);
+                long endRecallA = getEndTime(recallA);
+                for (String cueRelation : relations.keySet()) {
+                    for (int j : relations.get(cueRelation)) {
+                        Idea recallB = getNodeContent(recalls.get(j));
+                        long startRecallB = getStartTime(recallB);
+                        long endRecallB = getEndTime(recallB);
+                        if (!cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private List<Idea> filterEventsWithLinkToObject(GraphIdea epGraph, List<Idea> eventNodes, Idea initialObjectState, String linkType) {
