@@ -24,7 +24,7 @@ public class GraphIdeaVisualizer extends JFrame {
     protected static final double REPEL_FORCE = 250 / div;
     protected static final double LINK_FORCE = 0.10 / div;
     protected static final double DRAG_COEF = 2 / div;
-    protected static final double BAND_FORCE = 0.0; //0.025; //0.001;
+    protected static final double BAND_FORCE = 0.002; //0.025; //0.001;
     protected static final double MAX_DIST = 150;
     protected static final double MAX_VEL = 5;
 
@@ -288,9 +288,9 @@ public class GraphIdeaVisualizer extends JFrame {
                     nodeA.force = nodeA.force.subtract(nodeA.force);
                     double yBand = switch (nodeA.type) {
                         case "Episode" -> (heigth - 100) * (-4.0 / 10);
-                        case "Context" -> (heigth - 100) * (-2.0 / 10);
-                        case "Event" -> 0.0;
-                        case "Property" -> (heigth - 100) * (2.0 / 10);
+                        case "Event" -> (heigth - 100) * (-2.0 / 10);
+                        case "Context" -> 0.0;
+                        case "Property", "Object" -> (heigth - 100) * (2.0 / 10);
                         case "Location" -> (heigth - 100) * (4.0 / 10);
                         default -> 0;
                     };

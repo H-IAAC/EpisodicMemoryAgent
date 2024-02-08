@@ -24,10 +24,10 @@ public class Main {
     static AgentMind a;
     public static void main(String[] args) {
         //new ExperimentA().run();
-        LinearEventCategory.threashold = 0.0001;
-        EpisodicGistExtraction.objectCategoryThreashold = 0.7;
+        LinearEventCategory.threashold = 0.01;
+        EpisodicGistExtraction.objectCategoryThreashold = 0.8;
         GridLocation.SCALE = 0.15;
-        ExperimentF.run();
+        ExperimentC.run();
     }
 
     private static void test(){

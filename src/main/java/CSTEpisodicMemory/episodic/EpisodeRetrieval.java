@@ -7,7 +7,6 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.representation.idea.Idea;
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
-import scala.Int;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -346,23 +345,27 @@ public class EpisodeRetrieval extends Codelet {
         Set<Idea> nodesToRemove = new HashSet<>();
         for (Idea event : recalledEpisode.getEventNodes()) {
             for (Idea spatialLink : recalledEpisode.getChildrenWithLink(event, "ObjectContext")) {
-                Idea objectNode = recalledEpisode.getChildrenWithLink(spatialLink, "Object").get(0);
-                Idea copyObject = getNodeContent(objectNode).getInstance();
-                Idea objectOccupation = new Idea("Occupation", null, "Aggregate", 1);
-                List<Idea> occupationCells = recalledEpisode.getChildrenWithLink(spatialLink, "GridPlace");
-                for (Idea gridCell : occupationCells){
-                    objectOccupation.add(getNodeContent(gridCell));
-                }
-                copyObject.add(objectOccupation);
+                List<Idea> occupationCells = new ArrayList<>();
+                Idea copyObject = transformSpatialLinkToObject(spatialLink, recalledEpisode, nodesToRemove, occupationCells);
                 Idea copyObjectNode = recalledEpisode.insertObjectNode(copyObject);
-
-                recalledEpisode.insertLink(event, copyObjectNode, "ObjectContext");
                 for (Idea gridCell : occupationCells) {
                     recalledEpisode.insertLink(copyObjectNode, gridCell, "GridPlace");
                 }
-                nodesToRemove.add(spatialLink);
-                nodesToRemove.add(objectNode);
+                recalledEpisode.insertLink(event, copyObjectNode, "ObjectContext");
             }
+            Idea initialSpatialLink = recalledEpisode.getChildrenWithLink(event, "Initial").get(0);
+            Idea finalSpatialLink = recalledEpisode.getChildrenWithLink(event, "Final").get(0);
+            Idea initialCopyObject = transformSpatialLinkToObject(initialSpatialLink, recalledEpisode, nodesToRemove, new ArrayList<>());
+            Idea finalCopyObject = transformSpatialLinkToObject(finalSpatialLink, recalledEpisode, nodesToRemove, new ArrayList<>());
+            Idea eventContent = getNodeContent(event);
+            initialCopyObject.add(new Idea("TimeStamp", eventContent.get("Start").getValue(), "TimeStamp", 1));
+            eventContent.get("Start").add(initialCopyObject);
+            eventContent.get("Start").setValue(null);
+            eventContent.get("Start").setName("0");
+            finalCopyObject.add(new Idea("TimeStamp", eventContent.get("End").getValue(), "TimeStamp", 1));
+            eventContent.get("End").add(finalCopyObject);
+            eventContent.get("End").setValue(null);
+            eventContent.get("End").setName("1");
         }
         for (Idea node : nodesToRemove){
             recalledEpisode.removeNode(node);
@@ -374,6 +377,21 @@ public class EpisodeRetrieval extends Codelet {
         synchronized (recallMO) {
             recallMO.setI(recalledEpisode);
         }
+    }
+
+    private static Idea transformSpatialLinkToObject(Idea spatialLink, GraphIdea recalledEpisode, Set<Idea> nodesToRemove, List<Idea> occupationCells){
+        Idea objectNode = recalledEpisode.getChildrenWithLink(spatialLink, "Object").get(0);
+        Idea copyObject = getNodeContent(objectNode).getInstance();
+        Idea objectOccupation = new Idea("Occupation", null, "Aggregate", 1);
+        occupationCells.addAll(recalledEpisode.getChildrenWithLink(spatialLink, "GridPlace"));
+        for (Idea gridCell : occupationCells){
+            objectOccupation.add(getNodeContent(gridCell));
+        }
+        copyObject.add(objectOccupation);
+        nodesToRemove.add(spatialLink);
+        nodesToRemove.add(objectNode);
+
+        return copyObject;
     }
 
     private HashMap<Idea, List<Idea>> filterMatchedEventsByRelations(Map<Idea, List<Idea>> bestMatches, LinkedList<HashMap<String, List<Integer>>> eventsRelations) {
@@ -436,7 +454,7 @@ public class EpisodeRetrieval extends Codelet {
         int exploreNode = currSequence.get(level-1);
         if (level == searchGraph.size()){
             searchCount++;
-            if ((searchCount+1) % 500_000==0)
+            if ((searchCount+1) % 10_000_000==0)
                 System.out.println((searchCount+1) + " | " + rejectCount);
             //System.out.println(currSequence);
             int[] reject = new int[2];
@@ -523,6 +541,7 @@ public class EpisodeRetrieval extends Codelet {
     }
 
     private static boolean isValidRelations(LinkedList<HashMap<String, List<Integer>>> eventsRelations, LinkedList<Idea> recalls, int[] reject) {
+        boolean valid = true;
         for (int i = 0; i < eventsRelations.size(); i++) {
             HashMap<String, List<Integer>> relations = eventsRelations.get(i);
             if (!relations.isEmpty()) {
@@ -537,13 +556,16 @@ public class EpisodeRetrieval extends Codelet {
                         if (!cueRelation.equals(temporalRelation(startRecallA, endRecallA, startRecallB, endRecallB))) {
                             reject[0] = i;
                             reject[1] = j;
-                            return false;
+                            valid = false;
+                            if (Math.abs(i-j) == 1) {
+                                return valid;
+                            }
                         }
                     }
                 }
             }
         }
-        return true;
+        return valid;
     }
 
     private static boolean isValidRelations(LinkedList<HashMap<String, List<Integer>>> eventsRelations, LinkedList<Idea> recalls) {

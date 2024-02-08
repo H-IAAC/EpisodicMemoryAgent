@@ -8,6 +8,7 @@ import br.unicamp.cst.representation.idea.Idea;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 import java.util.Timer;
@@ -44,9 +45,9 @@ public class EventVisualizer extends JFrame {
             @Override
             public Dimension getPreferredSize(){
                 if (width > w)
-                    return new Dimension(width, heigth);
+                    return new Dimension(width+100, heigth);
                 else
-                    return new Dimension(w, heigth);
+                    return new Dimension(w+100, heigth);
             }
 
             @Override
@@ -66,6 +67,26 @@ public class EventVisualizer extends JFrame {
 
                 Graphics2D g2d = (Graphics2D) g;
                 events.sort(Comparator.comparingLong(e->(long) e.get("Start").getValue()));
+
+                try{
+                    PrintWriter out = new PrintWriter("events_seq");
+                    long firstTimeStamp = 0;
+                    int c = 1;
+                    for (Idea event : events) {
+                        long start = (long) event.get("Start").getValue();
+                        long end = (long) event.get("End").getValue();
+                        if (firstTimeStamp == 0)
+                            firstTimeStamp = start;
+
+                        start -= firstTimeStamp;
+                        end -= firstTimeStamp;
+                        out.println("Event_" + c++ + " " + start + " " + end);
+                    }
+                    out.close();
+                } catch (Exception e){
+                    System.out.println("Err");
+                }
+
                 long firstTimeStamp = 0;
                 double scale = 0.2;
                 List<Long> lastEnd = new ArrayList<>();

@@ -11,8 +11,13 @@ import CSTEpisodicMemory.util.visualization.IdeaVisualizer;
 import CSTEpisodicMemory.util.visualization.ObjectLocationsVisualizer;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
+import br.unicamp.cst.util.viewer.representation.idea.IdeaPanel;
+import com.google.gson.Gson;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -97,17 +102,13 @@ public class ExperimentF {
         GraphIdea cue = new GraphIdea(new Idea("Cue"));
         GraphIdea story = new GraphIdea(testEpisode);
         for (Idea event : story.getEventNodes()) {
-            if (cue.getEventNodes().size() > 5){
-                break;
-            }
             Idea eventContent = getNodeContent(event);
-            Idea eventCue = new Idea(eventContent.getName(), eventContent.getValue(), "Episode", 1);
-            Idea sourceNode = cue.insertEventNode(eventCue);
+            Idea sourceNode = cue.insertEventNode(IdeaHelper.cloneIdea(eventContent));
             for (Map.Entry<String, List<Idea>> link : story.getSuccesors(event).entrySet()) {
                 if (temporalRelations.contains(link.getKey())) {
                     for (Idea dest : link.getValue()) {
                         Idea destContent = getNodeContent(dest);
-                        Idea destNode = cue.insertEventNode(new Idea(destContent.getName(), destContent.getValue(), "Episode", 1));
+                        Idea destNode = cue.insertEventNode(IdeaHelper.cloneIdea(destContent));
                         cue.insertLink(sourceNode, destNode, link.getKey());
                     }
                 }
@@ -130,6 +131,22 @@ public class ExperimentF {
         System.out.println("---Recovered Episodes for Agent 21----");
         System.out.println("Episodes: " + storyRecall.getEpisodeNodes().size());
         System.out.println("Events: " + storyRecall.getEventNodes().size());
+
+        JFrame testFrame = new JFrame();
+        JPanel testPanel = new JPanel();
+        IdeaPanel ideaPanel1 = new IdeaPanel(new Gson().fromJson(IdeaHelper.csvPrint(storyRecall.graph, 4), Idea.class), false);
+        ideaPanel1.updateTree();
+        ideaPanel1.expandAllNodes();
+        IdeaPanel ideaPanel2 = new IdeaPanel(new Gson().fromJson(IdeaHelper.csvPrint(testEpisode, 4), Idea.class), false);
+        ideaPanel2.updateTree();
+        ideaPanel2.expandAllNodes();
+        testPanel.setLayout(new BorderLayout());
+        testPanel.add(ideaPanel1, BorderLayout.WEST);
+        testPanel.add(ideaPanel2, BorderLayout.EAST);
+        testFrame.add(testPanel);
+        testPanel.revalidate();
+        testFrame.revalidate();
+        testFrame.setVisible(true);
     }
 
     private static void testMemoryRetrieval(AgentMind mind) {
@@ -163,6 +180,7 @@ public class ExperimentF {
         System.out.println("---Recovered Episodes for Agent 21----");
         System.out.println("Episodes: " + storyRecall.getEpisodeNodes().size());
         System.out.println("Events: " + storyRecall.getEventNodes().size());
+
     }
 
     private static List<Idea> createRoomsCategories() {

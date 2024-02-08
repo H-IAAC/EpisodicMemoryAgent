@@ -393,7 +393,7 @@ public class EpisodeRetrievalTest {
         GraphIdea storyRecall = (GraphIdea) recallMO.getI();
 
         //Check number of items
-        Assertions.assertEquals(21, storyRecall.getNodes().size());
+        Assertions.assertEquals(13, storyRecall.getNodes().size());
 
         //Check if is correct episode
         List<Idea> ep = storyRecall.getEpisodeNodes();

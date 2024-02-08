@@ -27,7 +27,7 @@ public class ImpulseMemory extends MemoryContainer {
                 lastReturn = mem;
             }
         }
-        System.out.println("CHANGE @@@@@@@@@");
+        //System.out.println("CHANGE @@@@@@@@@");
         return get;
     }
 }

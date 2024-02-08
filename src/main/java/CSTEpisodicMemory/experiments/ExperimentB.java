@@ -78,7 +78,7 @@ public class ExperimentB {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        env.creature.moveTo(4, 2.3F);
+        //env.creature.moveTo(4, 2.3F);
 
         try {
             Thread.sleep(2000);
@@ -123,7 +123,7 @@ public class ExperimentB {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        env.creature.moveTo(4, 2.1F);
+        //env.creature.moveTo(4, 2.1F);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -168,7 +168,7 @@ public class ExperimentB {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        env.creature.moveTo(4, 1.9F);
+        //env.creature.moveTo(4, 1.9F);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -213,7 +213,7 @@ public class ExperimentB {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        env.creature.moveTo(4.5F, 1.9F);
+        env.creature.moveTo(4F, 2.3F);
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {

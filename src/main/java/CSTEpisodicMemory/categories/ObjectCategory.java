@@ -77,7 +77,7 @@ public class ObjectCategory implements Category {
         for (int i = 0; i < properties.size(); i++) {
             String property = properties.get(i);
             Idea parent = instance;
-            for (String s : property.split(".")) {
+            for (String s : property.split("[.]")) {
                 if (parent.get(s) != null) {
                     parent = parent.get(s);
                 } else {
@@ -87,6 +87,9 @@ public class ObjectCategory implements Category {
                 }
             }
             parent.setValue(selected.getCoords()[i]);
+            if (!idProperty.equals("")){
+                instance.add(new Idea(idProperty, id, "Property", 1));
+            }
         }
         return instance;
     }
