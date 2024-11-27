@@ -79,9 +79,9 @@ public class WallDetector extends Codelet {
         sizeIdea.add(new Idea("Depth", t.getDepth(), "QualityDimension", 1));
         wallIdea.add(sizeIdea);
         Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
-        color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
-        color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
-        color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
+        color.add(new Idea("R", (t.getColor().get(0)*100), "QualityDimension", 1));
+        color.add(new Idea("G", (t.getColor().get(1)*100), "QualityDimension", 1));
+        color.add(new Idea("B", (t.getColor().get(2)*100), "QualityDimension", 1));
         wallIdea.add(color);
         wallIdea.add(new Idea("ID", t.getId(), "Property", 1));
         synchronized (detectedRoom) {

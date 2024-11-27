@@ -4,7 +4,6 @@ import CSTEpisodicMemory.util.BKDTree;
 import CSTEpisodicMemory.util.KDTree;
 import br.unicamp.cst.representation.idea.Category;
 import br.unicamp.cst.representation.idea.Idea;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,7 +12,7 @@ public class ObjectCategory implements Category {
 
     public List<String> properties = new ArrayList<>();
     private String category = "";
-    private int id = 0;
+    public int id = 0;
     private String idProperty = "";
 
     private BKDTree examplars;
@@ -31,6 +30,8 @@ public class ObjectCategory implements Category {
         }
         examplars = new BKDTree(properties.size());
         examplars.insert(new KDTree.Node(extractVector(examplar)));
+        if (examplars.getNodes().isEmpty())
+            System.out.println("#################### EMPTY CATEGORY CREATED ####################");
     }
 
     private List<String> extractProperties(Idea examplar) {
@@ -50,23 +51,24 @@ public class ObjectCategory implements Category {
     public double membership(Idea idea) {
         double eval = 0;
         if (category.equals(idea.getValue().toString())) {
-            double[] propertiesVector = extractVector(idea);
-            KDTree.Node propertiesVectorNode = new KDTree.Node(propertiesVector);
-            KDTree.Node bestExamplar = examplars.findNearest(propertiesVectorNode);
-            double dist = bestExamplar.distance(propertiesVectorNode);
-            eval = Math.exp(-dist / Math.pow(properties.size(), 2));
             if (idProperty != "") {
-                eval *= 0.7;
                 if (idea.get(idProperty) != null && (int) idea.get(idProperty).getValue() == id) {
-                    if (checkProperties(idea) == 0){
-                        eval = 0.7;
+                    if (checkProperties(idea) == 0) {
+                        return 0.5;
                     } else {
-                        eval += 0.3;
+                        double[] propertiesVector = extractVector(idea);
+                        KDTree.Node propertiesVectorNode = new KDTree.Node(propertiesVector);
+                        KDTree.Node bestExamplar = examplars.findNearest(propertiesVectorNode);
+                        double dist = Double.MAX_VALUE;
+                        if (bestExamplar != null)
+                            dist = bestExamplar.distance(propertiesVectorNode);
+                        eval = Math.exp(-dist / Math.pow(properties.size(), 2));
+                        return eval;
                     }
                 }
             }
         }
-        return eval;
+        return 0;
     }
 
     @Override
@@ -87,7 +89,7 @@ public class ObjectCategory implements Category {
                 }
             }
             parent.setValue(selected.getCoords()[i]);
-            if (!idProperty.equals("")){
+            if (!idProperty.equals("")) {
                 instance.add(new Idea(idProperty, id, "Property", 1));
             }
         }
@@ -111,14 +113,14 @@ public class ObjectCategory implements Category {
                 double val = Double.parseDouble(idea.get(property).getValue().toString());
                 vec[i] = val;
             } else {
-                vec[i] = 0;
+                vec[i] = -Double.MAX_VALUE;
             }
         }
         return vec;
     }
 
     public void insertExamplar(Idea idea) {
-        if (category.equals(idea.getCategory())) {
+        if (category.equals(idea.getValue().toString())) {
             if (checkProperties(idea) == properties.size()) {
                 double[] propertiesVector = extractVector(idea);
                 KDTree.Node propertiesVectorNode = new KDTree.Node(propertiesVector);
@@ -129,5 +131,15 @@ public class ObjectCategory implements Category {
 
     public int exemplarsSize() {
         return examplars.getNodes().size();
+    }
+
+    @Override
+    public String toString() {
+        return "\nObjectCategory{" +
+                " category='" + category + '\'' +
+                ", id=" + id +
+                ", properties=" + properties +
+                ", examplars=" + examplars.getNodes().stream().map(e -> Arrays.toString(e.getCoords())).toList() +
+                '}';
     }
 }

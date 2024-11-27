@@ -8,13 +8,12 @@ import CSTEpisodicMemory.core.representation.GridLocation;
 import CSTEpisodicMemory.episodic.EpisodicGistExtraction;
 import CSTEpisodicMemory.experiments.*;
 import CSTEpisodicMemory.util.visualization.*;
-import WS3DCoppelia.util.Constants;
+import WS3DCoppelia.WS3DCoppelia;
+import WS3DCoppelia.model.Agent;
 import br.unicamp.cst.core.entities.Memory;
-import br.unicamp.cst.core.entities.MemoryContainer;
-import br.unicamp.cst.representation.idea.Idea;
+import com.coppeliarobotics.remoteapi.zmq.objects.special._sim;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -22,12 +21,35 @@ import java.util.stream.Collectors;
 public class Main {
 
     static AgentMind a;
-    public static void main(String[] args) {
+    public static void main(String... args) {
         //new ExperimentA().run();
-        LinearEventCategory.threashold = 0.01;
-        EpisodicGistExtraction.objectCategoryThreashold = 0.8;
+        Experiment exp = new ExperimentD();
+        Agent.HUE_VARIATION = 0.01;
+        LinearEventCategory.threshold = 0.01;
+        EpisodicGistExtraction.objectCategoryThreshold = 0.7;
+        for (int i=0; i<args.length;i++){
+            if (args[i].equals("-evt")){
+                LinearEventCategory.threshold = Double.parseDouble(args[i+1]);
+            } else if (args[i].equals("-obj")) {
+                EpisodicGistExtraction.objectCategoryThreshold = Double.parseDouble(args[i+1]);
+            } else if (args[i].equals("-exp1")) {
+                exp = new ExperimentC();
+            } else if (args[i].equals("-exp2")) {
+                exp = new ExperimentD();
+            } else if (args[i].equals("-exp3")) {
+                exp = new ExperimentF();
+            } else if (args[i].equals("-hue")) {
+                Agent.HUE_VARIATION = Double.parseDouble(args[i+1]);
+            }
+        }
+        String[] expName = exp.toString().split("@")[0].split("\\.");
+        System.out.println("Params Summary:\n" +
+                "\tExperiment: " + expName[expName.length-1] + "\n" +
+                "\tEvent Threshold: " + LinearEventCategory.threshold + "\n" +
+                "\tObject Threshold: " + EpisodicGistExtraction.objectCategoryThreshold + "\n" +
+                "\tHue: " + Agent.HUE_VARIATION);
         GridLocation.SCALE = 0.15;
-        ExperimentC.run();
+        exp.run();
     }
 
     private static void test(){

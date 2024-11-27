@@ -66,9 +66,9 @@ public class AgentDetector extends Codelet {
         agentIdea.add(new Idea("ID", agent.getId(), "Property", 1));
         agentIdea.add(new Idea("Pitch", agent.getPitch(), "Property", 1));
         Idea color = new Idea("Color", agent.getColorName(), "Property", 1);
-        color.add(new Idea("R", agent.getColor().get(0), "QualityDimension", 1));
-        color.add(new Idea("G", agent.getColor().get(1), "QualityDimension", 1));
-        color.add(new Idea("B", agent.getColor().get(2), "QualityDimension", 1));
+        color.add(new Idea("R", (agent.getColor().get(0)*100), "QualityDimension", 1));
+        color.add(new Idea("G", (agent.getColor().get(1)*100), "QualityDimension", 1));
+        color.add(new Idea("B", (agent.getColor().get(2)*100), "QualityDimension", 1));
         agentIdea.add(color);
         synchronized (detectedRoom) {
             if (detectedRoom != null) {

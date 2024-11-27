@@ -9,10 +9,7 @@ import CSTEpisodicMemory.util.visualization.*;
 import br.unicamp.cst.core.entities.Memory;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.*;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -20,30 +17,19 @@ import java.util.stream.Collectors;
 import static CSTEpisodicMemory.AgentMind.constructRoomCategory;
 import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
 
-public class ExperimentF implements Experiment {
+public class ExperimentD implements Experiment {
 
     AgentMind mind;
     Environment env;
     IdeaVisualizer visu;
-    //GraphicMind gm;
-    List<SimpleAgentExecutor> actors = new ArrayList<>();
+    GraphicMind gm;
     public void run() {
         env = new EnvironmentB(16, 24);
-        mind = new AgentMind(env, createRoomsCategories());
-        visu = new IdeaVisualizer(mind);
-        for (String mem : mind.getRawMemory().getAllMemoryObjects().stream().map(Memory::getName).collect(Collectors.toList()))
-            visu.addMemoryWatch(mem);
-        visu.setMemoryWatchPrintLevel("EPLTM", 4);
-        visu.setMemoryWatchPrintLevel("EVENTS", 5);
-        visu.setVisible(true);
-        //gm = new GraphicMind(mind, env, 16, 24, 16 * 30, 24 * 30, 1);
-        double start = System.currentTimeMillis();
 
         for (int i = 0; i < 5; i++) {
             SimpleAgentExecutor execNPC = new SimpleAgentExecutor(env);
             execNPC.setRecursive(true);
             execNPC.start();
-            actors.add(execNPC);
             try {
                 Thread.sleep(15000);
             } catch (InterruptedException ex) {
@@ -51,144 +37,83 @@ public class ExperimentF implements Experiment {
             }
         }
 
-        Map<Integer,Idea> testEpisodes = new HashMap<>();
-        while (env.creature.getFuel() > 100) {
+        mind = new AgentMind(env, createRoomsCategories());
+        visu = new IdeaVisualizer(mind);
+        for (String mem : mind.getRawMemory().getAllMemoryObjects().stream().map(Memory::getName).collect(Collectors.toList()))
+            visu.addMemoryWatch(mem);
+        visu.setMemoryWatchPrintLevel("EPLTM", 4);
+        visu.setMemoryWatchPrintLevel("EVENTS", 5);
+        visu.setVisible(true);
+        gm = new GraphicMind(mind, env, 16, 24, 16 * 30, 24 * 30, 1);
+
+        Map<String, Set<Integer>> episodesPerAgent = new HashMap<>();
+        double timer = System.currentTimeMillis();
+        while (env.creature.getFuel() > 100 && (System.currentTimeMillis() - timer) < 5*60*1000) {
+            //System.out.printf("Elapsed Time: %.1f\n", (System.currentTimeMillis() - timer)/1000);
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 System.out.printf("Skip sleep");
             }
-
             synchronized (mind.storyMO) {
                 Idea stories = (Idea) mind.storyMO.getI();
-                Idea lastStory = stories.getL().get(0);
-                int lastEp = (int) lastStory.getValue();
-                testEpisodes.put(lastEp, IdeaHelper.cloneIdea(lastStory.get("Story")));
+                int episodeId = (int) stories.getL().get(0).getValue();
+                GraphIdea lastStory = new GraphIdea(stories.getL().get(0).get("Story"));
+                for (Idea event : lastStory.getEventNodes()){
+                    Idea eventContent = getNodeContent(event);
+                    Optional<Idea> initialObject = eventContent.getL().get(0).getL().stream()
+                            .filter(o -> !o.getName().equals("TimeStamp"))
+                            .findFirst();
+                    Optional<Idea> finalObject = eventContent.getL().get(1).getL().stream()
+                            .filter(o -> !o.getName().equals("TimeStamp"))
+                            .findFirst();
+                    if (initialObject.isPresent())
+                        if (initialObject.get().getValue().equals("AGENT")) {
+                            Set<Integer> epis = episodesPerAgent.getOrDefault(initialObject.get().getName(), new HashSet<>());
+                            epis.add(episodeId);
+                            episodesPerAgent.put(initialObject.get().getName(), epis);
+                        }
+                }
             }
         }
 
-        System.out.println("\n\n###### Final Time: " + (System.currentTimeMillis() - start) + " ######\n");
+        SpatialLinkPerEventView spatialLinkPerEventView = new SpatialLinkPerEventView(mind, true);
+        ObjectCategoryPerEventView objectCategoryPerEventView = new ObjectCategoryPerEventView(mind, true);
+        GridPerEventView gridPerEventView = new GridPerEventView(mind, true);
 
-        SpatialLinkPerEventView cc = new SpatialLinkPerEventView(mind, true);
-        ObjectCategoryPerEventView ss = new ObjectCategoryPerEventView(mind, true);
-        GridPerEventView ww = new GridPerEventView(mind, true);
-        /*
-        Optional<Memory> selectedMem = mind.getRawMemory().getAllMemoryObjects()
-                .stream().filter(m -> m.getName().equalsIgnoreCase("EPLTM"))
-                .findFirst();
-        if (selectedMem.isPresent()) {
-            GraphIdea gg = new GraphIdea((GraphIdea) selectedMem.get().getI());
-            ObjectLocationsVisualizer oo = new ObjectLocationsVisualizer(gg);
-        }*/
+        System.out.println("START SIMILARITY");
+        synchronized (mind.EPLTMO) {
+            GraphIdea epltm = new GraphIdea((GraphIdea) mind.EPLTMO.getI());
+            String scores = "";
+            for (Idea ep : epltm.getEpisodeNodes()) {
+                Idea ep1Clone = IdeaHelper.referenceClone(ep);
+                Idea linksClone = IdeaHelper.referenceClone(ep1Clone.get("Links"));
+                if (linksClone.get("Next") != null)
+                    linksClone.getL().remove(linksClone.get("Next"));
+                ep1Clone.getL().remove(ep1Clone.get("Links"));
+                ep1Clone.add(linksClone);
+                scores += "\n" + ep.getId();
+                for (Idea ep2 : epltm.getEpisodeNodes()) {
+                    Idea ep2Clone = IdeaHelper.referenceClone(ep2);
+                    Idea links2Clone = IdeaHelper.referenceClone(ep2Clone.get("Links"));
+                    if (links2Clone.get("Next") != null)
+                        links2Clone.getL().remove(links2Clone.get("Next"));
+                    ep2Clone.getL().remove(ep2Clone.get("Links"));
+                    ep2Clone.add(links2Clone);
+                    double sss = IdeaHelper.scoreSimilarity(ep1Clone, ep2Clone);
+                    scores += String.format("\t %.4f", sss);
+                }
+            }
+            System.out.println(scores);
+        }
+        System.out.println(episodesPerAgent);
 
-        //testMemoryRetrieval(mind);
-
-        //compareReconstruction(mind, new ArrayList<>(testEpisodes.values()));
+        testMemoryRetrieval(mind);
+        System.out.println("\n");
+        GraphIdea epltm = new GraphIdea((GraphIdea) mind.EPLTMO.getI());
+        System.out.println(IdeaHelper.generateEPLTMDescription(epltm));
         System.out.println("FINISH");
         shutdown();
-    }
-
-    @Override
-    public void shutdown() {
-        for (SimpleAgentExecutor actor : actors){
-            actor.setRecursive(false);
-        }
-        mind.shutDown();
-        env.stopSimulation();
-        //gm.stop();
-        visu.setVisible(false);
-        System.exit(0);
-    }
-
-    private static void compareReconstruction(AgentMind mind, List<Idea> testEpisodes) {
-        int successes = 0;
-
-        for (Idea testEpisode : testEpisodes) {
-            List<String> temporalRelations = Arrays.asList("Before", "Meet", "Between", "Overlap", "Start", "During", "Finish", "Equal");
-            GraphIdea cue = new GraphIdea(new Idea("Cue"));
-            GraphIdea story = new GraphIdea(testEpisode);
-            for (Idea event : story.getEventNodes()) {
-                Idea eventContent = getNodeContent(event);
-                Idea sourceNode = cue.insertEventNode(eventContent);
-                for (Map.Entry<String, List<Idea>> link : story.getSuccesors(event).entrySet()) {
-                    if (temporalRelations.contains(link.getKey())) {
-                        for (Idea dest : link.getValue()) {
-                            Idea destContent = getNodeContent(dest);
-                            Idea destNode = cue.insertEventNode(destContent);
-                            cue.insertLink(sourceNode, destNode, link.getKey());
-                        }
-                    }
-                }
-            }
-
-            System.out.println("Event Cues: " + cue.getEventNodes().size());
-            mind.recallMO.setI(null);
-            mind.cueMO.setI(cue);
-
-            long start = System.currentTimeMillis();
-            while (mind.recallMO.getI() == null) {
-                try {
-                    Thread.sleep(100);
-                    System.out.print("Recalling " + (System.currentTimeMillis() - start) / 1000.0 + "ms\r");
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            System.out.println(" ");
-
-            GraphIdea storyRecall = (GraphIdea) mind.recallMO.getI();
-            System.out.println("---Recovered Episodes for Agent 21----");
-            System.out.println("Episodes: " + storyRecall.getEpisodeNodes().size());
-            System.out.println("Events: " + storyRecall.getEventNodes().size());
-
-            PrintWriter out;
-            try {
-                out = new PrintWriter("cue_data");
-                String csv = cue.toCSV();
-                out.println(csv);
-                out.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                out = new PrintWriter("testEp_data");
-                String csv = story.toCSV();
-                out.println(csv);
-                out.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                out = new PrintWriter("recalled_data");
-                String csv = storyRecall.toCSV();
-                out.println(csv);
-                out.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-
-            boolean sameNumEvents = story.getEventNodes().size() == storyRecall.getEventNodes().size();
-
-            boolean haveAllEvents = true;
-            for (Idea event : story.getEventNodes()) {
-                boolean found = false;
-                for (Idea eventRecall : storyRecall.getEventNodes())
-                    if (getNodeContent(event).getName().equals(getNodeContent(eventRecall).getName())) {
-                        found = true;
-                        break;
-                    }
-                if (!found) {
-                    haveAllEvents = false;
-                    break;
-                }
-            }
-
-            if (sameNumEvents && haveAllEvents)
-                successes++;
-        }
-
-        System.out.println("Successful retrieval of [ " + successes + " / " + testEpisodes.size() + " ]");
-
     }
 
     private static void testMemoryRetrieval(AgentMind mind) {
@@ -226,17 +151,25 @@ public class ExperimentF implements Experiment {
 
             System.out.println("---Recovered Episodes for Agent " + agentId +"----");
             System.out.println("Time: "+ (System.currentTimeMillis()-start));
-            System.out.println("Episodes: " + storyRecall.getEpisodeNodes().size());
+            System.out.println("Episodes: " + storyRecall.getEpisodeNodes().stream().map(e->getNodeContent(e).getName()).toList());
             System.out.println("Events: " + storyRecall.getEventNodes().size());
             String eee = "";
             for (Idea ep : storyRecall.getEpisodeNodes()){
+                eee += "\t" + getNodeContent(ep).getName() + "\n";
                 for (Idea ev : storyRecall.getEpisodeSubGraphCopy(ep).getEventNodes()){
-                    eee += getNodeContent(ep).getName() + "|" + getNodeContent(ev).getName() + "|" + getNodeContent(ev).getValue().toString() + " ";
+                    eee +=  "\t\t" + getNodeContent(ev).getName() + "|" + getNodeContent(ev).getValue().toString() + "\n";
                 }
             }
-            System.out.println("Event types: " + eee);
+            System.out.println("Event types:\n" + eee);
         }
+    }
 
+    public void shutdown(){
+        mind.shutDown();
+        gm.stop();
+        visu.setVisible(false);
+        env.stopSimulation();
+        System.exit(0);
     }
 
     private static List<Idea> createRoomsCategories() {

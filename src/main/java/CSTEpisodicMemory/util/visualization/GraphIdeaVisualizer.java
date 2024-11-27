@@ -74,7 +74,7 @@ public class GraphIdeaVisualizer extends JFrame {
         button.addItemListener(itemEvent -> physics = itemEvent.getStateChange() == ItemEvent.SELECTED);
         toolBar.add(button);
 
-        for (int i = 0; i<5;i++){
+        for (int i = 0; i<6;i++){
             JCheckBox cBox = new JCheckBox(types[i]);
             cBox.setSelected(true);
             int finalI = i;

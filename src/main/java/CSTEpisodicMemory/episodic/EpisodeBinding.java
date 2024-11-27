@@ -120,6 +120,8 @@ public class EpisodeBinding extends Codelet {
                                         if (roomCat != null) {
                                             story.insertContextNode((Idea) roomCat.getValue());
                                             story.insertLink(event, (Idea) roomCat.getValue(), "Environment");
+                                        } else {
+                                            System.out.println("NO ROOM");
                                         }
                                     }
 
@@ -187,6 +189,9 @@ public class EpisodeBinding extends Codelet {
                         Idea newEpisode = new Idea("Episode", (int) currentEpisode.getValue() + 1, "Episode", 1);
                         newEpisode.add(newStory);
                         stories.add(newEpisode);
+
+                        System.out.println("---Encoding---");
+                        System.out.println("Episode Binding " + currentEpisode.getValue() + " & " + story.getNodes().size() + " & " + story.getEventNodes().size() + " & " + story.getObjectNodes().size() );
 
                         //Clear events buffer
                         eventsIdea.setL(segmentedEvents);
@@ -310,7 +315,7 @@ public class EpisodeBinding extends Codelet {
         if (Math.abs(a) <= intervalThreshold && Math.abs(d) <= intervalThreshold)
             return "Equal";
         //before
-        if (-c >= intervalThreshold && -c <= 50 * intervalThreshold)
+        if (-c >= intervalThreshold) //&& -c <= 100 * intervalThreshold)
             return "Before";
         return "";
     }

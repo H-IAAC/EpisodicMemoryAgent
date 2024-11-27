@@ -17,7 +17,7 @@ import java.util.Optional;
 
 public class GridPerEventView {
 
-    public GridPerEventView(Mind m){
+    public GridPerEventView(Mind m, boolean logOnly){
         GraphIdea gg = null;
         Optional<Memory> selectedMem = m.getRawMemory().getAllMemoryObjects()
                 .stream().filter(mem->mem.getName().equalsIgnoreCase("EPLTM"))
@@ -77,14 +77,16 @@ public class GridPerEventView {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-            Plot plt = Plot.create();
-            plt.plot().add(eventObjectX,eventObjectY, "ob");
-            plt.plot().add(contextObjectX, contextObjectY, "og");
-            plt.title("Grid Cells Used");
-            try {
-                plt.show();
-            } catch (IOException | PythonExecutionException e) {
-                throw new RuntimeException(e);
+            if (!logOnly) {
+                Plot plt = Plot.create();
+                plt.plot().add(eventObjectX, eventObjectY, "ob");
+                plt.plot().add(contextObjectX, contextObjectY, "og");
+                plt.title("Grid Cells Used");
+                try {
+                    plt.show();
+                } catch (IOException | PythonExecutionException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

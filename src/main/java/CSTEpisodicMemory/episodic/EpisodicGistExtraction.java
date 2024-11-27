@@ -32,7 +32,7 @@ public class EpisodicGistExtraction extends Codelet {
     private int spatialLinkCount = 0;
     private boolean debug = true;
     private long processingStart;
-    public static double objectCategoryThreashold = 0.9;
+    public static double objectCategoryThreshold = 0.9;
 
     public EpisodicGistExtraction(Idea locCatAcomodate, Idea newLocCategoryGenerator, Idea trackedPropertiesAssimilateAccommodateHabit) {
         this.name = "GistExtraction";
@@ -69,7 +69,6 @@ public class EpisodicGistExtraction extends Codelet {
 
                 //If there is a segmented episode
                 if (stories.getL().size() > 1) {
-                    System.out.println("Star Gist Extraction");
                     processingStart = System.currentTimeMillis();
                     Idea oldestEpisode = stories.getL().get(0);
                     for (Idea ep : stories.getL()) {
@@ -243,17 +242,16 @@ public class EpisodicGistExtraction extends Codelet {
                     epLTMGraph.insertLink(ep, endEvent, "End");
                     if (prevEp != null) {
                         epLTMGraph.insertLink(prevEp, ep, "Next");
-                        epLTMGraph.insertLink(prevLastEvent, startEvent, "Next");
+                        //epLTMGraph.insertLink(prevLastEvent, startEvent, "Next");
                     }
                     prevEp = ep;
                     prevLastEvent = endEvent;
 
-                    stories.getL().remove(oldestEpisode);
-
                     if (debug){
-                        evaluateMemory(epLTMGraph);
+                        evaluateMemory(epLTMGraph, (int) oldestEpisode.getValue());
                     }
 
+                    stories.getL().remove(oldestEpisode);
                 }
             }
             //synchronized (locationMO) {
@@ -339,8 +337,8 @@ public class EpisodicGistExtraction extends Codelet {
             }
         }
         if (bestObjCat != null){
-            if (bestMem >= objectCategoryThreashold){
-                if (bestMem >=0.95) {
+            if (bestMem >= objectCategoryThreshold){
+                if (bestMem >= (0.5 + objectCategoryThreshold/2.0)) {
                     ObjectCategory cat = (ObjectCategory) bestObjCat.getValue();
                     cat.insertExamplar(objectContent);
                     bestObjCat.setValue(cat);
@@ -353,16 +351,17 @@ public class EpisodicGistExtraction extends Codelet {
         return epLTMGraph.insertObjectNode(newObjCat);
     }
 
-    private void evaluateMemory(GraphIdea epLTMGraph) {
+    private void evaluateMemory(GraphIdea epLTMGraph, int episodeId) {
         System.out.println("--Armazenamento--");
-        System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
-        System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
+        //System.out.println("Número de nós: " + epLTMGraph.getNodes().size());
+        //System.out.println("Detected Events: " +  epLTMGraph.getEventNodes().size());
         long links = epLTMGraph.getContextNodes().stream().filter(e->getNodeContent(e).getName().contains("SpatialLink")).count();
-        System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
-        System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
-        System.out.println("Links espaciais: " + links);
-        System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
-        System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
+        //System.out.println("Contextos: " + (epLTMGraph.getContextNodes().size() - links));
+        //System.out.println("Objetos: " + epLTMGraph.getObjectNodes().size());
+        //System.out.println("Links espaciais: " + links);
+        //System.out.println("Número de células de grade: " + epLTMGraph.getLocationNodes().size());
+        //System.out.println("Episódios: " +  epLTMGraph.getEpisodeNodes().size());
+        System.out.println("Episode Gist "+ episodeId + " & " + epLTMGraph.getNodes().size() + " & " + epLTMGraph.getEventNodes().size() + " & " + epLTMGraph.getObjectNodes().size() + " & " + links);
 
         SingleGraph measureGraph = new SingleGraph("Measure");
         long start = System.currentTimeMillis();
@@ -383,12 +382,19 @@ public class EpisodicGistExtraction extends Codelet {
         }
 
         System.out.println("--Graph Measure---");
-        System.out.println("Tempo de Processamento: " + (start-processingStart));
-        System.out.println("Tempo de Avaliação: " + (System.currentTimeMillis()-start));
-        System.out.println("EPLTM grau: " + Toolkit.averageDegree(measureGraph));
-        System.out.println("EPLTM densidade: " + Toolkit.density(measureGraph));
-        System.out.println("EPLTM diâmetro: " + Toolkit.diameter(measureGraph));
-        System.out.println("EPLTM clustering: " + Toolkit.averageClusteringCoefficient(measureGraph));
+        System.out.println("EPLTM Measure " +
+                (start-processingStart) + " & "
+                        +(System.currentTimeMillis()-start)+ " & "
+                +Toolkit.averageDegree(measureGraph)+ " & "
+                +Toolkit.density(measureGraph)+ " & "
+                +Toolkit.diameter(measureGraph)+ " & "
+                +Toolkit.averageClusteringCoefficient(measureGraph));
+        //System.out.println("Tempo de Processamento: " + (start-processingStart));
+        //System.out.println("Tempo de Avaliação: " + (System.currentTimeMillis()-start));
+        //System.out.println("EPLTM grau: " + Toolkit.averageDegree(measureGraph));
+        //System.out.println("EPLTM densidade: " + Toolkit.density(measureGraph));
+        //System.out.println("EPLTM diâmetro: " + Toolkit.diameter(measureGraph));
+        //System.out.println("EPLTM clustering: " + Toolkit.averageClusteringCoefficient(measureGraph));
         System.out.println("------------------");
     }
 }

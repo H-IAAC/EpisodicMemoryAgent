@@ -28,11 +28,11 @@ public class EnvironmentB extends Environment{
         insertFood(3.4F, 2.6F);
         //insertFood(3.8F, 2.6F);
         //insertFood(3.4F, 2.2F);
-        //insertFood(3.8F, 2.2F);
-        //insertFood(0.2F, 2.2F);
-        insertFood(0.6F, 2.2F);
+        insertFood(3.8F, 2.2F);
+        insertFood(0.2F, 2.2F);
+        //insertFood(0.6F, 2.2F);
         //insertFood(0.2F, 2.6F);
-        //insertFood(0.6F, 2.6F);
+        insertFood(0.6F, 2.6F);
 
         insertWall(RED_BRICK, 5,0,5,6);
         insertWall(RED_BRICK, 5,0,9,0);
@@ -58,7 +58,7 @@ public class EnvironmentB extends Environment{
         insertJewel(4,9.5F);
 
         insertFood(3.4F, 8.6F);
-        insertFood(4.4F, 8.6F);
+        insertFood(6.4F, 8.6F);
 
         insertWall(WHITE_BRICK, 2,6,2,7.98F);
         insertWall(WHITE_BRICK, 3,6.02F,6,6.02F);
@@ -99,8 +99,8 @@ public class EnvironmentB extends Environment{
         insertJewel(8, 11);
         insertJewel(8, 10);
 
-        //insertFood(7.4F, 8.6F);
-        //insertFood(9.4F, 13.6F);
+        insertFood(7.4F, 8.6F);
+        insertFood(9.4F, 13.6F);
 
         insertWall(GREY_BRICK, 12,12,12,14);
         insertWall(GREY_BRICK, 12,15,12,16);
@@ -112,8 +112,8 @@ public class EnvironmentB extends Environment{
         insertJewel(13.5F,14.5F);
         insertJewel(13.5F,15);
 
-        //insertFood(12.4F, 12.6F);
-        //insertFood(15.4F, 14.6F);
+        insertFood(12.4F, 12.6F);
+        insertFood(15.4F, 14.6F);
 
         insertWall(BROWN_BRICK, 9,20,10, 20);
         insertWall(BROWN_BRICK, 9,20,9,  24);
@@ -124,11 +124,11 @@ public class EnvironmentB extends Environment{
         insertFood(9.2F, 23.8F);
         //insertFood(9.6F, 23.8F);
         //insertFood(9.2F, 23.4F);
-        //insertFood(9.6F, 23.4F);
-        //insertFood(14.4F, 23.4F);
-        insertFood(14.8F, 23.4F);
+        insertFood(9.6F, 23.4F);
+        insertFood(14.4F, 23.4F);
+        //insertFood(14.8F, 23.4F);
         //insertFood(14.4F, 23.8F);
-        //insertFood(14.8F, 23.8F);
+        insertFood(14.8F, 23.8F);
 
         insertWall(YELLOW_BRICK, 4,18,6,18);
         insertWall(YELLOW_BRICK, 7,18,10,18);

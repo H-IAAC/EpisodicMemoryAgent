@@ -116,7 +116,7 @@ public class GraphIdea {
         }
         for (Idea parent : parents){
             //Function removeLink may change 'BackLinks' list. So is called after collecting parents
-            removeLink(foundNode, parent);
+            removeLink(parent, foundNode);
         }
 
         graph.getL().remove(foundNode);
@@ -387,7 +387,7 @@ public class GraphIdea {
                 .forEach(e -> e.get("Activation").setValue(0d));
     }
 
-    public GraphIdea getEpisodeSubGraph(Idea ep) {
+    public GraphIdea getEpisodeSubGraphCopy(Idea ep) {
         Idea foundNode = ep;
         if (!ep.getName().equals("Node")) {
             Optional<Idea> nodeOpt = graph.getL().stream()
@@ -396,48 +396,56 @@ public class GraphIdea {
         }
 
         if (foundNode != null) {
+            boolean endWithLinks = false;
             GraphIdea subGraph = new GraphIdea(new Idea(foundNode.getName()));
-            Idea subEp = subGraph.insertEpisodeNode(getNodeContent(foundNode));
+            Idea subEp = subGraph.insertEpisodeNode(IdeaHelper.cloneIdea(getNodeContent(foundNode)));
 
             Idea start = getChildrenWithLink(foundNode, "Begin").get(0);
             Idea end = getChildrenWithLink(foundNode, "End").get(0);
-            Idea subStart = subGraph.insertEventNode(getNodeContent(start));
-            Idea subEnd = subGraph.insertEventNode(getNodeContent(end));
+            Idea subStart = subGraph.insertEventNode(IdeaHelper.cloneIdea(getNodeContent(start)));
+            Idea subEnd = subGraph.insertEventNode(IdeaHelper.cloneIdea(getNodeContent(end)));
             subGraph.insertLink(subEp, subStart, "Begin");
             subGraph.insertLink(subEp, subEnd, "End");
             Set<Idea> queue = new LinkedHashSet<>();
             queue.add(start);
             for (int i = 0; i < queue.size(); i++) {
                 Idea root = new ArrayList<>(queue).get(i);
+                Idea rootContentCopy = IdeaHelper.cloneIdea(getNodeContent(root));
                 Map<String, List<Idea>> links = getSuccesors(root);
                 for (String linkType : links.keySet()) {
-                    for (Idea node : links.get(linkType)) {
-                        if (root == end) {
-                            if (!node.get("Type").getValue().equals("Event")) {
-                                subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
-                                subGraph.insertLink(getNodeContent(root), getNodeContent(node), linkType);
-                                Map<String, List<Idea>> subContext = getSuccesors(node);
-                                if (!subContext.isEmpty()){
-                                    for (String subLinkType : subContext.keySet()) {
-                                        for (Idea subContextNode : subContext.get(subLinkType)) {
-                                            subGraph.insertNode(getNodeContent(subContextNode), (String) subContextNode.get("Type").getValue());
-                                            subGraph.insertLink(getNodeContent(node), getNodeContent(subContextNode), subLinkType);
+                    if (!linkType.equals("Next")){
+                        for (Idea node : links.get(linkType)) {
+                            Idea nodeContentCopy = IdeaHelper.cloneIdea(getNodeContent(node));
+                            if (root == end) {
+                                if (!node.get("Type").getValue().equals("Event")) {
+                                    endWithLinks = true;
+                                    subGraph.insertNode(nodeContentCopy, (String) node.get("Type").getValue());
+                                    subGraph.insertLink(rootContentCopy, nodeContentCopy, linkType);
+                                    Map<String, List<Idea>> subContext = getSuccesors(node);
+                                    if (!subContext.isEmpty()) {
+                                        for (String subLinkType : subContext.keySet()) {
+                                            for (Idea subContextNode : subContext.get(subLinkType)) {
+                                                Idea subContextContentClone = IdeaHelper.cloneIdea(getNodeContent(subContextNode));
+                                                subGraph.insertNode(subContextContentClone, (String) subContextNode.get("Type").getValue());
+                                                subGraph.insertLink(nodeContentCopy, subContextContentClone, subLinkType);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        } else {
-                            subGraph.insertNode(getNodeContent(node), (String) node.get("Type").getValue());
-                            subGraph.insertLink(getNodeContent(root), getNodeContent(node), linkType);
-                            if (node.get("Type").getValue().equals("Event")) {
-                                queue.add(node);
                             } else {
-                                Map<String, List<Idea>> subContext = getSuccesors(node);
-                                if (!subContext.isEmpty()){
-                                    for (String subLinkType : subContext.keySet()) {
-                                        for (Idea subContextNode : subContext.get(subLinkType)) {
-                                            subGraph.insertNode(getNodeContent(subContextNode), (String) subContextNode.get("Type").getValue());
-                                            subGraph.insertLink(getNodeContent(node), getNodeContent(subContextNode), subLinkType);
+                                subGraph.insertNode(nodeContentCopy, (String) node.get("Type").getValue());
+                                subGraph.insertLink(rootContentCopy, nodeContentCopy, linkType);
+                                if (node.get("Type").getValue().equals("Event")) {
+                                    queue.add(node);
+                                } else {
+                                    Map<String, List<Idea>> subContext = getSuccesors(node);
+                                    if (!subContext.isEmpty()) {
+                                        for (String subLinkType : subContext.keySet()) {
+                                            for (Idea subContextNode : subContext.get(subLinkType)) {
+                                                Idea subContextContentClone = IdeaHelper.cloneIdea(getNodeContent(subContextNode));
+                                                subGraph.insertNode(subContextContentClone, (String) subContextNode.get("Type").getValue());
+                                                subGraph.insertLink(nodeContentCopy, subContextContentClone, subLinkType);
+                                            }
                                         }
                                     }
                                 }
@@ -446,6 +454,8 @@ public class GraphIdea {
                     }
                 }
             }
+            if (!endWithLinks)
+                System.out.println("No path to end event: " + getNodeContent(foundNode).getName());
             return subGraph;
         }
         return null;
@@ -462,7 +472,7 @@ public class GraphIdea {
     }
 
     public List<Idea> getAllNodesWithSimilarContent(Idea content) {
-        return getAllNodesWithSimilarContent(content, 0.6);
+        return getAllNodesWithSimilarContent(content, 0.5);
     }
 
     public List<Idea> getAllNodesWithSimilarContent(Idea content, double threshold) {
@@ -470,7 +480,7 @@ public class GraphIdea {
         for (Idea graphNode : graph.getL()){
             Idea graphNodeContent = getNodeContent(graphNode);
             if (graphNodeContent.isCategory()){
-                if (graphNodeContent.membership(content) > threshold){
+                if (graphNodeContent.membership(content) >= threshold){
                     foundNodes.add(graphNode);
                 }
             } else {
@@ -492,7 +502,7 @@ public class GraphIdea {
     public void addAll(GraphIdea clone) {
         for (Idea n : clone.getNodes()) {
             Node node = new Node(n);
-            this.insertNode(IdeaHelper.cloneIdea(node.getContent()), node.getType());
+            this.insertNode(node.getContent(), node.getType());
         }
         for (Idea n : clone.getNodes()) {
             Node node = new Node(n);
@@ -540,6 +550,40 @@ public class GraphIdea {
         if (parents.contains(null) || parents.stream().distinct().count() != 1)
             return null;
         return parents.get(0);
+    }
+
+    public String toCSV(){
+        List<Idea> listtoavoidloops = new ArrayList<>();
+        return csvPrint(this.graph, "", listtoavoidloops, 0);
+    }
+
+    private String csvPrint(Idea idea, String prefix, List<Idea> listtoavoidloops, int currLevel){
+        if (idea == null)
+            return "{\"id\": 0, \"name\": \"NULL\", \"value\": \"NULL\", \"l\": [], \"type\": 1,\"category\": \"Property\", \"scope\": 0}";
+        String csv = prefix + "{\n";
+        csv += prefix + "  \"id\": " + idea.getId() + ",\n";
+        csv += prefix + "  \"name\": \"" + idea.getName() + "\",\n";
+        csv += prefix + "  \"value\": \"" + (idea.getValue() != null ? IdeaHelper.getIdeaResumedValue(idea):"") + "\",\n";
+        StringBuilder lCsv = new StringBuilder();
+        if (!listtoavoidloops.contains(idea) && !(idea.getName().equals("Node") && currLevel > 1)) {
+            listtoavoidloops.add(idea);
+            for (Idea l : idea.getL()) {
+                lCsv.append("\n").append(csvPrint(l, prefix + "    ", listtoavoidloops, currLevel+1)).append(",");
+            }
+            if (!idea.getL().isEmpty()) {
+                lCsv.deleteCharAt(lCsv.length() - 1);
+                csv += prefix + "  \"l\": [" + lCsv + "\n" + prefix + "  ],\n";
+            } else {
+                csv += prefix + "  \"l\": [],\n";
+            }
+        } else {
+            csv += prefix + "  \"l\": [],\n";
+        }
+        csv += prefix + "  \"type\": " + idea.getType() + ",\n";
+        csv += prefix + "  \"category\": \"" + idea.getCategory() + "\",\n";
+        csv += prefix + "  \"scope\": " + idea.getScope() + "\n";
+        csv += prefix + "}";
+        return csv;
     }
 
     public static class Node {

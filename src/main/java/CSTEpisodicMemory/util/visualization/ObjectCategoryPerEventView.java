@@ -17,7 +17,7 @@ import java.util.Optional;
 
 public class ObjectCategoryPerEventView {
 
-    public ObjectCategoryPerEventView(Mind m){
+    public ObjectCategoryPerEventView(Mind m, boolean logOnly){
         GraphIdea gg = null;
         Optional<Memory> selectedMem = m.getRawMemory().getAllMemoryObjects()
                 .stream().filter(mem->mem.getName().equalsIgnoreCase("EPLTM"))
@@ -74,14 +74,16 @@ public class ObjectCategoryPerEventView {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-            Plot plt = Plot.create();
-            plt.plot().add(eventObjectX,eventObjectY, "ob");
-            plt.plot().add(contextObjectX, contextObjectY, "og");
-            plt.title("Objects Category");
-            try {
-                plt.show();
-            } catch (IOException | PythonExecutionException e) {
-                throw new RuntimeException(e);
+            if (!logOnly) {
+                Plot plt = Plot.create();
+                plt.plot().add(eventObjectX, eventObjectY, "ob");
+                plt.plot().add(contextObjectX, contextObjectY, "og");
+                plt.title("Objects Category");
+                try {
+                    plt.show();
+                } catch (IOException | PythonExecutionException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

@@ -33,14 +33,17 @@ dependencies {
 
     // This dependency is used by the application.
     implementation 'com.github.apache:commons-math:MATH_3_6_RC2'
-    implementation 'com.github.CST-Group:cst:8a5ef50'
+    implementation 'com.github.CST-Group:cst:06ab2da'
     implementation 'com.github.sh0nk:matplotlib4j:0.5.0'
     //implementation 'com.github.CST-Group:cst-desktop:1.0.5'
-    implementation 'com.github.CST-Group:WS3D-Coppelia:main-SNAPSHOT'
+    //implementation 'com.github.CST-Group:WS3D-Coppelia:main-SNAPSHOT'
     implementation 'org.json:json:20180813'
+    implementation 'com.google.code.gson:gson:2.10'
     implementation 'org.graphstream:gs-core:2.0'
     implementation 'org.graphstream:gs-algo:2.0'
     implementation 'org.graphstream:gs-ui-swing:2.0'
+    implementation group: 'co.nstant.in', name: 'cbor', version:'0.9'
+    implementation group: 'org.zeromq', name: 'jeromq', version:'0.5.2'
     implementation fileTree(dir: 'libs', include: '*.jar')
     //testImplementation group: 'junit', name: 'junit', version: '4.10'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'

@@ -210,7 +210,7 @@ public class GraphIdeaTest {
         epltm.insertLink(event9, locCat.get(1), "Location");
 
 
-        GraphIdea subGraph = epltm.getEpisodeSubGraph(ep3);
+        GraphIdea subGraph = epltm.getEpisodeSubGraphCopy(ep3);
 
         List<Idea> ep = subGraph.getEpisodeNodes();
         Assertions.assertEquals(1, ep.size());

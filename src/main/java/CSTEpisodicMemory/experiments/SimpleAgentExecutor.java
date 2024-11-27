@@ -105,7 +105,17 @@ public class SimpleAgentExecutor extends Thread{
             double offX = rnd.nextDouble() * 0.5 - 0.25;
             double offY = rnd.nextDouble() * 0.5 - 0.25;
             agent.moveTo(nextPos[0] + offX, nextPos[1] + offY);
+            boolean moving = true;
             while (!agent.isInOccupancyArea(nextPos[0] + offX, nextPos[1] + offY)){
+                double difx = env.creature.getPosition().get(0) - agent.getPosition().get(0);
+                double dify = env.creature.getPosition().get(1) - agent.getPosition().get(1);
+                if (Math.hypot(difx,dify) <= 0.5) {
+                    agent.stop();
+                    moving = false;
+                } else if (!moving){
+                    agent.moveTo(nextPos[0] + offX, nextPos[1] + offY);
+                    moving = true;
+                }
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {

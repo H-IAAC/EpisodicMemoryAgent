@@ -1,12 +1,13 @@
 package CSTEpisodicMemory.util;
 
+import CSTEpisodicMemory.core.representation.GraphIdea;
 import br.unicamp.cst.representation.idea.Idea;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static CSTEpisodicMemory.core.representation.GraphIdea.getNodeContent;
+import static com.google.common.base.Strings.commonPrefix;
 
 public class IdeaHelper {
 
@@ -173,6 +174,14 @@ public class IdeaHelper {
         return clone;
     }
 
+    public static Idea referenceClone(Idea idea) {
+        Idea clone = new Idea(idea.getName(), idea.getValue(), idea.getCategory(), idea.getScope());
+        for (Idea s : idea.getL()) {
+            clone.add(s);
+        }
+        return clone;
+    }
+
     public static Idea cloneIdea(Idea idea){
         return cloneIdea(idea, new HashMap<>());
     }
@@ -282,4 +291,98 @@ public class IdeaHelper {
 
         return countSimilar;
     }
+
+    public static String generateEPLTMDescription(GraphIdea epltm){
+        StringBuilder desc = new StringBuilder();
+        int epCount = 1;
+        for (Idea episode : epltm.getEpisodeNodes()){
+            desc.append("Episode " + epCount++ + ":\n");
+            epltm.resetActivations();
+            epltm.setNodeActivation(episode, 1.0);
+            epltm.propagateActivations(Arrays.asList("Begin", "Meet", "Before", "Start", "During", "Overlap", "Finish", "Equal"), new ArrayList<>());
+            List<Idea> episodeEvents = epltm.getEventNodes().stream().filter(e->epltm.getNodeActivation(e) > 0).toList();
+            int eventCount = 1;
+            for (Idea event : episodeEvents){
+                desc.append(eventCount++ + ") [" + ((Idea) getNodeContent(event).getValue()).getName() + "] ");
+                Idea spatialLinkInitial = epltm.getChildrenWithLink(event, "Initial").get(0);
+                Idea spatialLinkFinal = epltm.getChildrenWithLink(event, "Final").get(0);
+                String initialObj = getNodeContent(epltm.getChildrenWithLink(spatialLinkInitial, "Object").get(0)).getName();
+                String finalObj = getNodeContent(epltm.getChildrenWithLink(spatialLinkFinal, "Object").get(0)).getName();
+                desc.append(initialObj + " Occupation: [");
+                for (Idea grid : epltm.getChildrenWithLink(spatialLinkInitial, "GridPlace")){
+                    Idea gridInfo = getNodeContent(grid);
+                    desc.append("(" + gridInfo.get("u").getValue() + "," + gridInfo.get("v").getValue() + "), ");
+                }
+                desc.append("] |");
+                desc.append(finalObj + " Occupation: [");
+                for (Idea grid : epltm.getChildrenWithLink(spatialLinkFinal, "GridPlace")){
+                    Idea gridInfo = getNodeContent(grid);
+                    desc.append("(" + gridInfo.get("u").getValue() + "," + gridInfo.get("v").getValue() + "), ");
+                }
+                desc.append("]\n");
+            }
+            desc.append("\n");
+        }
+
+        return desc.toString();
+    }
+    public static double scoreSimilarity2(Idea a, Idea b){
+        return scoreSimilarity2(a, b, new ArrayList<>(), new ArrayList<>(), new Similarity());
+    }
+    private static double scoreSimilarity2(Idea a, Idea b, List<Idea> loopsA, List<Idea> loopsB, Similarity similarity) {
+        if (a == null || b == null) {
+            similarity.countTotal++;
+            similarity.countSimilar++;
+            return 1.0;
+        }
+
+        /*if (a.getId() == b.getId()) {
+            similarity.countTotal++;
+            similarity.countSimilar++;
+            return 1.0;
+        }*/
+
+        similarity.countTotal += 3; // Name, Value and Type
+        similarity.countSimilar += countSimpleSimilaity2(a, b);
+
+        if (loopsA.contains(a) || loopsB.contains(b))
+            return similarity.countSimilar / similarity.countTotal;
+        loopsA.add(a);
+        loopsB.add(b);
+
+        for (Idea s : a.getL()){
+            double maxSubSimilarity = 0;
+            Idea bestSubIdea = null;
+            for (Idea ss : b.getL()){
+                double subSimilarity = countSimpleSimilaity2(s, ss);//, new ArrayList<>(loopsA), new ArrayList<>(loopsB), new Similarity()); //countSimpleSimilaity(s, ss);
+                if (subSimilarity > maxSubSimilarity) {
+                    maxSubSimilarity = subSimilarity;
+                    bestSubIdea = ss;
+                }
+            }
+            scoreSimilarity2(s, bestSubIdea, loopsA, loopsB, similarity);
+        }
+        return similarity.countSimilar / similarity.countTotal;
+    }
+
+    public static double countSimpleSimilaity2(Idea a, Idea b){
+        if (a == null || b == null)
+            return 3;
+
+        if (a.getId() == b.getId())
+            return 3;
+
+        double countSimilar = 0;
+        if (a.getValue() == null && b.getValue() == null)
+            countSimilar++;
+        else if (a.getValue() != null && b.getValue() != null)
+            if (a.getValue().equals(b.getValue()))
+                countSimilar++;
+        countSimilar +=  commonPrefix(a.getName(), b.getName()).length() * 1.0 / Math.max(a.getName().length(), b.getName().length());
+        if (a.getType() == b.getType())
+            countSimilar++;
+
+        return countSimilar;
+    }
 }
+

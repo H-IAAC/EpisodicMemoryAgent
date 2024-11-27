@@ -3,7 +3,6 @@ package CSTEpisodicMemory.util.visualization;
 import CSTEpisodicMemory.core.representation.GraphIdea;
 import CSTEpisodicMemory.core.representation.GridLocation;
 import br.unicamp.cst.representation.idea.Idea;
-import com.oracle.truffle.regex.tregex.nodes.input.InputEndsWithNode;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

@@ -39,7 +39,7 @@ public abstract class EventCategory implements Category {
                 return 0;
         }
 
-        if (!checkVectorSize(propertiesVector))
+        if (!checkVectorSize(propertiesVector) && propertiesVector.size() > 0)
             return 0.5;
 
         //System.out.println("Checking");

@@ -49,6 +49,7 @@ public class AgentMind extends Mind {
     public Memory recallMO;
     public Memory storyMO;
     public Memory knownAgentsMO;
+    public Memory EPLTMO;
 
     public AgentMind(Environment env, List<Idea> roomsCategories, boolean debug, boolean stop) {
         super();
@@ -88,7 +89,7 @@ public class AgentMind extends Mind {
         Memory goalsMO;
         Memory perceptualBufferMO;
         Memory contextBufferMO;
-        Memory EPLTMO;
+        //Memory EPLTMO;
         Memory locationsMO;
         Memory categoriesRoomMO;
         Memory roomsMO;
@@ -566,11 +567,11 @@ public class AgentMind extends Mind {
     private Idea initializeInnerSenseIdea() {
         Idea innerSense = new Idea("Self", "AGENT", "AbstractObject", 1);
         Idea posIdea = new Idea("Position", null, "Property", 1);
-        posIdea.add(new Idea("X", 0, 3));
-        posIdea.add(new Idea("Y", 0, 3));
+        posIdea.add(new Idea("X", 3, 3));
+        posIdea.add(new Idea("Y", 3, 3));
         innerSense.add(posIdea);
-        innerSense.add(new Idea("Pitch", null, "Property", 1));
-        innerSense.add(new Idea("Fuel", null, "Property", 1));
+        innerSense.add(new Idea("Pitch", 0.0, "Property", 1));
+        innerSense.add(new Idea("Fuel", 1000, "Property", 1));
         innerSense.add(new Idea("ID", -1, "Property", 1));
         //innerSense.add(new Idea("Step", 0, "TimeStep", 1));
         innerSense.add(new Idea("TimeStamp", System.currentTimeMillis(), "Property", 1));

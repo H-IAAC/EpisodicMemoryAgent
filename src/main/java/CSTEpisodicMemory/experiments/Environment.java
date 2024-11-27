@@ -5,6 +5,7 @@ import WS3DCoppelia.WS3DCoppelia;
 import WS3DCoppelia.model.Agent;
 import WS3DCoppelia.util.Constants;
 import co.nstant.in.cbor.CborException;
+import org.zeromq.ZMQException;
 
 import java.io.IOException;
 import java.util.Random;
@@ -54,7 +55,7 @@ public abstract class Environment {
     }
 
     protected void insertFood(float x, float y){
-        world.createThing(Constants.FoodTypes.NPFOOD,x,y);
+        world.createThing(Constants.FoodTypes.PFOOD,x,y);
     }
 
     protected void insertJewel(float x, float y){
@@ -73,8 +74,11 @@ public abstract class Environment {
         try {
             world.stopSimulation();
             initialized = false;
-        } catch (CborException ex) {
+            Thread.sleep(200);
+        } catch (ZMQException | CborException ex) {
             Logger.getLogger(Environment.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }

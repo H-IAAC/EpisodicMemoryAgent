@@ -128,9 +128,9 @@ public class JewelDetector extends Codelet {
         }
 
         Idea color = new Idea("Color", t.getTypeName().split("_")[0], "Property", 1);
-        color.add(new Idea("R", t.getColor().get(0), "QualityDimension", 1));
-        color.add(new Idea("G", t.getColor().get(1), "QualityDimension", 1));
-        color.add(new Idea("B", t.getColor().get(2), "QualityDimension", 1));
+        color.add(new Idea("R", (t.getColor().get(0)*100), "QualityDimension", 1));
+        color.add(new Idea("G", (t.getColor().get(1)*100), "QualityDimension", 1));
+        color.add(new Idea("B", (t.getColor().get(2)*100), "QualityDimension", 1));
         jewelIdea.add(color);
         Idea size = new Idea("Size", null, "Property", 1);
         size.add(new Idea("X", t.getSize().get(0), "QualityDimension", 1));
